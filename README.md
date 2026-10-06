@@ -9,6 +9,7 @@ The lectures are written for university students, but every abbreviation and tec
 | 1 | [Operating Systems Historic Evolution](01-historic-evolution/) | why operating systems exist: batch processing, the resident monitor, multiprogramming, virtual memory, time sharing, Multics and Unix, MS-DOS, networks and mobile devices; the roles and layers of an OS |
 | 2 | [The Fetch-Execute Cycle](02-fetch-execute-cycle/) | von Neumann architecture, CPU registers and buses, the instruction cycle, addressing modes, flags and jumps, memory permissions (NX), x86-64 and `gdb` |
 | 3 | [Interrupts](03-interrupts/) | interrupt classes, user and kernel mode, interrupt processing, nested interrupts, the interrupt controller, interrupt latency, programmed I/O vs interrupts vs DMA, race conditions, test-and-set and semaphores, `/proc/interrupts` |
+| 4 | [Quality, Commercial Aspects and the Enterprise Linux Family](04-quality-and-enterprise-linux/) | quality criteria and ISO/IEC 25010, MTTF/MTTR/MTBF and availability, SLI/SLO/SLA, the commercial model of open source, branch/fork/upstream/backport, Fedora, CentOS Stream, RHEL, AlmaLinux, Rocky Linux |
 
 ## Running the labs
 
