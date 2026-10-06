@@ -6,8 +6,9 @@ The lectures are written for university students, but every abbreviation and tec
 
 | # | Lecture | Topics |
 | --- | --- | --- |
-| 1 | [The Fetch-Execute Cycle](01-fetch-execute-cycle/) | von Neumann architecture, CPU registers and buses, the instruction cycle, addressing modes, flags and jumps, memory permissions (NX), x86-64 and `gdb` |
-| 2 | [Interrupts](02-interrupts/) | interrupt classes, user and kernel mode, interrupt processing, nested interrupts, the interrupt controller, interrupt latency, programmed I/O vs interrupts vs DMA, race conditions, test-and-set and semaphores, `/proc/interrupts` |
+| 1 | [Operating Systems Historic Evolution](01-historic-evolution/) | why operating systems exist: batch processing, the resident monitor, multiprogramming, virtual memory, time sharing, Multics and Unix, MS-DOS, networks and mobile devices; the roles and layers of an OS |
+| 2 | [The Fetch-Execute Cycle](02-fetch-execute-cycle/) | von Neumann architecture, CPU registers and buses, the instruction cycle, addressing modes, flags and jumps, memory permissions (NX), x86-64 and `gdb` |
+| 3 | [Interrupts](03-interrupts/) | interrupt classes, user and kernel mode, interrupt processing, nested interrupts, the interrupt controller, interrupt latency, programmed I/O vs interrupts vs DMA, race conditions, test-and-set and semaphores, `/proc/interrupts` |
 
 ## Running the labs
 

@@ -2,7 +2,7 @@
 
 *Operating Systems lecture: the von Neumann machine, the instruction cycle and interrupts, with Linux (x86-64) examples*
 
-Next: [Interrupts](../02-interrupts/).
+Previous: [Operating Systems Historic Evolution](../01-historic-evolution/). Next: [Interrupts](../03-interrupts/).
 
 > **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
 
@@ -293,7 +293,7 @@ Loops and branches (`if`, `while`, `for`) are all implemented with conditional j
 
 ## Interrupts
 
-An interrupt signals an external event, and the CPU only takes it into account at the end of the cycle, in the Check Interrupt step. This way an instruction is never interrupted halfway through. Real x86-64 CPUs follow the same rule: hardware interrupts are recognised at instruction boundaries. (Exceptions caused by the instruction itself, such as page faults, arise while the instruction is being fetched or executed; the [Interrupts](../02-interrupts/) lecture explains how they are handled.)
+An interrupt signals an external event, and the CPU only takes it into account at the end of the cycle, in the Check Interrupt step. This way an instruction is never interrupted halfway through. Real x86-64 CPUs follow the same rule: hardware interrupts are recognised at instruction boundaries. (Exceptions caused by the instruction itself, such as page faults, arise while the instruction is being fetched or executed; the [Interrupts](../03-interrupts/) lecture explains how they are handled.)
 
 The sequence:
 
