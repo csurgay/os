@@ -2,7 +2,7 @@
 
 *Operating Systems lecture: interrupt classes, user and kernel mode, interrupt processing, nested interrupts, the interrupt controller, interrupt latency, I/O techniques and why interrupts make mutual exclusion necessary, with Linux (x86-64) examples*
 
-Previous: [The Fetch-Execute Cycle](../03-fetch-execute-cycle/).
+Previous: [The Fetch-Execute Cycle](../04-fetch-execute-cycle/).
 
 > **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
 

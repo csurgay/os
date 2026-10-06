@@ -114,7 +114,7 @@ From here, the history can be read as a sequence of problems. Each step solves t
 
 - **Batch:** a group of jobs collected and then run one after another without anybody stepping in, like a washing machine running a full load.
 - **I/O** (Input/Output): everything a computer exchanges with the outside world: card readers, printers, disks, keyboards, the network.
-- **Interrupt:** a signal that makes the processor pause its current program for a moment to deal with something urgent, like a doorbell. The [Interrupts](../04-interrupts/) lecture covers it in detail.
+- **Interrupt:** a signal that makes the processor pause its current program for a moment to deal with something urgent, like a doorbell. The [Interrupts](../05-interrupts/) lecture covers it in detail.
 - **Buffer:** a small temporary storage area where data waits until someone collects it, like a mailbox.
 - **Multiprogramming:** keeping several programs in memory at once, so that when one has to wait, the processor can work on another.
 - **Context switch:** the processor stops running one program and starts running another. It saves the first one's state and loads the other's, like bookmarking one book and opening another.
@@ -209,7 +209,7 @@ Electronic CPUs were roughly a thousand times faster than the mechanical card re
 
 A third idea was to keep the slow devices away from the expensive computer altogether. In **offline I/O**, a small, cheap computer (such as the IBM 1401) copied the card decks onto magnetic tape, the big computer read the much faster tape, and the small one printed the results from tape. **Spooling** (Simultaneous Peripheral Operations On-Line) brought the same idea inside one machine: the OS copies input to the disk ahead of time and collects output there, so programs never wait for the card reader or printer directly. Later, **DMA** let devices copy whole blocks into memory without the CPU.
 
-Handling interrupts, buffers and spooling became core tasks of the operating system. The [Interrupts](../04-interrupts/) lecture shows how much CPU time this saves.
+Handling interrupts, buffers and spooling became core tasks of the operating system. The [Interrupts](../05-interrupts/) lecture shows how much CPU time this saves.
 
 ### VI. CPU-bound and I/O-bound programs: multiprogramming
 

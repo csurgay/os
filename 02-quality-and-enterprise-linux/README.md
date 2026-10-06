@@ -2,13 +2,13 @@
 
 *Operating Systems lecture: what makes an operating system good, how its quality is measured and sold (MTBF, availability, SLA), how the Fedora, CentOS Stream, RHEL, AlmaLinux and Rocky Linux family is built and maintained, and how it reaches containers (UBI, registries, Podman, image mode)*
 
-Previous: [Operating Systems Historic Evolution](../01-historic-evolution/). Next: [The Fetch-Execute Cycle](../03-fetch-execute-cycle/).
+Previous: [Operating Systems Historic Evolution](../01-historic-evolution/). Next: [Cognitive Ergonomics and Operating Systems UI](../03-cognitive-ergonomics/).
 
 > **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
 
 ## Learning objectives
 
-The previous lecture showed how operating systems came to be; the following ones look inside the machine, at the fetch-execute cycle and interrupts. Between the two, this lecture steps back and asks how good an operating system is, how that is measured and promised in a contract, and how a commercial Linux distribution is built from a community project and kept stable for ten years.
+The previous lecture showed how operating systems came to be; the following ones turn to the people who use it and then look inside the machine, at the fetch-execute cycle and interrupts. Between the two, this lecture steps back and asks how good an operating system is, how that is measured and promised in a contract, and how a commercial Linux distribution is built from a community project and kept stable for ten years.
 
 By the end, students will be able to:
 
