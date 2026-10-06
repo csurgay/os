@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 508" width="760" height="508" role="img" aria-label="The CPU requests on the address bus and receives on the data bus">
+<title>The CPU requests on the address bus and receives on the data bus</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}
+  }
+</style>
+<defs><marker id="arch" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">The CPU requests on the address bus and receives on the data bus</text>
+<rect x="24" y="56" width="440" height="340" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="40" y="84" font-size="13" font-weight="600" class="ink" text-anchor="start">CPU</text>
+<path d="M302 136.0H330" fill="none" class="edge" stroke-width="1.25" marker-end="url(#arch)"/>
+<path d="M330 344.0H302" fill="none" class="edge" stroke-width="1.25" marker-end="url(#arch)"/>
+<path d="M243.5 308V276" fill="none" class="edge" stroke-width="1.25" marker-end="url(#arch)"/>
+<path d="M185 240.0H157" fill="none" class="edge" stroke-width="1.25" marker-end="url(#arch)"/>
+<path d="M302 240.0H330" fill="none" class="edge" stroke-width="1.25" marker-end="url(#arch)"/>
+<path d="M98.5 172V204" fill="none" class="edge" stroke-width="1.25" marker-end="url(#arch)" marker-start="url(#arch)"/>
+<path d="M98.5 276V308" fill="none" class="edge" stroke-width="1.25" marker-end="url(#arch)"/>
+<path d="M98.5 428V380" fill="none" class="edge" stroke-width="1.25" marker-end="url(#arch)"/>
+<path d="M447 136.0H600" fill="none" class="edge" stroke-width="1.25" marker-end="url(#arch)"/>
+<path d="M447 240.0H600" fill="none" class="edge" stroke-width="1.25" marker-end="url(#arch)"/>
+<path d="M447 344.0H600" fill="none" class="edge" stroke-width="1.25" marker-end="url(#arch)" marker-start="url(#arch)"/>
+<text x="524" y="128.0" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">address bus</text>
+<text x="524" y="154.0" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">MAR → memory</text>
+<text x="524" y="232.0" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">control bus</text>
+<text x="524" y="258.0" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">CS, R/W, CLK</text>
+<text x="524" y="336.0" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">data bus</text>
+<text x="524" y="362.0" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">bidirectional</text>
+<rect x="40" y="100" width="117" height="72" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="52" y="124" font-size="13" font-weight="600" class="ink" text-anchor="start">ACC</text>
+<text x="52" y="144" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">accumulator,</text>
+<text x="52" y="160" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">ALU result</text>
+<rect x="185" y="100" width="117" height="72" rx="8" class="accf"/><rect x="185" y="100" width="117" height="72" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="197" y="124" font-size="13" font-weight="600" class="ink" text-anchor="start">PC</text>
+<text x="197" y="144" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">program counter,</text>
+<text x="197" y="160" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">next address</text>
+<rect x="330" y="100" width="117" height="72" rx="8" class="accf"/><rect x="330" y="100" width="117" height="72" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="342" y="124" font-size="13" font-weight="600" class="ink" text-anchor="start">MAR</text>
+<text x="342" y="144" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">memory address</text>
+<text x="342" y="160" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">register</text>
+<rect x="40" y="204" width="117" height="72" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="52" y="228" font-size="13" font-weight="600" class="ink" text-anchor="start">ALU</text>
+<text x="52" y="248" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">arithmetic and</text>
+<text x="52" y="264" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">logic unit</text>
+<rect x="185" y="204" width="117" height="72" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="197" y="228" font-size="13" font-weight="600" class="ink" text-anchor="start">Decoder</text>
+<text x="197" y="248" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">opcode →</text>
+<text x="197" y="264" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">control signals</text>
+<rect x="330" y="204" width="117" height="72" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="342" y="228" font-size="13" font-weight="600" class="ink" text-anchor="start">CU</text>
+<text x="342" y="248" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">control unit:</text>
+<text x="342" y="264" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">sequencing</text>
+<rect x="40" y="308" width="117" height="72" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="52" y="332" font-size="13" font-weight="600" class="ink" text-anchor="start">SR</text>
+<text x="52" y="352" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">status bits:</text>
+<text x="52" y="368" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">SN, Z, NZ, OF</text>
+<rect x="185" y="308" width="117" height="72" rx="8" class="accf"/><rect x="185" y="308" width="117" height="72" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="197" y="332" font-size="13" font-weight="600" class="ink" text-anchor="start">CIR</text>
+<text x="197" y="352" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">current</text>
+<text x="197" y="368" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">instruction</text>
+<rect x="330" y="308" width="117" height="72" rx="8" class="accf"/><rect x="330" y="308" width="117" height="72" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="342" y="332" font-size="13" font-weight="600" class="ink" text-anchor="start">MBR</text>
+<text x="342" y="352" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">memory buffer</text>
+<text x="342" y="368" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">register</text>
+<text x="106.5" y="297" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">flags</text>
+<text x="106.5" y="414" font-size="11.5" font-weight="600" class="ink" text-anchor="start">IR</text>
+<rect x="40" y="428" width="117" height="56" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="52" y="452" font-size="13" font-weight="600" class="ink" text-anchor="start">Timer</text>
+<text x="52" y="470" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">periodic IR</text>
+<rect x="600" y="56" width="136" height="340" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="636" y1="96" x2="636" y2="316" class="grid"/>
+<line x1="600" y1="96" x2="736" y2="96" class="grid"/>
+<line x1="600" y1="140" x2="736" y2="140" class="grid"/>
+<line x1="600" y1="184" x2="736" y2="184" class="grid"/>
+<line x1="600" y1="228" x2="736" y2="228" class="grid"/>
+<line x1="600" y1="272" x2="736" y2="272" class="grid"/>
+<line x1="600" y1="316" x2="736" y2="316" class="grid"/>
+<text x="616" y="84" font-size="13" font-weight="600" class="ink" text-anchor="start">Memory</text>
+<text x="618" y="122" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">0</text>
+<text x="648" y="122" font-size="13" font-weight="400" class="ink" text-anchor="start">LD 3</text>
+<text x="618" y="166" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">1</text>
+<text x="648" y="166" font-size="13" font-weight="400" class="ink" text-anchor="start">ADD 2</text>
+<text x="618" y="210" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">2</text>
+<text x="648" y="210" font-size="13" font-weight="400" class="quiet" text-anchor="start">–</text>
+<text x="618" y="254" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">3</text>
+<text x="648" y="254" font-size="13" font-weight="400" class="ink" text-anchor="start">7 (data)</text>
+<text x="618" y="298" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">…</text>
+<text x="648" y="298" font-size="13" font-weight="400" class="quiet" text-anchor="start">…</text>
+<text x="616" y="346" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">code and data</text>
+<text x="616" y="362" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">together</text>
+<text x="200" y="460" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Highlighted: fetch-phase registers (PC, MAR, MBR, CIR)</text>
+</svg>
