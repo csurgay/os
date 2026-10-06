@@ -2,7 +2,7 @@
 
 *Operating Systems lecture: why operating systems exist, told as a chain of problems and solutions from punched cards to smartphones, with Linux (x86-64) demonstrations of each idea*
 
-Next: [The Fetch-Execute Cycle](../02-fetch-execute-cycle/).
+Next: [Quality, Commercial Aspects and the Enterprise Linux Ecosystem](../02-quality-and-enterprise-linux/).
 
 > **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
 
@@ -114,7 +114,7 @@ From here, the history can be read as a sequence of problems. Each step solves t
 
 - **Batch:** a group of jobs collected and then run one after another without anybody stepping in, like a washing machine running a full load.
 - **I/O** (Input/Output): everything a computer exchanges with the outside world: card readers, printers, disks, keyboards, the network.
-- **Interrupt:** a signal that makes the processor pause its current program for a moment to deal with something urgent, like a doorbell. The [Interrupts](../03-interrupts/) lecture covers it in detail.
+- **Interrupt:** a signal that makes the processor pause its current program for a moment to deal with something urgent, like a doorbell. The [Interrupts](../04-interrupts/) lecture covers it in detail.
 - **Buffer:** a small temporary storage area where data waits until someone collects it, like a mailbox.
 - **Multiprogramming:** keeping several programs in memory at once, so that when one has to wait, the processor can work on another.
 - **Context switch:** the processor stops running one program and starts running another. It saves the first one's state and loads the other's, like bookmarking one book and opening another.
@@ -209,7 +209,7 @@ Electronic CPUs were roughly a thousand times faster than the mechanical card re
 
 A third idea was to keep the slow devices away from the expensive computer altogether. In **offline I/O**, a small, cheap computer (such as the IBM 1401) copied the card decks onto magnetic tape, the big computer read the much faster tape, and the small one printed the results from tape. **Spooling** (Simultaneous Peripheral Operations On-Line) brought the same idea inside one machine: the OS copies input to the disk ahead of time and collects output there, so programs never wait for the card reader or printer directly. Later, **DMA** let devices copy whole blocks into memory without the CPU.
 
-Handling interrupts, buffers and spooling became core tasks of the operating system. The [Interrupts](../03-interrupts/) lecture shows how much CPU time this saves.
+Handling interrupts, buffers and spooling became core tasks of the operating system. The [Interrupts](../04-interrupts/) lecture shows how much CPU time this saves.
 
 ### VI. CPU-bound and I/O-bound programs: multiprogramming
 
@@ -397,7 +397,7 @@ Laptops, and later phones and tablets (the iPhone in 2007, Android in 2008, whic
 
 ### After the fourteen steps
 
-The story did not stop with phones. Three later turns are covered in later lectures: **virtualization**, running whole operating systems as programs on top of another (pioneered by IBM in the late 1960s and on VM/370 in 1972, and brought to PCs by VMware around 1999); **cloud computing** and **containers**, which rent out virtualized machines and isolated application packages by the hour; and **multicore** processors (from around 2005), which turned every PC and phone into a multiprocessor.
+The story did not stop with phones. Three later turns are taken up in later lectures (containers in the [next one](../02-quality-and-enterprise-linux/#container-images-the-family-in-containers)): **virtualization**, running whole operating systems as programs on top of another (pioneered by IBM in the late 1960s and on VM/370 in 1972, and brought to PCs by VMware around 1999); **cloud computing** and **containers**, which rent out virtualized machines and isolated application packages by the hour; and **multicore** processors (from around 2005), which turned every PC and phone into a multiprocessor.
 
 Alongside the main line of this history, specialised kinds of operating systems developed. **Real-time operating systems** guarantee that tasks finish within fixed deadlines, for example in industrial controllers or a car's braking system. **Embedded systems** run inside devices that do not look like computers at all, from washing machines to routers; most computers in the world today are embedded. **Distributed systems** make many computers connected by a network work together as if they were one.
 

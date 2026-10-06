@@ -277,8 +277,48 @@ def lifecycle():
     return svg(760, ly + 20, title, "\n".join(p))
 
 
+# ---------------- 6. Containers: images share layers, containers share the kernel ----------------
+def containers():
+    m = "ct"
+    title = "Images bring their own user space; every container shares the host's kernel"
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600)]
+    # left: two images sharing the base layer
+    p.append(text(24, 66, "Two images built on the same base", 13, 600))
+    bw, bh = 150, 34
+    lx = [24, 190]
+    labels = [("web app", "billing app"), ("Python packages", "Java runtime")]
+    for i, x in enumerate(lx):
+        p.append(rect(x, 80, bw, bh, "c2", rx=4)); p.append(text(x + bw / 2, 102, labels[0][i], 12, anchor="middle"))
+        p.append(rect(x, 80 + bh + 4, bw, bh, "tint", rx=4)); p.append(text(x + bw / 2, 102 + bh + 4, labels[1][i], 12, anchor="middle"))
+        p.append(text(x + bw / 2, 216, f"image {i + 1}", 11.5, 600, cls="quiet", anchor="middle"))
+    p.append(rect(24, 80 + 2 * (bh + 4), 316, bh + 8, "acc", rx=4))
+    p.append(text(182, 106 + 2 * (bh + 4), "base layer: UBI 9 (one copy on disk)", 12, 600, anchor="middle"))
+    p.append(text(24, 262, "Layers are read-only and identified by a hash,", 11.5, cls="quiet"))
+    p.append(text(24, 278, "so a shared base is stored and downloaded once.", 11.5, cls="quiet"))
+    # right: host with containers
+    hx, hy, hw = 400, 66, 336
+    p.append(text(hx, hy, "One host running three containers", 13, 600))
+    cw = 100
+    names = [("UBI 9", "user space"), ("AlmaLinux 9", "user space"), ("Fedora", "user space")]
+    for i, (n, sub) in enumerate(names):
+        x = hx + i * (cw + 18)
+        p.append(rect(x, 80, cw, 86, "c2" if i == 0 else "tint", rx=6))
+        p.append(text(x + cw / 2, 104, "app", 11.5, cls="quiet", anchor="middle"))
+        p.append(text(x + cw / 2, 128, n, 12, 600, anchor="middle"))
+        p.append(text(x + cw / 2, 146, sub, 11, cls="quiet", anchor="middle"))
+        p.append(path(f"M{x + cw / 2} 166V{196}", m))
+    p.append(rect(hx, 198, hw, 40, "acc", rx=6))
+    p.append(text(hx + hw / 2, 223, "one Linux kernel: the host's (e.g. RHEL 9)", 12.5, 600, anchor="middle"))
+    p.append(rect(hx, 244, hw, 30, "tint", rx=6))
+    p.append(text(hx + hw / 2, 264, "hardware", 12, anchor="middle"))
+    p.append(text(24, 314, "Arrows: system calls. Every container talks to the same kernel, so for RHEL/UBI images Red Hat fully supports only a host of the", 11.5, cls="quiet"))
+    p.append(text(24, 332, "same major version; other pairings are supported only for ordinary, unprivileged workloads (Red Hat's compatibility matrix).", 11.5, cls="quiet"))
+    return svg(760, 352, title, "\n".join(p))
+
+
 if __name__ == "__main__":
     for name, f in [("nines", nines), ("mtbf-mttr", mtbf), ("branching-vocabulary", vocab),
-                    ("enterprise-linux-family", ecosystem), ("support-lifecycles", lifecycle)]:
+                    ("enterprise-linux-family", ecosystem), ("support-lifecycles", lifecycle),
+                    ("container-images", containers)]:
         open(f"{name}.svg", "w", encoding="utf-8").write(f())
     print("ok")
