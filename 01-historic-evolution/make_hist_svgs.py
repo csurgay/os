@@ -55,7 +55,7 @@ def svg(w, h, title, body):
 
 # ---------------- 1. Timeline ----------------
 def timeline():
-    title = "Each era added a new OS idea, and none of them went away"
+    title = "Each era added a new OS idea; the ideas outlived the machines"
     y0, x0, x1 = 1940, 200, 724
     X = lambda yr: x0 + (x1 - x0) * (yr - y0) / (2025 - y0)
     lanes = [  # name, start, note
@@ -63,7 +63,8 @@ def timeline():
         ("Batch processing", 1956, None, "GM-NAA I/O (1956)"),
         ("Multiprogramming", 1962, None, "Atlas Supervisor (1962)"),
         ("Time sharing", 1961, None, "CTSS (1961), Multics, Unix (1969)"),
-        ("Personal computers", 1977, None, "Apple II (1977), IBM PC + DOS (1981)"),
+        ("Minicomputers", 1965, 1990, "PDP-8, PDP-11, VAX"),
+        ("Personal computers", 1974, None, "CP/M (1974), IBM PC + DOS (1981), Mac (1984)"),
         ("Networked systems", 1983, None, "ARPANET moves to TCP/IP (1983)"),
         ("Battery-powered, portable", 1992, None, "laptops, then phones"),
     ]

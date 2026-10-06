@@ -16,7 +16,8 @@ By the end, students will be able to:
 - describe batch processing, the resident monitor, multiprogramming, virtual memory and time sharing, and the problem each one solved;
 - explain why multiprogramming raises CPU utilisation, and calculate it from a timeline;
 - define efficiency and the operating system's own overhead, and measure them;
-- place Multics, Unix and MS-DOS in this history, and explain why the first personal-computer systems gave up features that mainframes already had;
+- place Multics, Unix, minicomputers, CP/M and MS-DOS in this history, and explain why the first personal-computer systems gave up features that mainframes already had;
+- tell the documented story of how MS-DOS and the graphical interface reached the market, and separate it from the legends;
 - name four roles of an operating system and place the OS in the layers of a computer system;
 - find each historical idea on a running Linux system.
 
@@ -89,7 +90,7 @@ Machines started to process data in bulk for statistics. For the **1890 US censu
 
 From here, the history can be read as a sequence of problems. Each step solves the bottleneck of the previous one, and the solution becomes a permanent part of the operating system. The order is logical rather than strictly chronological: many of these ideas appeared at almost the same time, in the late 1950s and early 1960s.
 
-![Each era added a new OS idea, and none of them went away](os-timeline.svg)
+![Each era added a new OS idea; the ideas outlived the machines](os-timeline.svg)
 
 | Step | Problem | Solution | Still in today's OS |
 | --- | --- | --- | --- |
@@ -172,6 +173,31 @@ One of the first such systems was **GM-NAA I/O**, written by General Motors Rese
 
 </details>
 
+### What the monitor needed from the hardware
+
+A batch monitor is only safe if the programs it runs cannot break it. Stallings (2018) lists the hardware features that batch monitors came to rely on, and every one of them is still in today's processors:
+
+- **Memory protection:** a user program must not be able to change the memory area that holds the monitor.
+- **A timer:** a job must not run forever. When its time is up, the timer interrupts it and the monitor takes back control.
+- **Privileged instructions:** some instructions, above all the I/O instructions, may only be executed by the monitor. A program that wants to read a card must ask the monitor, which also stops one job from reading the next job's cards.
+- **Interrupts:** these let the monitor regain control and let the CPU work while devices are busy (step V).
+
+Together these features need two modes of operation: a **user mode** for the programs, with the restrictions, and a privileged **monitor mode** (today: kernel mode) for the monitor itself.
+
+The monitor also needed to know what to do with each part of the deck. Special **control cards** told it, written in a **job control language (JCL)**. In Stallings' example, a FORTRAN job looks like this: `$JOB` starts the job, `$FTN` calls the FORTRAN compiler for the cards that follow, `$LOAD` loads the result, `$RUN` starts it on the data cards behind it, and `$END` closes the job. JCL was the ancestor of today's shell scripts.
+
+<details>
+<summary><b>Explained simply:</b> memory protection, timer, privileged instruction, user mode, monitor mode, control card, JCL, shell script</summary>
+
+- **Memory protection:** a hardware check that stops a program from touching memory that is not its own.
+- **Timer:** a hardware clock that can interrupt the processor after a set time, like a kitchen timer.
+- **Privileged instruction:** an instruction that only the operating system may use, like a key only the staff are given.
+- **User mode / monitor mode:** two modes of the processor. In user mode the dangerous instructions are forbidden; in monitor (kernel) mode everything is allowed.
+- **Control card, JCL** (Job Control Language): special punched cards that did not contain program or data, but instructions for the monitor: "compile this", "now run it".
+- **Shell script:** a text file with a list of commands that the shell runs one after another, today's version of a job deck.
+
+</details>
+
 ## The CPU waits for the devices
 
 ### V. I/O is a thousand times slower: buffers and interrupts
@@ -195,11 +221,11 @@ Programs differ. Some compute almost all the time (**CPU-bound**, or CPU-intensi
 
 Both jobs together need 2.4 seconds of CPU time. Run one after the other, they take 4.03 seconds, so the CPU is busy 2.4 / 4.03 = 60% of the time. Run together, they finish in 2.44 seconds, with the CPU busy 99% of the time, and nothing was made faster: the CPU was simply never left waiting.
 
-Several computers of the early 1960s pioneered multiprogramming. The best known is **Atlas**, built by the University of Manchester and Ferranti. Designed from the late 1950s and commissioned in December 1962, its operating system, the **Atlas Supervisor**, ran several user programs at once and is considered by many the first recognisably modern operating system (IEEE, n.d.). It scheduled the programs (decided which one runs next), but also managed the memory, buffered the slow devices through its drum, and handled the jobs. From 1966, IBM's OS/360 brought multiprogramming to a whole family of commercial computers, in its MFT and (from 1967) MVT versions.
+Several computers of the early 1960s pioneered multiprogramming. The best known is **Atlas**, built by the University of Manchester and Ferranti. Designed from the late 1950s and commissioned in December 1962, its operating system, the **Atlas Supervisor**, ran several user programs at once and is considered by many the first recognisably modern operating system (IEEE, n.d.-a). It scheduled the programs (decided which one runs next), but also managed the memory, buffered the slow devices through its drum, and handled the jobs. From 1966, IBM's OS/360 brought multiprogramming to a whole family of commercial computers, in its MFT and (from 1967) MVT versions.
 
 ### VII. Programs share the memory: protection and virtual memory
 
-With several programs in memory at once, a new danger appeared: a faulty program could overwrite another program's memory, or the operating system's. Shared memory **needs protection**. The simplest hardware answer is a pair of **base and limit registers**: the CPU checks every address a program uses against the start and the end of its own memory area. Atlas went much further. Its designers wanted to make a small fast memory and a large slow drum look like one big memory, so that programmers no longer had to shuffle data between them by hand, and the result, **virtual memory**, also gave each program a protected memory of its own (Kilburn et al., 1962; IEEE, n.d.). Every computer uses it today.
+With several programs in memory at once, a new danger appeared: a faulty program could overwrite another program's memory, or the operating system's. Shared memory **needs protection**. The simplest hardware answer is a pair of **base and limit registers**: the CPU checks every address a program uses against the start and the end of its own memory area. Atlas went much further. Its designers wanted to make a small fast memory and a large slow drum look like one big memory, so that programmers no longer had to shuffle data between them by hand, and the result, **virtual memory**, also gave each program a protected memory of its own (Kilburn et al., 1962; IEEE, n.d.-a). Every computer uses it today.
 
 ![Each program sees its own memory from 0 to MAX; the OS maps its pages to frames](virtual-memory.svg)
 
@@ -285,11 +311,40 @@ At Bell Labs, Ken Thompson and Dennis Ritchie then wrote a much **simpler** syst
 
 </details>
 
+### Minicomputers
+
+Between the room-sized mainframes and the personal computer lies an era that many short histories skip: the **minicomputer**. In 1965, Digital Equipment Corporation (DEC) introduced the PDP-8, a small computer for about 18,000 dollars, cheap enough for a single laboratory or department (Information Processing Society of Japan, n.d.). DEC's later 16-bit PDP-11 family (1970) became the home of Unix, and DEC's 32-bit VAX (1977) ran the VMS operating system, with virtual memory and time sharing. Minicomputers brought interactive computing to many more people, and their operating systems were the direct models for the early personal-computer systems. From around 1980, machines built around a single-chip **microprocessor** began to take their place, and by the 1990s most minicomputer makers had gone.
+
+<details>
+<summary><b>Explained simply:</b> mainframe, minicomputer, DEC, PDP-8, PDP-11, VAX, VMS, microprocessor</summary>
+
+- **Mainframe:** a large, very expensive central computer, run by a computing centre for a whole company or university.
+- **Minicomputer:** a smaller and much cheaper computer, about the size of a fridge or a cupboard, bought by one department or lab.
+- **DEC, PDP-8, PDP-11, VAX:** Digital Equipment Corporation, the leading minicomputer maker, and three of its famous computer families.
+- **VMS:** the operating system of the VAX, an important commercial multi-user system.
+- **Microprocessor:** a complete CPU on a single chip. It made computers small and cheap enough for one person to own.
+
+</details>
+
 ## The second phase shift: everyone can own one
 
 ### XII. Personal computers: a step back
 
-In the late 1970s and 1980s, computers became so cheap that one person could own one. The goals changed again: a low **initial cost** and a short **time to market** mattered more than anything else. The IBM PC, announced in August 1981, cost 1,565 dollars in its basic version, with 16 KB of memory, no disk drive and a connection for a cassette recorder; a usable system with a monitor and a 160 KB floppy disk drive, needed to run DOS, cost about 3,000 dollars (Wikipedia contributors, n.d.). Its usual operating system was **DOS** (PC DOS from IBM, MS-DOS from Microsoft), based on 86-DOS, written by Tim Paterson at Seattle Computer Products (Necasek, n.d.).
+In the late 1970s and 1980s, computers became so cheap that one person could own one. The goals changed again: a low **initial cost** and a short **time to market** mattered more than anything else. The IBM PC, announced in August 1981, cost 1,565 dollars in its basic version, with 16 KB of memory, no disk drive and a connection for a cassette recorder; a usable system with a monitor and a 160 KB floppy disk drive, needed to run DOS, cost about 3,000 dollars ("IBM Personal Computer," n.d.). Its usual operating system was **DOS** (PC DOS from IBM, MS-DOS from Microsoft), based on 86-DOS, written by Tim Paterson at Seattle Computer Products (Necasek, n.d.). How DOS, and not the established system of the time, ended up on the IBM PC is one of the most retold stories in computing, and it is worth telling with care, because the popular version is partly legend.
+
+**CP/M, the first personal-computer OS.** In 1974, Gary Kildall, who had earned a PhD in computer science at the University of Washington, demonstrated the first working version of **CP/M** (Control Program for Microcomputers) in Pacific Grove, California. Its key idea was to put all the hardware-specific code into a small separate part, the **BIOS** (Basic Input/Output System). To move CP/M to a new computer, a manufacturer only had to write a new BIOS, and all CP/M programs ran unchanged (IEEE, n.d.-b). This is step II again, and the fast-food franchise role of the OS: the same programs and the same experience on machines from dozens of manufacturers. By 1980, CP/M, sold by Kildall's company Digital Research (DRI), was the standard operating system of small computers.
+
+**IBM, CP/M and "QDOS".** In 1980, IBM was building its personal computer in a hurry and needed an operating system for it. IBM had already contracted Microsoft for its BASIC programming language. In August 1980, IBM approached Digital Research about a CP/M version for the PC's Intel 8088 processor (a member of the 8086 family) (Shustek, 2014). Here the legend begins, retold in many popular accounts and some textbooks: Kildall, it is told, went flying in his plane instead of meeting IBM, and so lost the deal of the century. The record is less dramatic. Kildall did fly that day, with a colleague, to deliver software to a customer, and left the first meeting to his wife and business partner, Dorothy McEwen. On their lawyer's advice, she declined to sign IBM's very broad non-disclosure agreement before Kildall had seen it. Accounts differ on whether Kildall met the IBM team later that day. The deeper disagreements were about money and time: DRI wanted a royalty on every copy sold, IBM wanted to pay once, and the 16-bit CP/M-86 was late ("Gary Kildall," n.d.).
+
+IBM then asked Microsoft to find an operating system. Microsoft licensed **86-DOS**, nicknamed **QDOS** ("Quick and Dirty Operating System"), from Seattle Computer Products in December 1980 for 25,000 dollars, and in the summer of 1981 bought all rights to it for another 50,000 dollars; its author, Tim Paterson, joined Microsoft (Shustek, 2014). It became PC DOS on IBM's machines, for 40 dollars a copy. When CP/M-86 finally appeared for the IBM PC some months later, it cost 240 dollars, and it sold poorly ("Gary Kildall," n.d.).
+
+Kildall maintained for the rest of his life that DOS was a copy of CP/M. QDOS deliberately reproduced CP/M's system-call interface and used similar commands, so that CP/M programs could be converted easily, and this is what Kildall regarded as copying. But its internals and its file storage format were different, and a forensic comparison of the source code by Bob Zeidman found no copied code (Shustek, 2014). The decisive move came in the contract: Microsoft kept the right to license MS-DOS to other manufacturers. When other companies built IBM-compatible "clone" PCs, they all bought MS-DOS from Microsoft, which made it the dominant software company of the next decades. The lesson for an OS course: the most widely used operating system of the 1980s won through timing, price and licensing, not through technical superiority.
+
+**The graphical interface: Xerox, Apple and Microsoft.** The windows-icons-mouse interface was developed in the 1970s at Xerox's Palo Alto Research Center (PARC), building on Douglas Engelbart's 1960s work at the Stanford Research Institute (SRI), where the mouse was invented. PARC built it on the Alto computer (1973), together with the Ethernet network and the Smalltalk programming system. In December 1979, Steve Jobs visited PARC twice. The visits were part of a deal: Xerox's venture arm was allowed to buy 100,000 Apple shares before Apple went public, at 10.50 dollars a share, on condition that Apple's people were shown PARC's work (Living Computers: Museum + Labs, 2020). Apple hired several PARC researchers, among them Larry Tesler, and brought the ideas to market in the Lisa (1983) and the **Macintosh** (1984).
+
+The popular story calls this "Apple's theft from Xerox". The facts are more nuanced: the visits were arranged and paid for with the share deal, Apple took no code or hardware, the GUI ideas had been shown to many visitors and published, and Apple's Lisa project had started before the visits. What Apple took was the ideas and the proof that they worked, and it then implemented them in its own way on much cheaper hardware. When Xerox finally sued Apple in 1989, the court dismissed the case in 1990, partly because Xerox had waited too long ("Apple Computer, Inc. v. Microsoft Corp.," n.d.).
+
+**Gates and Jobs.** Microsoft was one of the first companies to write application programs for the Macintosh, and so saw it long before its launch. In November 1983, Microsoft announced its own graphical system, **Windows**. Andy Hertzfeld, a member of the Macintosh team, recalls that Jobs summoned Gates to Apple and accused him of ripping Apple off. Gates replied that they both had a rich neighbour named Xerox: he had broken into the house to steal the TV set, only to find that Jobs had already stolen it (Hertzfeld, n.d.). In 1985, Apple granted Microsoft a license for some visual elements of the Mac for Windows 1.0. When Windows 2.0 (1987) went further, Apple sued Microsoft in 1988 over the "look and feel" of the Macintosh. Apple lost: in 1992 and on appeal in 1994, the courts found that most of the disputed elements were covered by the 1985 license, and that the basic ideas of a graphical interface (windows, icons, menus) could not be protected; only close copying of specific designs could infringe ("Apple Computer, Inc. v. Microsoft Corp.," n.d.). For operating systems this was a lasting decision: the GUI became a common good that every OS could adopt, and today it is part of the operating system in the broad sense.
 
 To fit such **minimal hardware**, DOS left out almost everything the mainframes had developed over twenty years:
 
@@ -309,17 +364,34 @@ From the 1980s, and for everyone from the 1990s, computers were connected to eac
 Laptops, and later phones and tablets (the iPhone in 2007, Android in 2008, which runs a Linux kernel), brought a constraint that mainframes never had: **battery life**. Power management became an OS task on laptops in the 1990s, and on phones it became central. The OS now also manages **energy consumption**: it switches off unused parts of the hardware, slows the CPU down when full speed is not needed, and decides which programs may run in the background at all. Efficiency got a new meaning: useful work per unit of energy.
 
 <details>
-<summary><b>Explained simply:</b> initial cost, time to market, KB, floppy disk, DOS, MS-DOS, multitasking, GUI, network stack, battery life</summary>
+<summary><b>Explained simply:</b> initial cost, time to market, KB, floppy disk, DOS, MS-DOS, multitasking, GUI, network stack, battery life, CP/M, BIOS, PhD, DRI, SCP, BASIC, 8086/8088, Engelbart, NDA, royalty, license, compatible, clone, Xerox PARC, Alto, Ethernet, Smalltalk, shares, Lisa, Macintosh, look and feel</summary>
 
 - **Initial cost:** the price you pay to buy something at the start. **Time to market:** how quickly a product can be made and put on sale.
-- **KB** (kilobyte): about a thousand bytes, enough for about half a page of plain text.
-- **Graphical user interface (GUI):** using a computer through windows, icons and a mouse pointer instead of typed commands. 16 KB is roughly a million times less than a modern phone's memory.
+- **KB** (kilobyte): about a thousand bytes, enough for about half a page of plain text. 16 KB is roughly a million times less than a modern phone's memory.
+- **Graphical user interface (GUI):** using a computer through windows, icons and a mouse pointer instead of typed commands.
 - **Floppy disk:** a thin, flexible magnetic disk in a plastic sleeve, the main way to store and carry data on early personal computers.
 - **DOS** (Disk Operating System), **MS-DOS:** the operating system of the early IBM-compatible personal computers. MS = Microsoft.
 - **Multitasking:** running several programs at the same time; on personal computers the word meant the same as multiprogramming.
 - **Network stack:** the part of the OS that sends and receives data over a network, built in layers stacked on top of each other.
 - **Linux:** a free, Unix-like operating system started in 1991. It runs most servers, Android phones and many other devices.
 - **Battery life:** how long a device runs before it needs charging.
+- **CP/M** (Control Program for Microcomputers): the leading operating system of small computers in the late 1970s.
+- **BIOS** (Basic Input/Output System): the small, hardware-specific part of CP/M (and later of every PC) that talks to the actual devices. Swap the BIOS, and the rest of the OS works on a new machine.
+- **PhD:** the highest university degree, earned with several years of original research.
+- **Digital Research (DRI), Seattle Computer Products (SCP), Microsoft:** software and hardware companies of the time. Microsoft was then a small company selling programming languages.
+- **BASIC:** a simple programming language that most early personal computers came with.
+- **Intel 8086/8088:** the 16-bit microprocessor family used in the IBM PC (which used the 8088 version); today's x86 processors descend from it.
+- **Douglas Engelbart, SRI:** an American engineer who, at the Stanford Research Institute in the 1960s, invented the mouse and demonstrated windows, hypertext and video conferencing in 1968.
+- **Non-disclosure agreement (NDA):** a contract in which you promise to keep secret what you are told.
+- **Royalty, license:** a license is permission to use or sell something; a royalty is a fee paid for every copy sold, instead of one fixed price.
+- **Compatible:** working the same way from the outside, so that the same programs can run, even if the inside is different.
+- **Clone:** a computer built by another company to work exactly like the original, here the IBM PC.
+- **Xerox PARC, Alto:** Xerox's research lab in Palo Alto, California, and its experimental computer with a graphical screen and a mouse.
+- **Ethernet:** the technology for connecting computers in a local network, still used today in cabled networks.
+- **Smalltalk:** an early object-oriented programming language and environment from PARC.
+- **Shares, going public:** a share is a small piece of ownership of a company. "Going public" means its shares are offered for sale on the stock market for the first time.
+- **Lisa, Macintosh:** Apple's first two computers with a graphical interface. The Lisa was expensive and failed; the Macintosh became a classic.
+- **"Look and feel":** how a program appears and behaves on screen. Apple claimed that the overall look and feel of the Mac was protected; the courts disagreed.
 
 </details>
 
@@ -327,13 +399,45 @@ Laptops, and later phones and tablets (the iPhone in 2007, Android in 2008, whic
 
 The story did not stop with phones. Three later turns are covered in later lectures: **virtualization**, running whole operating systems as programs on top of another (pioneered by IBM in the late 1960s and on VM/370 in 1972, and brought to PCs by VMware around 1999); **cloud computing** and **containers**, which rent out virtualized machines and isolated application packages by the hour; and **multicore** processors (from around 2005), which turned every PC and phone into a multiprocessor.
 
+Alongside the main line of this history, specialised kinds of operating systems developed. **Real-time operating systems** guarantee that tasks finish within fixed deadlines, for example in industrial controllers or a car's braking system. **Embedded systems** run inside devices that do not look like computers at all, from washing machines to routers; most computers in the world today are embedded. **Distributed systems** make many computers connected by a network work together as if they were one.
+
 <details>
-<summary><b>Explained simply:</b> virtualization, cloud, container, multicore</summary>
+<summary><b>Explained simply:</b> virtualization, cloud, container, multicore, real-time OS, embedded system, distributed system</summary>
 
 - **Virtualization:** software that makes one real computer behave like several separate computers, each running its own operating system.
 - **Cloud computing:** using computers in someone else's data centre over the Internet, paying for what you use.
 - **Container:** a lightweight package that holds an application with everything it needs, kept separate from the other applications on the same OS.
 - **Multicore:** a processor chip with several complete CPUs (cores) on it.
+- **Real-time OS:** an OS that guarantees that tasks finish on time, every time, not just quickly on average.
+- **Embedded system:** a computer built into another device to control it, often with a very small OS of its own.
+- **Distributed system:** many computers on a network that cooperate and look like one system to the user, as in a search engine's data centres.
+
+</details>
+
+## Reading this lecture with the textbooks
+
+This lecture tells the history as a chain of problems and solutions. The standard textbooks tell the same story in other frames, so students reading them side by side can use this map:
+
+| This lecture | Tanenbaum & Bos (2015): generations | Stallings (2018): stages of evolution |
+| --- | --- | --- |
+| Before operating systems | 1st generation (1945–55): vacuum tubes | serial processing |
+| Steps I–IV: batch, resident library, batch monitor | 2nd generation (1955–65): transistors and batch systems | simple batch systems |
+| Steps V–VII: buffers, interrupts, multiprogramming, virtual memory | 3rd generation (1965–80): integrated circuits and multiprogramming | multiprogrammed batch systems |
+| Steps VIII–XI, Multics, Unix, minicomputers | 3rd generation (time sharing, MULTICS, UNIX) | time-sharing systems |
+| Step XII: personal computers, CP/M, DOS, the GUI | 4th generation (1980–present): personal computers | (later chapters) |
+| Step XIII: networks | 4th generation (1980–present) | (later chapters) |
+| Step XIV: small and portable | 5th generation (1990–present): mobile computers | (later chapters) |
+
+Tanenbaum's generations show a link that this lecture keeps in the background: each new hardware technology made the next OS idea affordable. Reliable **transistors** made computers dependable enough to sell and to run batch systems on; **integrated circuits** made families of compatible machines (IBM System/360) and cheap minicomputers possible; and the **microprocessor** (Intel 4004, 1971) put a whole CPU on one chip and made the personal computer possible. Anderson and Dahlin (2014) tell the history through the same driving force as this lecture, the falling cost of hardware relative to people.
+
+<details>
+<summary><b>Explained simply:</b> vacuum tube, transistor, integrated circuit, generation, serial processing</summary>
+
+- **Vacuum tube:** an early electronic switch, a glass bulb like a small light bulb. Thousands were needed for one computer, and they burned out often.
+- **Transistor:** a tiny electronic switch made of semiconductor material, invented in 1947. It replaced the vacuum tube: smaller, cheaper, cooler and far more reliable.
+- **Integrated circuit (chip):** many transistors made together on one small piece of silicon. Today a single chip can hold billions.
+- **Generation:** here, a period of computing defined by the main hardware technology of the time.
+- **Serial processing:** Stallings' name for the earliest era, when users took turns using the machine directly, one after another, with no operating system.
 
 </details>
 
@@ -617,6 +721,9 @@ Even `ls` needs 76 system calls: to load its libraries (`mmap`, `openat`), to re
 10. Give the formula for the OS's efficiency, and calculate it for a program that ran 3 seconds in user mode and 1 second in the kernel.
 11. Name the four roles of an operating system from this lecture, and give an example of each from the fourteen steps.
 12. Where is the boundary between user mode and kernel mode in the layer diagram, and how does a program cross it?
+13. Which four hardware features did batch monitors need, and what would go wrong without each of them?
+14. Why did MS-DOS, and not CP/M, become the operating system of the IBM PC and its clones? Separate the documented facts from the legend.
+15. "Apple stole the graphical interface from Xerox, and Microsoft stole it from Apple." What is accurate in this sentence, and what is not? What did the courts decide about the GUI, and why does that matter for operating systems?
 
 <details>
 <summary><strong>Answer key (for instructors)</strong></summary>
@@ -633,6 +740,9 @@ Even `ls` needs 76 system calls: to load its libraries (`mmap`, `openat`), to re
 10. $\eta_{OS} = t_{user} / (t_{user} + t_{OS})$. Here 3 / (3 + 1) = 75%.
 11. Magician: virtual memory, files instead of disk sectors (steps VII, XI). Conductor: scheduling and multiprogramming (VI, IX, X). Fast-food franchise: the same interface on different hardware, from the resident library (II) to portable Unix. Security guard: memory protection (VII), separation of users (VIII), network security (XIII).
 12. Between the system programs (user mode) and the kernel (kernel mode). A program crosses it with a system call, which switches the processor into kernel mode and enters the kernel at an entry point the kernel has set up; ordinary programs cannot enter kernel mode any other way.
+13. Memory protection (otherwise a job could overwrite the monitor), a timer (otherwise a job in an endless loop would never give control back), privileged instructions (otherwise a job could do its own I/O, for example read the next job's cards), and interrupts (otherwise the monitor could not regain control or overlap I/O with computing). They require a user mode and a privileged monitor (kernel) mode.
+14. Documented: IBM approached Digital Research first (August 1980); the dispute over IBM's non-disclosure agreement delayed the first meeting, and the talks failed over DRI's wish for royalties instead of a one-time fee and the late CP/M-86. Microsoft licensed and then bought 86-DOS (QDOS) from Seattle Computer Products and supplied it to IBM; PC DOS cost 40 dollars, CP/M-86 later 240 dollars; and Microsoft kept the right to license MS-DOS to clone makers. Legend: that Kildall simply "went flying" instead of meeting IBM and lost the deal through carelessness; he did fly that day, but on business, and the reasons were contractual and commercial. The claim that DOS's code was copied is not supported: DOS deliberately reproduced CP/M's system-call interface (which is what Kildall objected to), but its code and internals were different.
+15. Accurate: the GUI ideas came from Xerox PARC, Apple developed them after Jobs's visits, and Microsoft built Windows after seeing the Mac. Not accurate: "stole" for Apple (the visits were part of a share deal, no code was taken, the ideas had been shown widely, and the Lisa project predated the visits), and for Microsoft (Apple had licensed some Mac elements to Microsoft in 1985, and Apple lost its lawsuit). The courts found (1992, 1994) that most disputed elements were licensed, and that the basic ideas of a GUI cannot be protected, only close copying of specific designs; so the GUI became a common part of every operating system.
 
 </details>
 
@@ -640,13 +750,27 @@ Even `ls` needs 76 system calls: to load its libraries (`mmap`, `openat`), to re
 
 Anderson, T., & Dahlin, M. (2014). *Operating systems: Principles and practice* (2nd ed.). Recursive Books.
 
+Apple Computer, Inc. v. Microsoft Corp. (n.d.). In *Wikipedia*. Retrieved October 6, 2026, from https://en.wikipedia.org/wiki/Apple_Computer,_Inc._v._Microsoft_Corp.
+
 Computer History Museum Software Preservation Group. (n.d.). *Operating systems at conception*. Retrieved October 6, 2026, from https://softwarepreservation.computerhistory.org/os/gm.html
 
 Corbató, F. J., Merwin-Daggett, M., & Daley, R. C. (1962). An experimental time-sharing system. In *Proceedings of the May 1–3, 1962, Spring Joint Computer Conference* (pp. 335–344). Association for Computing Machinery. https://doi.org/10.1145/1460833.1460871
 
-IEEE. (n.d.). *Milestones: The Atlas computer and the invention of virtual memory, 1957–1962*. Engineering and Technology History Wiki. Retrieved October 6, 2026, from https://ieeemilestones.ethw.org/Milestones:The_Atlas_computer_and_the_Invention_of_Virtual_Memory
+Gary Kildall. (n.d.). In *Wikipedia*. Retrieved October 6, 2026, from https://en.wikipedia.org/wiki/Gary_Kildall
+
+Hertzfeld, A. (n.d.). *A rich neighbor named Xerox*. Folklore.org. Retrieved October 6, 2026, from https://www.folklore.org/A_Rich_Neighbor_Named_Xerox.html
+
+IBM Personal Computer. (n.d.). In *Wikipedia*. Retrieved October 6, 2026, from https://en.wikipedia.org/wiki/IBM_Personal_Computer
+
+IEEE. (n.d.-a). *Milestones: The Atlas computer and the invention of virtual memory, 1957–1962*. Engineering and Technology History Wiki. Retrieved October 6, 2026, from https://ieeemilestones.ethw.org/Milestones:The_Atlas_computer_and_the_Invention_of_Virtual_Memory
+
+IEEE. (n.d.-b). *Milestones: The CP/M microcomputer operating system, 1974*. Engineering and Technology History Wiki. Retrieved October 6, 2026, from https://ethw.org/Milestones:The_CP/M_Microcomputer_Operating_System,_1974
+
+Information Processing Society of Japan. (n.d.). *Minicomputers: Brief history*. IPSJ Computer Museum. Retrieved October 6, 2026, from https://museum.ipsj.or.jp/en/computer/mini/history.html
 
 Kilburn, T., Edwards, D. B. G., Lanigan, M. J., & Sumner, F. H. (1962). One-level storage system. *IRE Transactions on Electronic Computers, EC-11*(2), 223–235. https://doi.org/10.1109/TEC.1962.5219356
+
+Living Computers: Museum + Labs. (2020, April 9). *What really happened: Steve Jobs @ Xerox PARC '79*. https://www.livingcomputers.org/Blog/What-Really-Happened-Steve-Jobs-@-Xerox-PARC-79.aspx
 
 Multicians. (n.d.). *Multics history*. Retrieved October 6, 2026, from https://multicians.org/history.html
 
@@ -654,13 +778,17 @@ Necasek, M. (n.d.). *DOS 1.0 and 1.1*. OS/2 Museum. Retrieved October 6, 2026, f
 
 Ritchie, D. M., & Thompson, K. (1974). The UNIX time-sharing system. *Communications of the ACM, 17*(7), 365–375. https://doi.org/10.1145/361011.361061
 
+Shustek, L. (2014, March 25). *Microsoft MS-DOS early source code*. Computer History Museum. https://computerhistory.org/blog/microsoft-ms-dos-early-source-code/
+
+Stallings, W. (2018). *Operating systems: Internals and design principles* (9th ed.). Pearson.
+
 Tanenbaum, A. S. (2001). *Modern operating systems* (2nd ed.). Prentice Hall.
+
+Tanenbaum, A. S., & Bos, H. (2015). *Modern operating systems* (4th ed.). Pearson.
 
 U.S. Census Bureau. (n.d.). *The Hollerith machine*. Retrieved October 6, 2026, from https://www.census.gov/about/history/bureau-history/census-innovations/technology/hollerith-machine.html
 
 Van Vleck, T. (n.d.). *Unix and Multics*. Multicians. Retrieved October 6, 2026, from https://multicians.org/unix.html
-
-Wikipedia contributors. (n.d.). *IBM Personal Computer*. Wikipedia. Retrieved October 6, 2026, from https://en.wikipedia.org/wiki/IBM_Personal_Computer
 
 ## Further reading
 
@@ -668,6 +796,3 @@ Kóczy, A., & Kondorosi, K. (Eds.). (2000). *Operációs rendszerek mérnöki me
 
 Silberschatz, A., Galvin, P. B., & Gagne, G. (2018). *Operating system concepts* (10th ed.). Wiley.
 
-Stallings, W. (2018). *Operating systems: Internals and design principles* (9th ed.). Pearson.
-
-Tanenbaum, A. S., & Bos, H. (2015). *Modern operating systems* (4th ed.). Pearson.
