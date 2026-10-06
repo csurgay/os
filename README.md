@@ -2,10 +2,12 @@
 
 Lecture notes for a university Operating Systems course, with Linux (x86-64) examples and lab exercises. Each lecture lives in its own folder: the notes are in the folder's `README.md`, next to its figures (SVG) and the source files used in the labs.
 
+The lectures are written for university students, but every abbreviation and technical term comes with a collapsible **Explained simply** box, so readers with only basic computer knowledge can follow too.
+
 | # | Lecture | Topics |
 | --- | --- | --- |
 | 1 | [The Fetch-Execute Cycle](01-fetch-execute-cycle/) | von Neumann architecture, CPU registers and buses, the instruction cycle, addressing modes, flags and jumps, memory permissions (NX), x86-64 and `gdb` |
-| 2 | [Interrupts](02-interrupts/) | interrupt classes, interrupt processing, nested interrupts, programmed I/O vs interrupts vs DMA, race conditions, test-and-set and semaphores, `/proc/interrupts` |
+| 2 | [Interrupts](02-interrupts/) | interrupt classes, user and kernel mode, interrupt processing, nested interrupts, the interrupt controller, interrupt latency, programmed I/O vs interrupts vs DMA, race conditions, test-and-set and semaphores, `/proc/interrupts` |
 
 ## Running the labs
 

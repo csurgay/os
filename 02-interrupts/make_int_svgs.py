@@ -234,8 +234,122 @@ def race():
     return svg(760, 440, title, "\n".join(p))
 
 
+# ---------------- 5. CPU time spent on one block transfer ----------------
+def io_timeline():
+    title = "The same 4 KiB transfer costs the CPU 100%, 20%, 0.14% or 0.007% of its time"
+    x0, x1 = 236, 640                       # time axis, 0 .. 40.96 ms
+    total = 40960.0
+    X = lambda us: x0 + (x1 - x0) * us / total
+    rows = [
+        ("Programmed I/O", "polling the status register", "100%"),
+        ("Interrupt per byte", "4096 interrupts × 2 µs", "20%"),
+        ("Interrupt per buffer", "8 × (2 µs + copy 512 B)", "0.14%"),
+        ("DMA", "setup + 1 interrupt", "0.007%"),
+    ]
+    y0, step, bh = 92, 60, 22
+    p = [text(24, 30, title, 15, 600),
+         text(24, 50, "CPU time spent on the transfer (blue) over the 41 ms the device needs. Assumed numbers, see the table.", 11.5, cls="quiet")]
+    for i, (name, sub, pct) in enumerate(rows):
+        y = y0 + i * step
+        p.append(text(24, y + 8, name, 13, 600))
+        p.append(text(24, y + 24, sub, 11.5, cls="quiet"))
+        p.append(f'<rect x="{x0}" y="{y - 4}" width="{x1 - x0}" height="{bh}" rx="3" class="tint"/>')
+        p.append(f'<rect x="{x0}" y="{y - 4}" width="{x1 - x0}" height="{bh}" rx="3" fill="none" class="edge" stroke-width="1"/>')
+        if i == 0:
+            p.append(f'<rect x="{x0}" y="{y - 4}" width="{x1 - x0}" height="{bh}" rx="3" class="acct"/>')
+        elif i == 1:
+            # 20% duty: one 2 µs slice in every 10 µs; drawn as an even stripe pattern
+            for k in range(0, 110):
+                xs = X(k * total / 110)
+                p.append(f'<rect x="{xs:.2f}" y="{y - 4}" width="{(x1 - x0) / 110 * 0.2:.2f}" height="{bh}" class="acct"/>')
+        elif i == 2:
+            for k in range(1, 9):
+                xs = X(k * 512 * 10.0) - 1.2
+                p.append(f'<rect x="{xs:.2f}" y="{y - 4}" width="1.6" height="{bh}" class="acct"/>')
+        else:
+            p.append(f'<rect x="{x0:.2f}" y="{y - 4}" width="1.6" height="{bh}" class="acct"/>')
+            p.append(f'<rect x="{x1 - 1.6:.2f}" y="{y - 4}" width="1.6" height="{bh}" class="acct"/>')
+        p.append(text(x1 + 16, y + 12, pct, 13, 600))
+    ya = y0 + 4 * step - 18
+    p.append(f'<line x1="{x0}" y1="{ya}" x2="{x1}" y2="{ya}" class="edge" stroke-width="1.25"/>')
+    for ms in range(0, 41, 10):
+        xs = X(ms * 1000)
+        p.append(f'<line x1="{xs:.1f}" y1="{ya}" x2="{xs:.1f}" y2="{ya + 5}" class="edge" stroke-width="1.25"/>')
+        p.append(text(xs, ya + 19, f"{ms} ms", 11.5, cls="quiet", anchor="middle"))
+    p.append(text(24, ya + 46, "The thin lines for buffer interrupts and DMA are drawn wider than to scale, or they would be invisible.", 11.5, cls="quiet"))
+    return svg(760, ya + 66, title, "\n".join(p))
+
+
+# ---------------- 6. Interrupt latency ----------------
+def latency():
+    m = "lat"
+    title = "Interrupt latency adds up from several waits"
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600)]
+    segs = [
+        ("finish current", "instruction", 120, False),
+        ("interrupts are", "switched off (masked)", 172, True),
+        ("hardware entry:", "save PC and PSW", 128, False),
+        ("handler saves", "registers", 112, False),
+        ("urgent work", "(top half)", 112, False),
+    ]
+    x, y, h = 40, 96, 52
+    xs = []
+    for a, b, w, acc in segs:
+        p.append(rect(x, y, w, h, main=acc, tint=not acc))
+        p.append(text(x + 10, y + 22, a, 11.5, 600))
+        p.append(text(x + 10, y + 38, b, 11.5, cls="quiet"))
+        xs.append((x, w))
+        x += w + 12
+    # device signal arrow
+    p.append(path(f"M40 72V{y - 4}", m))
+    p.append(text(48, 72, "device raises IR", 11.5, 600))
+    # brace for latency (first four)
+    lx0 = 40
+    lx1 = xs[3][0] + xs[3][1]
+    yb = y + h + 18
+    p.append(f'<path d="M{lx0} {yb - 8}V{yb}H{lx1}V{yb - 8}" fill="none" class="acc" stroke-width="2"/>')
+    p.append(text((lx0 + lx1) / 2, yb + 20, "interrupt latency: from the request to the first useful instruction of the handler", 11.5, 600, cls="acct", anchor="middle"))
+    p.append(text(24, yb + 50, "Highlighted: usually the longest and least predictable part. Keeping interrupts switched off only briefly is what keeps latency low.", 11.5, cls="quiet"))
+    return svg(760, yb + 70, title, "\n".join(p))
+
+
+# ---------------- 7. Interrupt controller ----------------
+def controller():
+    m = "ctl"
+    title = "Devices signal the interrupt controller, the controller interrupts a CPU core"
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600)]
+    devs = [("Disk", 80), ("Network card", 150), ("Keyboard", 220), ("Timer chip", 290)]
+    for name, y in devs:
+        p.append(rect(24, y - 22, 150, 44, tint=True))
+        p.append(text(40, y + 5, name, 13, 600))
+        p.append(path(f"M174 {y}H{300}", m))
+    p.append(text(237, 66, "IRQ lines", 11.5, cls="quiet", anchor="middle"))
+    # controller
+    p.append(rect(300, 56, 190, 256, main=True))
+    p.append(text(316, 84, "Interrupt controller", 13, 600))
+    p.append(text(316, 104, "(PIC, or I/O APIC on PCs)", 11.5, cls="quiet"))
+    for i, t in enumerate(["• one input per device", "• priorities, masking", "• picks the vector number", "• picks which core", "• waits for the handler's", "   end-of-interrupt (EOI)"]):
+        p.append(text(316, 136 + i * 22, t, 12.5))
+    # cores
+    for i, y in enumerate([110, 250]):
+        p.append(rect(600, y - 40, 136, 80))
+        p.append(text(616, y - 12, f"CPU core {i}", 13, 600))
+        p.append(text(616, y + 8, "local APIC,", 11.5, cls="quiet"))
+        p.append(text(616, y + 24, "own timer", 11.5, cls="quiet"))
+        p.append(path(f"M490 {y}H600", m))
+    p.append(text(545, 86, "interrupt +", 11.5, cls="quiet", anchor="middle"))
+    p.append(text(545, 102, "vector number", 11.5, cls="quiet", anchor="middle"))
+    p.append(path(f"M668 150V210", m, start=True))
+    p.append(text(676, 184, "IPI", 11.5, cls="quiet"))
+    p.append(text(24, 346, "Modern PCI Express devices can skip the wires: with MSI they write a short message to a special memory", 11.5, cls="quiet"))
+    p.append(text(24, 362, "address instead. These are the PCI-MSIX rows in /proc/interrupts.", 11.5, cls="quiet"))
+    return svg(760, 384, title, "\n".join(p))
+
+
 if __name__ == "__main__":
     for name, f in [("interrupt-cycle", cycle), ("interrupt-processing", processing),
-                    ("nested-interrupts", nested), ("race-condition", race)]:
+                    ("nested-interrupts", nested), ("race-condition", race),
+                    ("io-cpu-time", io_timeline), ("interrupt-latency", latency),
+                    ("interrupt-controller", controller)]:
         open(f"{name}.svg", "w", encoding="utf-8").write(f())
     print("ok")
