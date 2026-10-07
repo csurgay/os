@@ -16,6 +16,7 @@ English version: [../en/](../en/)
 | 6 | [Párhuzamosság, holtpontok, folyamatállapotok és a Linux ütemezése](06-concurrency-deadlocks-scheduling/) | a kritikus szakasz problémája, Peterson algoritmusa és a memóriakorlátok, atomi műveletek, spinlockok, mutexek és futexek, szemaforok és a termelő–fogyasztó probléma, monitorok, holtpont (Coffman-feltételek, megelőzés, bankár-algoritmus, felismerés), livelock és prioritásinverzió, folyamatállapotok és a három ütemező, zombik, FIFO/SJF/SRTF/Round Robin, a Linux ütemezési osztályai, nice és EEVDF |
 | 7 | [Kétszintű memóriák és gyorsítótárak](07-two-level-memory-and-cache/) | a memóriahierarchia, a kétszintű memória és átlagos elérési ideje, a hivatkozási lokalitás, direkt leképezésű, teljesen asszociatív és csoportasszociatív gyorsítótárak, érvényességi és dirty bit, write-through és write-back, csere (LRU, FIFO, öregítés, Bélády OPT algoritmusa), sorméret, előbetöltés, koherencia és hamis megosztás, a lap-gyorsítótár (page cache), gyorsítótár-barát ciklusok |
 | 8 | [Virtuális memória](08-virtual-memory/) | elválasztás és áthelyezés, belső és külső fragmentáció, lapozás, laptáblák és a laptábla-bázisregiszter, érvényességi és jogosultsági bitek, az x86-64 többszintű laptáblái, a TLB és az óriáslapok, laphibák, igény szerinti lapozás és írásra másolás, lapcsere (FIFO, OPT, LRU, óra), Bélády-anomália, munkahalmaz és vergődés, gyorsítótárak és virtuális memória összevetése |
+| 9 | [Fájlrendszerek](09-file-systems/) | merevlemezek és SSD-k (felépítés, elérési idő, NAND flash, FTL, szemétgyűjtés, írásamplifikáció, TRIM), a tárolási verem és a VFS, inode-ok, blokkmutatók és extentek, könyvtárak (lista, htree, B+ fa), hard és szimbolikus linkek, foglalás és fragmentáció, naplózás és írásra másolás, a FAT16, az ext4, az XFS és az NTFS szétszedve |
 
 ## A laborok futtatása
 
@@ -25,7 +26,7 @@ A laborprogramokhoz Linux (vagy WSL) kell `gcc`, `binutils` (`as`, `ld`, `objdum
 $ sudo apt install build-essential gdb
 ```
 
-A 6. előadás ezen felül `strace`-t, Python 3-at és (opcionálisan) Java JDK-t használ, a 7. előadás `valgrind`-ot (`sudo apt install strace default-jdk valgrind`). A 2. előadás konténeres laborjaihoz Podman (vagy Docker) kell, lehetőleg Fedorán, CentOS Streamen, AlmaLinuxon vagy Rocky Linuxon (`sudo dnf install podman skopeo`).
+A 6. előadás ezen felül `strace`-t, Python 3-at és (opcionálisan) Java JDK-t használ, a 7. előadás `valgrind`-ot (`sudo apt install strace default-jdk valgrind`). A 9. előadáshoz `e2fsprogs` (`debugfs`, `dumpe2fs`, `filefrag`), `dosfstools`, `xfsprogs` és `ntfs-3g` kell (`sudo apt install e2fsprogs dosfstools xfsprogs ntfs-3g`); az ext4-es bemutatók képfájlok csatolásához root jogot igényelnek. A 2. előadás konténeres laborjaihoz Podman (vagy Docker) kell, lehetőleg Fedorán, CentOS Streamen, AlmaLinuxon vagy Rocky Linuxon (`sudo dnf install podman skopeo`).
 
 A programok kimenetei és a bennük lévő megjegyzések angolul vannak; az előadásokban szereplő konzolkimenetek valódi, mért eredmények, ezért változatlanok.
 

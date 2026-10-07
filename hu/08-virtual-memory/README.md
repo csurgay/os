@@ -2,7 +2,7 @@
 
 *Operációs rendszerek előadás: hogyan ad az operációs rendszer minden folyamatnak saját, privát, összefüggő memóriát, hogyan védi meg a folyamatokat egymástól, és hogyan bővíti a RAM-ot a lemezzel: fragmentáció, lapozás, laptáblák, a TLB, laphibák és lapcsere, linuxos mérésekkel*
 
-Előző: [Kétszintű memóriák és gyorsítótárak](../07-two-level-memory-and-cache/).
+Előző: [Kétszintű memóriák és gyorsítótárak](../07-two-level-memory-and-cache/). Következő: [Fájlrendszerek](../09-file-systems/).
 
 > **Hogyan olvasd ezt az előadást?** Ahol új rövidítés vagy fogalom jelenik meg, utána egy **Egyszerűen elmagyarázva** feliratú doboz következik. Kattints rá, és kinyílik egy köznapi nyelvű magyarázat. Ha már ismered a fogalmakat, nyugodtan átugorhatod ezeket a dobozokat.
 
