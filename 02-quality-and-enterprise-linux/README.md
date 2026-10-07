@@ -16,7 +16,7 @@ By the end, students will be able to:
 - define MTTF, MTTR, MTBF and availability, and calculate availability and allowed downtime;
 - calculate the availability of components in series and in parallel, and explain why redundancy helps;
 - explain the difference between SLI, SLO and SLA, and measure a simple SLI;
-- use the vocabulary of code lines: branch, merge, fork, upstream, downstream, patch, backport, retrofit;
+- use the vocabulary of code lines: branch, merge, fork, upstream, downstream, patch, backport, update;
 - describe how Fedora, CentOS Stream, RHEL, AlmaLinux, Rocky Linux and Oracle Linux relate to each other, and what changed in 2020 and 2023;
 - explain why an enterprise distribution backports fixes instead of upgrading, and why a version number alone says little about security;
 - explain what a container image is (layers, registries, OCI), why a container shares the host's kernel, and what follows for compatibility and support;
@@ -92,7 +92,7 @@ The share of time the system works is its **availability** (Hennessy & Patterson
 
 $$A = \frac{MTTF}{MTTF + MTTR}$$
 
-Because repairs are usually much shorter than the time between failures, MTBF and MTTF are often treated as the same, and the formula is commonly written $A = MTBF / (MTBF + MTTR)$. A server that works on average 2000 hours before it fails (MTTF) and takes 4 hours to repair is available 2000 / 2004 = 99.8% of the time.
+When repairs are much shorter than the time between failures, MTBF ≈ MTTF, so $A \approx MTBF / (MTBF + MTTR)$. A server that works on average 2000 hours before it fails (MTTF) and takes 4 hours to repair is available 2000 / 2004 = 99.8% of the time.
 
 **MTBF is not a lifetime.** Hardware data sheets often quote enormous MTBF values: a disk with an MTBF of 1.2 million hours does not last 137 years. The number is a failure *rate* measured on many young devices: with 1000 such disks, about 7 fail every year. Hardware failure rates follow the **bathtub curve**: high at the start (early defects), low and roughly constant during the useful life, and rising again as parts wear out; MTBF figures describe only the flat middle. Software does not wear out: it fails because of bugs triggered by particular inputs, loads or timing, and its failure rate changes with every update.
 
@@ -219,17 +219,17 @@ An operating system is not one piece of code but thousands of projects, each dev
 | **dependency** | another package that a program needs in order to work; a patch may also depend on other patches being applied first |
 | **backport** | taking a fix made in a newer version and adapting it to an older version that is still supported |
 | **install** | putting a release onto a machine |
-| **retrofit** | applying changes to systems that are already installed and in use, without reinstalling them |
+| **update** (patch deployment) | applying fixes to systems that are already installed and in use, without reinstalling them |
 
 **Patch dependencies in practice.** Suppose a security fix is written for the newest kernel. To backport it to a kernel that is five years older, the maintainers often find that the fix relies on helper functions or structure changes added in between. They must then first backport those earlier patches too (the fix's dependencies), each adapted to the old code, and test that none of them changes the stable interfaces. One upstream patch can become a series of a dozen downstream ones.
 
 Two working rules follow from this vocabulary:
 
 - **Upstream first.** A fix should be made in the upstream project first, and only then taken downstream. Otherwise every downstream product must carry its own private patch forever, and repeat the work with every new upstream version. Red Hat follows this policy: its engineers send their changes to Fedora, the Linux kernel and the other original projects.
-- **Backport, don't upgrade.** An enterprise distribution promises stable interfaces for ten years, so it cannot simply move to each new upstream version. Instead, it keeps the versions it shipped and backports the fixes, and sometimes also new features. This is a large amount of careful work, and it is a central part of what the subscription pays for. Applying the fixes to servers already in use (retrofit) usually means installing updated packages and rebooting; with **live patching**, critical kernel fixes can even be applied to the running kernel without a reboot.
+- **Backport, don't upgrade.** An enterprise distribution promises stable interfaces for ten years, so it cannot simply move to each new upstream version. Instead, it keeps the versions it shipped and backports the fixes, and sometimes also new features. This is a large amount of careful work, and it is a central part of what the subscription pays for. Applying the fixes to servers already in use usually means installing updated packages and rebooting; with **live patching**, critical kernel fixes can even be applied to the running kernel without a reboot.
 
 <details>
-<summary><b>Explained simply:</b> version control, Git, branch, merge, fork, rebuild, GNOME, upstream, downstream, patch, dependency, backport, retrofit, live patching</summary>
+<summary><b>Explained simply:</b> version control, Git, branch, merge, fork, rebuild, GNOME, upstream, downstream, patch, dependency, backport, update, live patching</summary>
 
 - **Version control, Git:** a system that records every change ever made to a project's code, who made it and why, so that any earlier state can be restored. Git is the most widely used one.
 - **Branch / merge:** like writing a new chapter of a shared document in a separate copy, then putting it back into the main document when it is ready.
@@ -240,8 +240,8 @@ Two working rules follow from this vocabulary:
 - **Patch:** a description of exactly which lines to change, like a correction slip for a printed book.
 - **Dependency:** something a program needs to work, like batteries for a remote control.
 - **Backport:** taking a repair designed for the new model and adapting it to fit the old model that customers still use.
-- **Retrofit:** fitting an improvement to something already in use, like adding seat belts to old cars.
-- **Live patching:** fixing the running kernel in memory, without a reboot (Red Hat's tool is called kpatch, Oracle's Ksplice): a retrofit that avoids planned downtime.
+- **Update (patch deployment):** fitting an improvement to something already in use, like adding seat belts to old cars.
+- **Live patching:** fixing the running kernel in memory, without a reboot (Red Hat's tool is called kpatch, Oracle's Ksplice): an update that avoids planned downtime.
 
 </details>
 
@@ -253,9 +253,9 @@ Two working rules follow from this vocabulary:
 
 **Fedora** is the community distribution sponsored by Red Hat. It moves fast: a new release about every six months, each supported for about 13 months (Itechtics, n.d.). New technology appears in Fedora first.
 
-**Red Hat Enterprise Linux (RHEL)** is Red Hat's commercial distribution. Every few years, Red Hat takes a Fedora release as the starting point, stabilises and tests it, and releases it as a new major version of RHEL, then supports it for ten years. In the terms above, each RHEL major version is a fork of Fedora: it continues separately, with a different community (Red Hat's engineers and customers) and its own changes, and since 2021 it is created as a branch, CentOS Stream, as described below.
+**Red Hat Enterprise Linux (RHEL)** is Red Hat's commercial distribution. Every few years, Red Hat takes a Fedora release as the starting point, stabilises and tests it, and releases it as a new major version of RHEL, then supports it for ten years. In the terms above, each RHEL major version branches from a Fedora release and is then developed separately by Red Hat, with its own changes; since 2021 this branch is developed in public as CentOS Stream, as described below.
 
-**CentOS** (Community Enterprise Operating System), first released in 2004, rebuilt RHEL from the source packages that Red Hat published openly (more than the GPL itself requires, and including many packages under other licences), removed Red Hat's trademarks and logos, and gave the result away for free. It is often called a fork of RHEL, but it was a rebuild: it followed RHEL exactly, without diverging. CentOS was downstream of RHEL: binary compatible with it, but without support or certification. It became very popular for servers, web hosting and universities. In January 2014, the CentOS project joined Red Hat, which took over its trademarks and employed its core developers ("CentOS," n.d.).
+**CentOS** (Community Enterprise Operating System), first released in 2004, rebuilt RHEL from the source packages that Red Hat published openly (more than the GPL itself requires, and including many packages under other licences), removed Red Hat's trademarks and logos, and gave the result away for free. CentOS was a rebuild of RHEL: it followed RHEL exactly, without diverging. CentOS was downstream of RHEL: binary compatible with it, but without support or certification. It became very popular for servers, web hosting and universities. In January 2014, the CentOS project joined Red Hat, which took over its trademarks and employed its core developers ("CentOS," n.d.).
 
 ### December 2020: CentOS Stream moves upstream
 

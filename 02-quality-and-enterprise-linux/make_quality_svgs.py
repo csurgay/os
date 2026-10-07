@@ -112,7 +112,7 @@ def mtbf():
     p += span(560, 600, y + 96, "MTTR", "edge")
     p += span(250, 560, y + 128, "MTBF: from one failure to the next = MTTR + MTTF", "edge")
     p.append(text(24, y + 170, "Averaged over many failures: availability = MTTF / (MTTF + MTTR), the share of time the system is working.", 11.5, cls="quiet"))
-    p.append(text(24, y + 188, "When repairs are short, MTBF ≈ MTTF, which is why availability is often written MTBF / (MTBF + MTTR).", 11.5, cls="quiet"))
+    p.append(text(24, y + 188, "When repairs are short, MTBF ≈ MTTF, so availability ≈ MTBF / (MTBF + MTTR).", 11.5, cls="quiet"))
     return svg(760, y + 206, title, "\n".join(p))
 
 
@@ -172,7 +172,7 @@ def vocab():
     p.append(text(430, 342, "backport: a fix from the new", 11.5, 600, cls="acct"))
     p.append(text(430, 358, "version, adapted to the old one", 11.5, cls="quiet"))
     p.append(text(dn[1][0] + 22, 262, "patch", 11.5, 600, cls="quiet"))
-    # servers: install + retrofit
+    # servers: install + update
     sx = 640
     for i, yy in enumerate((236, 300)):
         p.append(rect(sx, yy, 80, 40, "tint", rx=4))
@@ -180,7 +180,7 @@ def vocab():
     p.append(path(f"M{560} 266L{sx - 4} 256", m))
     p.append(text(578, 240, "install", 11.5, 600, cls="quiet"))
     p.append(path(f"M{old[0] + r} {old[1] + 6}C{480} 392 {600} 392 {sx + 40} {344}", ma, cls="acc", width=1.5, dash="5 3"))
-    p.append(text(540, 404, "retrofit: update servers already in use", 11.5, 600, cls="acct", anchor="middle"))
+    p.append(text(540, 404, "update: apply the fixes to servers in use", 11.5, 600, cls="acct", anchor="middle"))
     p.append(text(24, 432, "Solid arrows: history of a code line. Dashed blue: a change carried from one line to another.", 11.5, cls="quiet"))
     return svg(760, 452, title, "\n".join(p))
 
@@ -202,7 +202,7 @@ def ecosystem():
     p += box(290, ya, 170, "RHEL", "Red Hat, subscription", "acc")
     p += box(556, ya, 180, "CentOS Linux", "free rebuild of RHEL")
     p.append(path(f"M194 {ya + 26}H290", m))
-    p.append(text(242, ya + 18, "fork", 11, 600, cls="quiet", anchor="middle"))
+    p.append(text(242, ya + 18, "branch", 11, 600, cls="quiet", anchor="middle"))
     p.append(text(242, ya + 44, "every few years", 10.5, cls="quiet", anchor="middle"))
     p.append(path(f"M460 {ya + 26}H556", m))
     p.append(text(508, ya + 18, "rebuild", 11, 600, cls="quiet", anchor="middle"))

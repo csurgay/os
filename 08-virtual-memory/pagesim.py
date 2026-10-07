@@ -2,14 +2,14 @@
 """pagesim.py - page replacement algorithms on a reference string.
 
 Usage:
-  python3 pagesim.py belady                 the lecture notes' example, FIFO with 3 and 4 frames
+  python3 pagesim.py belady                 the classic example, FIFO with 3 and 4 frames
   python3 pagesim.py table [PAGES...]       faults of FIFO, LRU, OPT, clock and random for 1..7 frames
   python3 pagesim.py trace ALG N PAGES...   step-by-step table for one algorithm and N frames
   python3 pagesim.py thrash                 fault rate against frames for a program with phases
 """
 import random, sys
 
-NOTES = [3, 2, 1, 0, 3, 2, 4, 3, 2, 1, 0, 4]          # the reference string in the notes
+EXAMPLE = [3, 2, 1, 0, 3, 2, 4, 3, 2, 1, 0, 4]        # a string that shows Belady's anomaly
 
 def simulate(refs, frames, alg, seed=1):
     """Returns (faults, history); history[i] = (page, fault?, frame contents)."""
@@ -64,9 +64,9 @@ def print_trace(refs, frames, alg):
 if __name__ == "__main__":
     a = sys.argv[1:]
     if a[:1] == ["belady"]:
-        print_trace(NOTES, 3, "fifo"); print(); print_trace(NOTES, 4, "fifo")
+        print_trace(EXAMPLE, 3, "fifo"); print(); print_trace(EXAMPLE, 4, "fifo")
     elif a[:1] == ["table"]:
-        refs = [int(x) for x in a[1:]] or NOTES
+        refs = [int(x) for x in a[1:]] or EXAMPLE
         print("reference string:", " ".join(map(str, refs)))
         print(f"{'frames':>6}" + "".join(f"{alg:>8}" for alg in ("fifo", "lru", "opt", "clock", "random")))
         for n in range(1, 8):

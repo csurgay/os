@@ -34,12 +34,12 @@ By the end, students will be able to:
 
 ## Why virtual memory?
 
-The lecture notes start with the **RAM–disk pair as a two-level memory**, and with two problems that appear as soon as several programs share one computer, which the [history lecture](../01-historic-evolution/#vii-programs-share-the-memory-protection-and-virtual-memory) traced back to multiprogramming:
+Virtual memory starts from the **RAM–disk pair as a two-level memory**, and from two problems that appear as soon as several programs share one computer, which the [history lecture](../01-historic-evolution/#vii-programs-share-the-memory-protection-and-virtual-memory) traced back to multiprogramming:
 
 ![Processes 1 to 4 placed one after another in RAM; process 5 does not fit; protection, relocation, fragmentation and size](separation.svg)
 
 - **Separation (security).** With several processes in RAM, each must be protected from the others, and the operating system from all of them. A bug or an attack in one program must not be able to read or overwrite another's memory.
-- **A simple, private view.** The notes' second point: with **virtual** memory, *every process sees as if it had the whole memory alone, contiguously, from 0 to max*. A program can then be compiled for fixed addresses, wherever it actually lands in RAM (**relocation**), and it does not need to know about the other programs at all.
+- **A simple, private view.** With **virtual** memory, *every process sees as if it had the whole memory alone, contiguously, from 0 to max*. A program can then be compiled for fixed addresses, wherever it actually lands in RAM (**relocation**), and it does not need to know about the other programs at all.
 - **More memory than RAM.** Virtual memory extends RAM onto the disk: pages that are not needed at the moment can wait there, and the total memory of all processes can exceed the physical RAM.
 
 Virtual memory was first built on the **Atlas** computer at the University of Manchester, which went into operation in 1962. Its designers called it a *one-level storage system*: the programmer saw one large memory, while the hardware and the supervisor program moved 512-word pages between the small core memory and a magnetic drum automatically (Kilburn et al., 1962). Every general-purpose operating system today is built on the same idea.
@@ -56,14 +56,14 @@ Virtual memory was first built on the **Atlas** computer at the University of Ma
 
 ## Fragmentation
 
-The simplest solution gives each process one **contiguous** piece of RAM, its **partition**, and checks every address against the partition's limits (a base and a limit register). The notes show why this breaks down: memory becomes fragmented. There are two kinds:
+The simplest solution gives each process one **contiguous** piece of RAM, its **partition**, and checks every address against the partition's limits (a base and a limit register). This breaks down because memory becomes fragmented. There are two kinds:
 
 ![Equal-sized blocks waste the unused rest of each block; variable-sized blocks leave holes between them, so a new request does not fit although enough memory is free in total](fragmentation.svg)
 
-- **Internal fragmentation** comes with **equal block sizes**: memory is handed out in fixed units, and the unused rest of each unit is wasted *inside* it. The notes' analogy is goods transport in containers: a half-empty container still takes a whole container's space on the ship.
+- **Internal fragmentation** comes with **equal block sizes**: memory is handed out in fixed units, and the unused rest of each unit is wasted *inside* it. An analogy is goods transport in containers: a half-empty container still takes a whole container's space on the ship.
 - **External fragmentation** comes with **different block sizes**: as blocks are allocated and freed, the free memory is broken into holes *between* the blocks. A new request may not fit into any hole, although the holes together would be large enough.
 
-With variable blocks, the allocator chooses a hole for each request: **first fit** (the first hole that is large enough), **best fit** (the smallest that is large enough) or **worst fit** (the largest). None of them avoids fragmentation; Knuth's analysis of first fit led to the "fifty-percent rule": in equilibrium there are about half as many holes as allocated blocks (Knuth, 1997). The remedy is **compaction**, moving the blocks together so that the free memory forms one hole: in the notes' picture, turning the striped zebra into a horse with all its dark stripes in one patch. But compaction is slow, and it requires every program to be relocatable while it runs.
+With variable blocks, the allocator chooses a hole for each request: **first fit** (the first hole that is large enough), **best fit** (the smallest that is large enough) or **worst fit** (the largest). None of them avoids fragmentation; Knuth's analysis of first fit led to the "fifty-percent rule": in equilibrium there are about half as many holes as allocated blocks (Knuth, 1997). The remedy is **compaction**, moving the blocks together so that the free memory forms one hole: in the picture, turning the striped zebra into a horse with all its dark stripes in one patch. But compaction is slow, and it requires every program to be relocatable while it runs.
 
 Paging, the subject of the next section, chooses equal block sizes, and so trades external fragmentation for a little internal fragmentation: on average half a page per memory region. Both kinds can be observed on Linux ([Linux section](#fragmentation-on-linux)).
 
@@ -82,7 +82,7 @@ Paging, the subject of the next section, chooses equal block sizes, and so trade
 
 ## Paging
 
-**Paging** divides the virtual memory of each process into fixed-size **pages** (4 KiB on x86, as in the notes) and the physical RAM into **frames** of the same size. Any page can be placed into any free frame. The pages of a process are contiguous in its own address space (the notes write *folytonos!*, contiguous), but the frames that hold them can lie anywhere in RAM, in any order, and some pages may not be in RAM at all:
+**Paging** divides the virtual memory of each process into fixed-size **pages** (4 KiB on x86) and the physical RAM into **frames** of the same size. Any page can be placed into any free frame. The pages of a process are contiguous in its own address space, but the frames that hold them can lie anywhere in RAM, in any order, and some pages may not be in RAM at all:
 
 ![Pages 11, 12, 13 of process 1 and 21, 22, 23 of process 2 placed in scattered frames of RAM](paging.svg)
 
@@ -90,21 +90,21 @@ The measurement in the [Linux section](#where-pages-really-live) shows exactly t
 
 ### Address translation
 
-The notes' example uses 32-bit virtual addresses and 4 KiB pages. The low 12 bits of an address ($2^{12}$ = 4096) are the **offset** within the page, and the high 20 bits are the **page number**. The **page table** of the process has one entry per page number, and each entry holds the number of the physical frame where the page is, plus control bits:
+Take 32-bit virtual addresses and 4 KiB pages as an example. The low 12 bits of an address ($2^{12}$ = 4096) are the **offset** within the page, and the high 20 bits are the **page number**. The **page table** of the process has one entry per page number, and each entry holds the number of the physical frame where the page is, plus control bits:
 
-![The page number indexes the page table, which the PTP register points to; the entry's frame number is joined with the unchanged offset to form the physical address](address-translation.svg)
+![The page number indexes the page table, which the page-table base register points to; the entry's frame number is joined with the unchanged offset to form the physical address](address-translation.svg)
 
-1. The **page-table pointer** (PTP; on x86 the CR3 register, on ARM the TTBR registers) holds the physical address of the current process's page table. It is part of each process's context, so a context switch that changes the process also changes the PTP, and with it the whole address space.
-2. The page number selects the entry: its address is the PTP plus the page number times the entry size (the first "+" in the notes).
-3. If the entry is valid, its **physical page (frame) number** is combined with the unchanged offset to form the physical address (the second "+": in binary, the frame number is simply written in front of the offset).
+1. The **page-table base register** (PTBR; on x86 the CR3 register, on ARM the TTBR registers) holds the physical address of the current process's page table. It is part of each process's context, so a context switch that changes the process also changes the PTBR, and with it the whole address space.
+2. The page number selects the entry: its address is the PTBR plus the page number times the entry size.
+3. If the entry is valid, its **physical page (frame) number** is combined with the unchanged offset to form the physical address (in binary, the frame number is simply written in front of the offset).
 
-The notes list the most important bits of an entry:
+The most important bits of an entry:
 
 - **Valid (present):** 1 means the page is in a frame. 0 means it is not: the access causes a **page fault**, an exception (a program interrupt in the terms of the [interrupts lecture](../05-interrupts/#classes-of-interrupts)), and the operating system decides what to do.
 - **Access rights:** read-only, read/write, executable. On x86-64 there is also a **user/supervisor** bit (kernel pages are not accessible from user mode) and the **NX** (no-execute) bit, the one the [fetch-execute lecture](../04-fetch-execute-cycle/#memory-permissions-in-a-real-process) demonstrated. An access that the rights do not allow also causes a page fault, which the OS turns into an error for the program (on Linux, the `SIGSEGV` signal: "segmentation fault").
 - Hardware also sets an **accessed** bit when the page is used and a **dirty** bit when it is written; the OS uses them for page replacement, below.
 
-A worked example with the notes' geometry: the virtual address `0x00403A7C` has page number `0x00403` and offset `0xA7C`. If entry `0x403` of the page table says "valid, read/write, frame `0x12DC6`", the physical address is `0x12DC6A7C`.
+A worked example: the virtual address `0x00403A7C` has page number `0x00403` and offset `0xA7C`. If entry `0x403` of the page table says "valid, read/write, frame `0x12DC6`", the physical address is `0x12DC6A7C`.
 
 ### Multi-level page tables
 
@@ -114,15 +114,15 @@ A flat table for a 32-bit address space has $2^{20}$ entries; at 4 bytes each, t
 
 The machine used below reports `address sizes : 46 bits physical, 48 bits virtual` in `/proc/cpuinfo`, so it uses four levels; newer processors support a fifth level for 57-bit addresses. The price of the hierarchy is that a translation may need four extra memory reads, a **page-table walk**. This is where the next section comes in.
 
-**Segmentation**, which the notes mention in passing, is the older alternative: memory is divided into variable-sized logical **segments** (code, data, stack), each with its own base, limit and rights. It matches the program's structure, but suffers from external fragmentation. x86 processors had both, segments on top of pages; in 64-bit mode segmentation is essentially switched off, and modern operating systems rely on paging alone.
+**Segmentation** is the older alternative: memory is divided into variable-sized logical **segments** (code, data, stack), each with its own base, limit and rights. It matches the program's structure, but suffers from external fragmentation. x86 processors had both, segments on top of pages; in 64-bit mode segmentation is essentially switched off, and modern operating systems rely on paging alone.
 
 <details>
-<summary><b>Explained simply:</b> paging, offset, page table, page-table entry, PTP/CR3, page fault, exception, access rights, NX bit, user/supervisor, accessed and dirty bits, hierarchy, segment</summary>
+<summary><b>Explained simply:</b> paging, offset, page table, page-table entry, PTBR/CR3, page fault, exception, access rights, NX bit, user/supervisor, accessed and dirty bits, hierarchy, segment</summary>
 
 - **Paging:** cutting memory into equal pieces and placing each piece wherever there is room, keeping a list of where each one went.
 - **Offset:** the position of a byte inside its page.
 - **Page table:** that list: for each page of a process, which frame of RAM holds it, and what may be done with it. Each line is a **page-table entry**.
-- **PTP (page-table pointer), CR3, TTBR:** the CPU register (CR3 on Intel and AMD processors, TTBR on ARM) that says where the current process's page table is. Changing it switches to another process's memory.
+- **PTBR (page-table base register), CR3, TTBR:** the CPU register (CR3 on Intel and AMD processors, TTBR on ARM) that says where the current process's page table is. Changing it switches to another process's memory.
 - **Page fault:** the CPU's signal to the OS that a page is not in RAM, or that an access is not allowed.
 - **Exception:** an interrupt caused by the instruction that is running.
 - **Access rights:** whether a page may be read, written or executed. **NX** (no-execute): data pages cannot be run as code. **User/supervisor:** whether ordinary programs may touch the page, or only the kernel.
@@ -134,7 +134,7 @@ The machine used below reports `address sizes : 46 bits physical, 48 bits virtua
 
 ## The TLB: a cache for translations
 
-Every memory access needs a translation, and a page-table walk would multiply the cost of every access. The CPU therefore keeps recent translations in the **translation lookaside buffer (TLB)**, a small, fast cache of page-table entries, as the notes' third page draws it:
+Every memory access needs a translation, and a page-table walk would multiply the cost of every access. The CPU therefore keeps recent translations in the **translation lookaside buffer (TLB)**, a small, fast cache of page-table entries:
 
 ![The virtual address goes to the TLB; on a hit the physical address comes out at once, on a miss a page-table walk produces it; the physical address then goes to the cache and, on a miss, to RAM](tlb-path.svg)
 
@@ -196,11 +196,11 @@ Linux keeps pages on two kinds of lists, **active** and **inactive** (one pair f
 
 ### Bélády's anomaly
 
-The notes' last page asks a natural question: if a process gets more frames, does its fault rate always fall? For FIFO, not necessarily. With the notes' reference string `3 2 1 0 3 2 4 3 2 1 0 4`, FIFO makes 9 faults with 3 frames, but 10 with 4:
+A natural question: if a process gets more frames, does its fault rate always fall? For FIFO, not necessarily. With the reference string `3 2 1 0 3 2 4 3 2 1 0 4`, FIFO makes 9 faults with 3 frames, but 10 with 4:
 
 ![FIFO with 3 frames: 9 faults; with 4 frames: 10 faults; each column shows the frames after the reference](belady-anomaly.svg)
 
-The simulator reproduces the notes' tables column by column ([Linux section](#page-replacement-simulated)). Bélády et al. (1969) showed that such strings exist for FIFO. LRU and OPT can never behave like this, because they are **stack algorithms**: the set of pages they keep with *n* frames is always contained in the set they would keep with *n* + 1 frames, so an extra frame can only save faults (Mattson et al., 1970). FIFO lacks this inclusion property: in the example, at the seventh reference FIFO with 4 frames has just evicted page 3, which FIFO with 3 frames still holds and needs next.
+The simulator reproduces the figure column by column ([Linux section](#page-replacement-simulated)). Bélády et al. (1969) showed that such strings exist for FIFO. LRU and OPT can never behave like this, because they are **stack algorithms**: the set of pages they keep with *n* frames is always contained in the set they would keep with *n* + 1 frames, so an extra frame can only save faults (Mattson et al., 1970). FIFO lacks this inclusion property: in the example, at the seventh reference FIFO with 4 frames has just evicted page 3, which FIFO with 3 frames still holds and needs next.
 
 ### Working sets and thrashing
 
@@ -229,13 +229,13 @@ When the processes in memory together need more frames than there are, they spen
 
 ## Caches and virtual memory compared
 
-The notes end the third page with a comparison. Both are two-level memories built on locality, with the same structure, but with very different numbers, and these numbers explain every difference in design:
+Caches and virtual memory are both two-level memories built on locality, with the same structure, but with very different numbers, and these numbers explain every difference in design:
 
 | | Cache | Virtual memory |
 |---|---|---|
 | unit | line (block) | page / frame (or segment) |
 | unit size | 32–128 bytes, usually 64 | 4–16 KiB, plus huge pages of 2 MiB and 1 GiB |
-| capacity of the fast level | 32 KiB (L1) to tens of MiB (L3) | GiB of RAM (the notes: 16–64 GiB) |
+| capacity of the fast level | 32 KiB (L1) to tens of MiB (L3) | GiB of RAM (typically 8–64 GiB in a PC) |
 | a miss is called | cache miss | page fault |
 | cost of a miss | 10–100 ns | µs (SSD) to ms (hard disk) |
 | handled by | hardware alone | hardware (TLB, page walk) and the OS (fault handler) |
@@ -243,7 +243,7 @@ The notes end the third page with a comparison. Both are two-level memories buil
 | replacement | none (direct-mapped), random or pseudo-LRU in hardware | approximations of LRU in software (clock, aging, active/inactive lists) |
 | writes | write-through or, mostly today, write-back | always write-back (dirty bit) |
 
-The notes pair the cache with write-through and the virtual memory with write-back. For virtual memory this is a necessity: writing every store through to the disk would make every store take milliseconds. Caches were often write-through in the past, and L1 caches sometimes still are, but most caches today are write-back, as the [previous lecture](../07-two-level-memory-and-cache/#the-direct-mapped-cache) explained. The same reasoning explains placement and replacement: since a major page fault costs hundreds of thousands to millions of cycles, the OS can afford full associativity and a careful choice of victim, while a cache must decide within a cycle.
+Virtual memory is always write-back: writing every store through to the disk would make every store take milliseconds. Caches can use either policy; some L1 caches are write-through, but most caches today are write-back, as the [previous lecture](../07-two-level-memory-and-cache/#the-direct-mapped-cache) explained. The same reasoning explains placement and replacement: since a major page fault costs hundreds of thousands to millions of cycles, the OS can afford full associativity and a careful choice of victim, while a cache must decide within a cycle.
 
 ## The same ideas on Linux (x86-64)
 
@@ -331,7 +331,7 @@ virtual page 0x7f8a2f426 -> not in RAM (never touched)
 virtual page 0x7f8a2f427 -> not in RAM (never touched)
 ```
 
-This is the notes' picture of process 1 with pages 11, 12, 13: contiguous virtual pages, scattered physical frames. The two pages that were never written have no frame at all: demand paging. (Since Linux 4.2, frame numbers are shown as 0 unless the reader has administrator rights (the `CAP_SYS_ADMIN` capability; Linux 4.0 and 4.1 blocked the file entirely), because knowing physical addresses helps attacks such as Rowhammer.)
+This is the picture of the [paging section](#paging) on a real system: contiguous virtual pages, scattered physical frames. The two pages that were never written have no frame at all: demand paging. (Since Linux 4.2, frame numbers are shown as 0 unless the reader has administrator rights (the `CAP_SYS_ADMIN` capability; Linux 4.0 and 4.1 blocked the file entirely), because knowing physical addresses helps attacks such as Rowhammer.)
 
 <details>
 <summary><b>Explained simply:</b> pagemap, frame number, Rowhammer, capability</summary>
@@ -531,7 +531,7 @@ In the `Normal` zone, most free blocks *by count* are small (1 to 8 frames, lyin
 
 ### Page replacement, simulated
 
-`pagesim.py` replays the notes' reference string with FIFO and prints the frames after each reference, newest first, as in the notes:
+`pagesim.py` replays the reference string of the figure with FIFO and prints the frames after each reference, newest first:
 
 ```console
 $ python3 pagesim.py belady
@@ -599,19 +599,19 @@ frames  LRU faults  fault rate
 
 1. **Your address space.** Write a C program that prints the addresses of a global variable, a local variable, a `malloc`ed block, a function and `main`, then sleeps. Find each address in `/proc/PID/maps`. Run it three times: which addresses change, and why? Turn ASLR off for one run with `setarch -R ./prog` and compare.
 2. **Virtual to physical.** As root, extend `v2p.c` to map 64 pages and count how many of them are physically contiguous with their predecessor. Then map 4 MiB, aligned to 2 MiB as `tlb.c` does, with `MADV_HUGEPAGE`, and check the frame numbers of consecutive 4 KiB pages inside a huge page.
-3. **Translate by hand.** For the notes' 32-bit, 4 KiB-page system, translate the virtual addresses `0x00000FFF`, `0x00001000` and `0x00403A7C` with a page table in which page 0 → frame 7, page 1 → not present, page `0x403` → frame `0x12DC6`. Which access causes a page fault? For x86-64, split `0x00007F8A2F422ABC` into its four 9-bit indices and the offset.
+3. **Translate by hand.** For a 32-bit system with 4 KiB pages, translate the virtual addresses `0x00000FFF`, `0x00001000` and `0x00403A7C` with a page table in which page 0 → frame 7, page 1 → not present, page `0x403` → frame `0x12DC6`. Which access causes a page fault? For x86-64, split `0x00007F8A2F422ABC` into its four 9-bit indices and the offset.
 4. **Page-table size.** How large is a flat page table for a 32-bit address space with 4 KiB pages and 4-byte entries? How many pages of page tables does a process using 8 MiB of contiguous memory need with the x86-64 four-level scheme? Check with `faults.c` (change its `SIZE` constant, and compare VmPTE before and after) by mapping 8 MiB, 64 MiB and 1 GiB.
 5. **Demand paging and copy-on-write.** Modify `faults.c` to fork after touching the memory, and let the child write to every page. How many minor faults does the child cause, and how much does `fork()` itself take? Compare with a child that only reads.
 6. **TLB.** Run `tlb` and `tlb huge` on your machine, and find the steps. Look up your processor's TLB sizes (`cpuid -1 | grep -i tlb`, or the vendor's documentation) and check whether the steps match the number of entries.
-7. **Replacement.** Run `python3 pagesim.py trace lru 3 3 2 1 0 3 2 4 3 2 1 0 4` and the same with `opt` and `clock`, then add the aging algorithm to `pagesim.py` and run it on the notes' string. Then search, with a small script, for the shortest reference string over 5 pages that shows Bélády's anomaly for FIFO, and check that LRU never shows it on 1,000 random strings.
+7. **Replacement.** Run `python3 pagesim.py trace lru 3 3 2 1 0 3 2 4 3 2 1 0 4` and the same with `opt` and `clock`, then add the aging algorithm to `pagesim.py` and run it on the same string. Then search, with a small script, for the shortest reference string over 5 pages that shows Bélády's anomaly for FIFO, and check that LRU never shows it on 1,000 random strings.
 8. **Thrashing, for real.** In a virtual machine or a container with a memory limit (for example `sudo systemd-run --scope -p MemoryMax=256M ./prog` with swap enabled), run a program that touches 200, 250, 300 and 400 MiB at random. Measure its run time and its major faults. Where does thrashing begin?
 
 ## Review questions
 
 1. What problems arise when several processes share one RAM without virtual memory? Name four, and explain how virtual memory solves each.
-2. Explain internal and external fragmentation with the notes' two pictures. Which one does paging avoid, and which one does it keep?
+2. Explain internal and external fragmentation with the two pictures of the fragmentation figure. Which one does paging avoid, and which one does it keep?
 3. What are first fit, best fit and worst fit? Why does compaction help, and why is it expensive?
-4. Explain the notes' paging figure: why are the pages of a process contiguous in virtual memory and scattered in RAM? What does this solve?
+4. Explain the paging figure: why are the pages of a process contiguous in virtual memory and scattered in RAM? What does this solve?
 5. Describe the translation of a 32-bit virtual address with 4 KiB pages step by step, including the role of the page-table pointer. What happens at a context switch?
 6. What do the valid bit and the access-rights bits of a page-table entry do? What happens when an access breaks them?
 7. Why are page tables hierarchical? How is a 48-bit address split on x86-64, and how large is each table?
@@ -619,7 +619,7 @@ frames  LRU faults  fault rate
 9. What happens on a page fault? Distinguish demand paging, copy-on-write, and minor and major faults, with an example of each.
 10. Compute the effective access time for a fault rate of $10^{-5}$, a memory access of 100 ns and a fault time of 8 ms. What fault rate keeps the slowdown under 10%?
 11. Describe FIFO, OPT, LRU and the clock algorithm. Why is exact LRU not used for virtual memory, and what does Linux use?
-12. Reproduce the notes' example of Bélády's anomaly. Why can LRU not show the anomaly?
+12. Reproduce the classic example of Bélády's anomaly with 3 and 4 frames. Why can LRU not show the anomaly?
 13. What is a working set, and what is thrashing? How can an operating system prevent thrashing?
 14. Compare caches and virtual memory: unit, size, cost of a miss, placement, replacement and write policy. Explain each difference by the cost of a miss.
 15. What did the Linux measurements show about demand paging, copy-on-write, major faults and the TLB? Give one number for each.
@@ -631,7 +631,7 @@ frames  LRU faults  fault rate
 2. Internal: equal blocks, the unused rest of each block is wasted inside it. External: variable blocks, holes between blocks too small to use. Paging avoids external fragmentation, keeps a little internal fragmentation (on average half a page per region).
 3. First fit: first hole large enough; best fit: smallest hole large enough; worst fit: largest hole. Compaction joins the holes into one, but it copies memory and requires running programs to be relocated.
 4. Each process has its own page table that maps its contiguous virtual pages to any free frames. This solves external fragmentation and relocation, and lets each process see a contiguous memory.
-5. Offset = low 12 bits; page number = high 20 bits; entry address = PTP + page number × entry size; if valid and rights allow, physical address = frame number × 4096 + offset; otherwise page fault. At a context switch the OS loads the new process's PTP (CR3), switching the whole address space (and the TLB must be flushed or tagged).
+5. Offset = low 12 bits; page number = high 20 bits; entry address = PTBR + page number × entry size; if valid and rights allow, physical address = frame number × 4096 + offset; otherwise page fault. At a context switch the OS loads the new process's PTBR (CR3), switching the whole address space (and the TLB must be flushed or tagged).
 6. Valid: the page is in a frame; if 0, page fault, and the OS loads the page or ends the program. Rights (R/W/X, user/supervisor): a forbidden access causes a page fault, which the OS turns into SIGSEGV.
 7. A flat table would be 4 MiB per process for 32 bits and impossibly large for 64 bits; with levels, tables exist only for used regions. x86-64: 9 + 9 + 9 + 9 index bits + 12 offset bits; each table has 512 eight-byte entries = 4 KiB.
 8. A small cache of recent translations inside the CPU, needed because a page-table walk takes up to four memory reads per access. Reach = entries × page size (1,536 × 4 KiB = 6 MiB). Huge pages multiply the reach by 512 (2 MiB) or 262,144 (1 GiB).
@@ -643,7 +643,7 @@ frames  LRU faults  fault rate
 14. Line (64 B) vs page (4 KiB); KiB–MiB vs GiB; 10–100 ns vs µs–ms; set-associative vs fully associative; hardware random/pseudo-LRU vs software LRU approximations; write-through or write-back vs always write-back. A major page fault costs hundreds of thousands to millions of cycles, so the OS can afford full associativity and careful replacement, and must avoid any unnecessary disk write.
 15. Demand paging: 1 GiB mapped with 1 MiB resident until touched, then 262,144 faults. Copy-on-write: the child got a new frame (0x1802b2) only when it wrote. Major faults: 57 µs per page vs about 0.15 µs when cached. TLB: 14.9 ns vs 4.3 ns per access for 4,096 pages with 4 KiB vs 2 MiB pages.
 
-**Lab answers.** Lab 3: `0x00000FFF` → frame 7, physical `0x00007FFF`; `0x00001000` → page 1, not present: page fault; `0x00403A7C` → `0x12DC6A7C`. `0x00007F8A2F422ABC`: indices 0xFF (255), 0x28 (40), 0x17A (378), 0x22 (34), offset 0xABC. Lab 4: 2²⁰ × 4 B = 4 MiB; for 8 MiB contiguous (and aligned): 1 table at each of levels 4, 3 and 2, and 4 tables at level 1 (2,048 entries / 512), 7 pages = 28 KiB in total, in theory. Measured, VmPTE grows only by about 4–5 pages (16–20 kB): the new region usually lands next to the libraries, whose upper-level tables already exist, and VmPTE does not count the top-level table. Lab 5: one minor fault per page written by the child (262,144 for 1 GiB); fork itself must copy the page tables, about 2 MiB, which takes milliseconds; a reading child causes no copies and no faults at all. Lab 7: an exhaustive search over all strings of up to 12 references over up to 5 pages shows that 12 is the minimum length, and that, up to renaming the pages, the notes' string with 3 against 4 frames is the only such string of length 12.
+**Lab answers.** Lab 3: `0x00000FFF` → frame 7, physical `0x00007FFF`; `0x00001000` → page 1, not present: page fault; `0x00403A7C` → `0x12DC6A7C`. `0x00007F8A2F422ABC`: indices 0xFF (255), 0x28 (40), 0x17A (378), 0x22 (34), offset 0xABC. Lab 4: 2²⁰ × 4 B = 4 MiB; for 8 MiB contiguous (and aligned): 1 table at each of levels 4, 3 and 2, and 4 tables at level 1 (2,048 entries / 512), 7 pages = 28 KiB in total, in theory. Measured, VmPTE grows only by about 4–5 pages (16–20 kB): the new region usually lands next to the libraries, whose upper-level tables already exist, and VmPTE does not count the top-level table. Lab 5: one minor fault per page written by the child (262,144 for 1 GiB); fork itself must copy the page tables, about 2 MiB, which takes milliseconds; a reading child causes no copies and no faults at all. Lab 7: an exhaustive search over all strings of up to 12 references over up to 5 pages shows that 12 is the minimum length, and that, up to renaming the pages, the string of the figure, with 3 against 4 frames, is the only such string of length 12.
 
 </details>
 

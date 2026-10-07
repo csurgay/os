@@ -66,9 +66,9 @@ A memory cell alone does not tell whether it holds an instruction or data. The s
 
 | Bit | Meaning | Typical use | Shown by Linux as |
 | --- | --- | --- | --- |
-| RD | readable | code and data | `r` |
-| WR | writable | data only | `w` |
-| NE | not executable (No Execute, NX) | data, heap, stack | missing `x` |
+| R | readable | code and data | `r` |
+| W | writable | data only | `w` |
+| NX (no-execute) | not executable | data, heap, stack | missing `x` |
 
 Rule of thumb: a region is either writable or executable, never both at once. This policy is called **W^X** ("write xor execute"). A violation does not just get blocked: the CPU raises an exception (a page fault), and Linux delivers `SIGSEGV` to the process, the familiar "Segmentation fault".
 
@@ -262,19 +262,18 @@ A jump instruction changes the order of execution by overwriting the PC. A condi
 
 | Flag | Set to 1 when | x86-64 equivalent |
 | --- | --- | --- |
-| SN (sign) | the result is negative | SF |
+| S (sign) | the result is negative | SF |
 | Z (zero) | the result is zero | ZF |
-| NZ (not zero) | the result is not zero | no separate bit: "ZF = 0" |
-| OF (overflow) | the signed result does not fit in the register | OF |
+| O (overflow) | the signed result does not fit in the register | OF |
 
-Real processors store only Z; "not zero" is simply the condition Z = 0, tested by a different jump instruction (on x86-64: `jz` and `jnz`). They also keep further flags, such as carry (CF), which is the unsigned counterpart of OF.
+The condition "not zero" is Z = 0; it has no flag of its own and is tested by a separate jump instruction (on x86-64: `jz` and `jnz`). Processors also keep further flags, such as carry (CF), the unsigned counterpart of the overflow flag.
 
 **Unconditional jump: JMP 1000.** During execute, PC ← 1000. The next fetch takes the instruction from address 1000.
 
-**Conditional jump: JMZ 900** (jump if zero). The execute phase checks the Z flag:
+**Conditional jump: JZ 900** (jump if zero). The execute phase checks the Z flag:
 
 - **yes** (Z = 1, the previous result was zero): PC ← 900, and the program continues at address 900;
-- **no** (Z = 0): the PC does not change. Since the fetch already advanced it, the program continues with the instruction after JMZ.
+- **no** (Z = 0): the PC does not change. Since the fetch already advanced it, the program continues with the instruction after JZ.
 
 Loops and branches (`if`, `while`, `for`) are all implemented with conditional jumps like this at machine level.
 
@@ -297,7 +296,7 @@ An interrupt signals an external event, and the CPU only takes it into account a
 
 The sequence:
 
-1. A device, for example the hardware **timer**, activates the interrupt request line (**IR**).
+1. A device, for example the hardware **timer**, activates the interrupt request line (**IRQ**).
 2. The request is recorded as pending (in our teaching CPU, as a bit in the SR).
 3. The CPU finishes the current instruction.
 4. In the Check Interrupt step it detects the pending request. It saves the PC and SR, switches to privileged (kernel) mode, and loads the address of the interrupt handler into the PC.
@@ -312,10 +311,10 @@ If no request is pending, the cycle simply restarts with the next fetch.
 **Why does this matter to the operating system?** The timer interrupt guarantees that the OS regularly regains control, even if a program gets stuck in an infinite loop. Time sharing and preemptive scheduling are built on this: in the interrupt handler, the OS decides which process runs next (Silberschatz et al., 2018).
 
 <details>
-<summary><b>Explained simply:</b> timer, IR, kernel mode, masking, RFLAGS, IF, system call, time sharing, preemptive scheduling, infinite loop</summary>
+<summary><b>Explained simply:</b> timer, IRQ, kernel mode, masking, RFLAGS, IF, system call, time sharing, preemptive scheduling, infinite loop</summary>
 
 - **Timer:** a hardware clock that can send an interrupt at regular intervals.
-- **IR** (Interrupt Request): the signal a device sends to ask for an interrupt, like raising your hand.
+- **IRQ** (Interrupt Request): the signal a device sends to ask for an interrupt, like raising your hand.
 - **Kernel mode** (privileged mode): the CPU mode in which everything is allowed. Only the operating system's core, the **kernel**, runs in it; ordinary programs run in the restricted user mode.
 - **Masking:** telling the CPU to ignore interrupts for a while, like "do not disturb" on a phone. The requests wait; they are not lost.
 - **RFLAGS, IF:** RFLAGS is the x86-64 status register; IF (Interrupt enable Flag) is the bit in it that switches ordinary interrupts on or off.
@@ -348,9 +347,9 @@ Everything above is a simplified model. This section shows where each idea appea
 | MAR, MBR, CIR | internal parts of the CPU's front end and memory pipeline | no |
 | 8-bit instruction, 4-bit opcode | 1 to 15 bytes per instruction | yes (`objdump`) |
 | LD n, ADD n | `mov $n, %eax`, `add $n, %eax` | yes |
-| JMP, JMZ | `jmp`, `jz` (also written `je`) | yes |
-| RD / WR / NE bits | page table bits, NX supported by the CPU (`nx` in `/proc/cpuinfo`) | via `/proc/<pid>/maps` |
-| Timer → IR | local APIC timer → "Local timer interrupts" | via `/proc/interrupts` |
+| JMP, JZ | `jmp`, `jz` (also written `je`) | yes |
+| R / W / NX bits | page table bits, NX supported by the CPU (`nx` in `/proc/cpuinfo`) | via `/proc/<pid>/maps` |
+| Timer → IRQ | local APIC timer → "Local timer interrupts" | via `/proc/interrupts` |
 
 <details>
 <summary><b>Explained simply:</b> RIP, RAX, RFLAGS, pipeline, page table, PID, /proc, local APIC</summary>
@@ -374,7 +373,7 @@ The same program, LD 3 then ADD 2, with a conditional jump added. The result bec
 _start:
     mov  $3, %eax        # LD 3   (immediate operand)
     add  $2, %eax        # ADD 2
-    jz   done            # JMZ: jump if ZF = 1
+    jz   done            # JZ: jump if ZF = 1
     mov  %eax, %edi      # exit code = result
 done:
     mov  $60, %eax       # system call number 60 = exit
@@ -437,7 +436,7 @@ $ gdb -q ./ldadd
 | `add $2, %eax` | 0x401008 | 5 | `[ PF IF ]` |
 | `je done` (not taken) | 0x40100a | 5 | `[ PF IF ]` |
 
-The result is 5, not zero, so ZF stays 0 and the jump is not taken: RIP simply moves on to the next instruction, exactly like the "no" branch of JMZ. (PF is the parity flag: the low byte of the result, 5 = 101₂, has an even number of 1 bits.)
+The result is 5, not zero, so ZF stays 0 and the jump is not taken: RIP simply moves on to the next instruction, exactly like the "no" branch of JZ. (PF is the parity flag: the low byte of the result, 5 = 101₂, has an even number of 1 bits.)
 
 <details>
 <summary><b>Explained simply:</b> debugger, gdb, starti, stepi, EFLAGS, PF, 101₂</summary>
@@ -466,7 +465,7 @@ $ ./direct
 Segmentation fault
 ```
 
-Address 3 is not mapped into the process, so the MMU raises a page fault, and the kernel kills the process with `SIGSEGV`. This is the crossed-out arrow from our worked example, made real: the same "3" means a value in one addressing mode and an address in the other.
+Address 3 is not mapped into the process, so the MMU raises a page fault, and the kernel kills the process with `SIGSEGV`. This is the [addressing-mode](#addressing-modes-one-character-makes-the-difference) difference of the LD 3 example, on a real CPU: the same "3" is a value in one mode and an address in the other.
 
 <details>
 <summary><b>Explained simply:</b> mapped, kernel kills the process</summary>
@@ -609,11 +608,11 @@ Each context switch happens inside the kernel, reached through an interrupt or a
 1. Address 0 in memory holds 19. Is it an instruction or data? What does the answer depend on?
 2. Why is the PC advanced during the fetch phase rather than at the end of execution?
 3. What would the ACC hold after the first instruction if LD used direct addressing?
-4. JMZ 900 is at address 20. What will the PC be after it executes if the previous result was 0, and what if it was 5?
+4. JZ 900 is at address 20. What will the PC be after it executes if the previous result was 0, and what if it was 5?
 5. Why is the PC not connected directly to the address bus? What is the role of the MAR?
 6. Why does the CPU check for interrupts only at the end of the cycle?
 7. Why could preemptive scheduling not work without a timer interrupt?
-8. What does the NE (NX) bit prevent, and what can it not prevent?
+8. What does the NX bit prevent, and what can it not prevent?
 9. On x86-64 the instruction at 0x401005 is 3 bytes long. What will RIP be after it is fetched? Why can a real CPU not simply use "PC + 1"?
 10. `mov $3, %eax` and `mov 3, %eax` differ by one character. Why does only the second one crash?
 11. In `/proc/self/maps`, the heap is `rw-p`. What would happen if a program jumped into its heap? Which Linux mechanism reports the error to the program?

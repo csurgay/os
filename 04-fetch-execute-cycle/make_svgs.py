@@ -1,4 +1,4 @@
-"""Generate the two standalone SVG figures (English labels) for the GitHub Markdown version."""
+"""Generate the SVG figures for the Fetch-Execute Cycle lecture."""
 
 STYLE = """<style>
   .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
@@ -120,7 +120,7 @@ def arch():
         (L1, R2, False, "ALU", "arithmetic and", "logic unit"),
         (L2, R2, False, "Decoder", "opcode →", "control signals"),
         (L3, R2, False, "CU", "control unit:", "sequencing"),
-        (L1, R3, False, "SR", "status bits:", "SN, Z, NZ, OF"),
+        (L1, R3, False, "SR", "status bits:", "S, Z, O (and more)"),
         (L2, R3, True, "CIR", "current", "instruction"),
         (L3, R3, True, "MBR", "memory buffer", "register"),
     ]
@@ -130,11 +130,11 @@ def arch():
         p.append(text(x + 12, y + 44, a, 11.5, cls="quiet"))
         p.append(text(x + 12, y + 60, b, 11.5, cls="quiet"))
     p.append(text(c1 + 8, R2 + BH + 21, "flags", 11.5, cls="quiet"))
-    p.append(text(c1 + 8, 414, "IR", 11.5, 600))
+    p.append(text(c1 + 8, 414, "IRQ", 11.5, 600))
     # timer
     p.append(rect(L1, 428, BW, 56))
     p.append(text(L1 + 12, 452, "Timer", 13, 600))
-    p.append(text(L1 + 12, 470, "periodic IR", 11.5, cls="quiet"))
+    p.append(text(L1 + 12, 470, "periodic IRQ", 11.5, cls="quiet"))
     # memory
     p.append(rect(M0, 56, MW, 340))
     p.append(f'<line x1="{M0+36}" y1="96" x2="{M0+36}" y2="316" class="grid"/>')

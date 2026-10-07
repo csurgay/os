@@ -64,7 +64,7 @@ The part of a program that works on shared data is its **critical section**. A c
 
 It must also work whatever the relative speeds of the processes, and wherever an interrupt strikes.
 
-The naive lock in the lecture notes fails the first requirement because the **test** (`while (S == 0)`) and the **set** (`S = 0`) are two separate steps; an interrupt between them lets both processes in. The notes' answer is **IFSET**: a hardware instruction that tests and sets in one indivisible (atomic) step, `xchg` on x86, which the interrupts lecture used to build a spinlock.
+The naive lock `while (S == 0); S = 0;` fails the first requirement because the **test** (`while (S == 0)`) and the **set** (`S = 0`) are two separate steps; an interrupt between them lets both processes in. The solution is a **test-and-set** instruction: a hardware instruction that tests and sets in one indivisible (atomic) step, `xchg` on x86, which the interrupts lecture used to build a spinlock.
 
 ### Peterson's algorithm: a lock in plain software
 
@@ -105,7 +105,7 @@ To be fast, each core puts its writes into a private **store buffer** and contin
 
 ## Three layers of mutual exclusion
 
-The lecture notes draw a three-layer stack: **applications** (Java, C++) use the **operating system's** mutex, which is built on the **hardware's** IFSET.
+Synchronisation is built in three layers: **applications** (Java, C++) use the **operating system's** mutex, which is built on the **hardware's** atomic test-and-set (or compare-and-swap) instruction.
 
 ![Application: synchronized, std::mutex; operating system: mutex, semaphore, futex; hardware: xchg, lock cmpxchg, fences](sync-layers.svg)
 
@@ -184,7 +184,7 @@ Two details matter. `pthread_cond_wait` releases the mutex while sleeping and ta
 
 ## Deadlock
 
-The lecture notes end the page with a one-lane bridge: two cars meet in the middle, and neither can go on. Seen as two halves, the bridge is two resources, and each car holds one and waits for the other:
+A classic illustration is a one-lane bridge: two cars meet in the middle, and neither can go on. Seen as two halves, the bridge is two resources, and each car holds one and waits for the other:
 
 ![Car A holds the west half and wants the east; car B holds the east half and wants the west; the resource graph has a cycle](bridge-deadlock.svg)
 
@@ -201,7 +201,7 @@ A **resource-allocation graph** (Holt, 1972) makes this visible: an arrow from a
 
 There are four strategies (Silberschatz et al., 2018; Stallings, 2018):
 
-- **Prevention:** make one of the four conditions impossible. The most practical is to break **circular wait** with a global **lock order**: every program takes the west half before the east half, so no cycle can form. Breaking **hold and wait** means taking all resources at once (the semaphore "traffic light" in the notes lets one car onto the *whole* bridge); breaking **no preemption** means taking resources away (possible for the CPU or memory, not for a half-written file); breaking **mutual exclusion** means making a resource shareable (spooling a printer).
+- **Prevention:** make one of the four conditions impossible. The most practical is to break **circular wait** with a global **lock order**: every program takes the west half before the east half, so no cycle can form. Breaking **hold and wait** means taking all resources at once (a semaphore acting as a "traffic light" lets one car onto the *whole* bridge); breaking **no preemption** means taking resources away (possible for the CPU or memory, not for a half-written file); breaking **mutual exclusion** means making a resource shareable (spooling a printer).
 - **Avoidance:** the system knows in advance how much of each resource each process may need, and grants a request only if the resulting state is **safe**, that is, there is still an order in which every process can obtain its maximum and finish. **Dijkstra's banker's algorithm** (Dijkstra, 1965) checks this, like a bank that lends only if it can still satisfy all its customers' credit lines ([Linux section](#avoidance-the-bankers-algorithm)). It needs the maximum claims in advance, so general-purpose operating systems rarely use it.
 - **Detection and recovery:** let deadlocks happen, find cycles in the wait-for graph, and break them by aborting a victim or rolling back its work. Database systems do exactly this with transactions.
 - **Ignoring the problem** (the "ostrich algorithm"): general-purpose operating systems, Linux and Windows included, do not detect deadlocks between user processes; it is the programmer's job to avoid them, and the user's job to kill a hung program. Inside the Linux kernel, the **lockdep** validator records the order in which every class of lock is taken and warns as soon as two code paths take two locks in opposite orders, even if the deadlock has never actually happened (Linux kernel documentation, n.d.-a).
@@ -234,15 +234,15 @@ The classic teaching example is Dijkstra's **dining philosophers** (Dijkstra, 19
 
 ## The process state space
 
-A **process** is a program in execution: in the notes' formula, *process = running program + context*. The **context** is everything needed to stop the process and continue it later as if nothing had happened: the CPU registers (including the program counter), the memory map, open files, the scheduling state. The OS keeps it in a **process control block**; in Linux, a `struct task_struct`. Linux creates a process with `fork()`, which duplicates the calling process, and usually loads a new program into the copy with `exec()`.
+A **process** is a program in execution: *process = running program + context*. The **context** is everything needed to stop the process and continue it later as if nothing had happened: the CPU registers (including the program counter), the memory map, open files, the scheduling state. The OS keeps it in a **process control block**; in Linux, a `struct task_struct`. Linux creates a process with `fork()`, which duplicates the calling process, and usually loads a new program into the copy with `exec()`.
 
 ![Process state diagram: ready, running, waiting in the short-term region; suspended ready and suspended waiting in the medium-term region; program and zombie at the long-term level](process-states.svg)
 
-The diagram follows the lecture notes:
+The diagram shows the seven-state model:
 
 - **Ready** (many processes): able to run, waiting only for a CPU. **Running** (one process per CPU core): executing. The **dispatcher** moves a process from ready to running; the timer interrupt (time slice over) or the process itself (yield) moves it back.
 - **Waiting** (often also called *blocked*): the process waits for an event, the end of an I/O operation, data in a buffer, a semaphore. When the event happens (an interrupt, a V operation), it becomes ready again, not running: it has to wait for the CPU like everyone else.
-- **Suspended ready** and **suspended waiting** (the notes' *blocked ready* and *blocked waiting*; Stallings calls them Ready/Suspend and Blocked/Suspend): the process has been moved out of memory (swapped out) to make room for others. A suspended waiting process whose event happens becomes suspended ready; it must be swapped in before it can run.
+- **Suspended ready** and **suspended waiting** (Stallings calls them Ready/Suspend and Blocked/Suspend): the process has been moved out of memory (swapped out) to make room for others. A suspended waiting process whose event happens becomes suspended ready; it must be swapped in before it can run.
 - **Zombie**: the process has ended (by `exit()` or because it was killed), but its exit status is kept until its parent collects it with `wait()`. Then the last trace is removed: the parent **reaps** the zombie.
 
 The diagram is divided into three regions by **how often** decisions are made (Stallings, 2018):
@@ -294,17 +294,17 @@ The short-term scheduler chooses, from the ready queue, the process to run next.
 - **response time** (from arrival to the first time the job runs) matters for interactive users;
 - **fairness** and the absence of starvation matter for everyone.
 
-The lecture notes list three classic algorithms:
+Three classic algorithms:
 
 - **FIFO** (first in, first out; also FCFS, first come, first served): run each job to completion in arrival order. Simple and fair in a sense, but one long job makes everybody behind it wait (the *convoy effect*).
-- **SJF** (shortest job first): run the shortest ready job next. For a set of jobs that are all available at the start, it gives the minimum average waiting time of all non-preemptive algorithms. Its preemptive form, **SRTF** (shortest remaining time first), switches to a newly arrived job if it is shorter than what remains of the current one. Two catches: job lengths are not known in advance, so they are predicted, usually by an exponential average of the earlier CPU bursts, $\tau_{n+1} = \alpha\, t_n + (1-\alpha)\,\tau_n$; and long jobs can starve. The notes add a cost: choosing the shortest of $n$ ready jobs by scanning the list takes $O(n)$ time at every decision; keeping the queue sorted in a heap or tree makes it $O(\log n)$.
+- **SJF** (shortest job first): run the shortest ready job next. For a set of jobs that are all available at the start, it gives the minimum average waiting time of all non-preemptive algorithms. Its preemptive form, **SRTF** (shortest remaining time first), switches to a newly arrived job if it is shorter than what remains of the current one. Two catches: job lengths are not known in advance, so they are predicted, usually by an exponential average of the earlier CPU bursts, $\tau_{n+1} = \alpha\, t_n + (1-\alpha)\,\tau_n$; and long jobs can starve. There is also a cost: choosing the shortest of $n$ ready jobs by scanning the list takes $O(n)$ time at every decision; keeping the queue sorted in a heap or tree makes it $O(\log n)$.
 - **RR** (Round Robin): FIFO with a time limit. Each job runs for at most one **time slice** (quantum) $q$, then goes to the back of the ready queue. No job waits more than $(n-1)\,q$ for its turn, which gives good response times.
 
 ![Gantt charts of the five example jobs under FIFO, SJF, SRTF and Round Robin with quantum 2](gantt.svg)
 
 The examples follow two conventions, which hand calculations must also use: a job that arrives at the moment another is preempted enters the ready queue *before* the preempted job, and ties go to the job that has been waiting longer.
 
-**The cost of the time slice.** Every switch costs time $s$ for the OS: saving and restoring registers, running the scheduler, and refilling caches. With quantum $q$, the share of CPU time left for the applications is the notes' **efficiency** (*hatásfok*):
+**The cost of the time slice.** Every switch costs time $s$ for the OS: saving and restoring registers, running the scheduler, and refilling caches. With quantum $q$, the share of CPU time left for the applications is the **efficiency**:
 
 $$\eta = \frac{\text{application time}}{\text{application time} + \text{OS time}} = \frac{q}{q + s}$$
 
@@ -329,7 +329,7 @@ A small $q$ gives quick responses but low efficiency; a large $q$ gives high eff
 
 ## Linux scheduling
 
-Linux's CPU scheduler has been rewritten several times, each time for the problem the notes point at, the cost of choosing:
+Linux's CPU scheduler has been rewritten several times, each time for the same problem, the cost of choosing:
 
 - **Linux 2.4** scanned the whole run queue at every decision to compute each task's "goodness": an $O(n)$ scheduler that slowed down with many processes.
 - **Linux 2.6** (2003) brought Ingo Molnár's **O(1) scheduler**: an array of 140 priority queues with a bitmap, so finding the highest-priority task took constant time; heuristics guessed which tasks were interactive.
@@ -492,11 +492,11 @@ $ objdump -d /usr/lib/x86_64-linux-gnu/libc.so.6 --start-address=0xa00d0 --stop-
    a0121:	f0 0f b1 17          	lock cmpxchg %edx,(%rdi)
 ```
 
-The three layers of the notes, APPL, OS and HW, appear in one call chain.
+The three layers, application, operating system and hardware, appear in one call chain.
 
 ### The bridge: a deadlock you can watch
 
-`bridge.c` models the notes' one-lane bridge as two mutexes, the west and the east half. A car going east takes the west half, drives for 1 ms, then takes the east half; a car going west does the opposite. In `naive` mode a car gives up and backs off if it waits more than 2 seconds for the far half; `ordered` makes every car take the west half first; `semaphore` lets one car at a time onto the whole bridge:
+`bridge.c` models the one-lane bridge as two mutexes, the west and the east half. A car going east takes the west half, drives for 1 ms, then takes the east half; a car going west does the opposite. In `naive` mode a car gives up and backs off if it waits more than 2 seconds for the far half; `ordered` makes every car take the west half first; `semaphore` lets one car at a time onto the whole bridge:
 
 ```console
 $ gcc -O2 -pthread -o bridge bridge.c
@@ -599,7 +599,7 @@ $ taskset -c 0 ./cswitch
 200000 round trips: 1.41 us per switch (including the pipe system calls)
 ```
 
-About 1.4 to 1.7 µs per switch, including a `write` and a `read` system call. With the 4 ms that two CPU-bound tasks actually run between switches, the notes' efficiency is $\eta = 4000 / (4000 + 1.5) \approx 99.96\%$. The direct cost of switching is small; the indirect cost, refilling the caches that the other process has evicted, is usually larger and is not included in this measurement.
+About 1.4 to 1.7 µs per switch, including a `write` and a `read` system call. With the 4 ms that two CPU-bound tasks actually run between switches, the efficiency is $\eta = 4000 / (4000 + 1.5) \approx 99.96\%$. The direct cost of switching is small; the indirect cost, refilling the caches that the other process has evicted, is usually larger and is not included in this measurement.
 
 ### Scheduling algorithms side by side
 
@@ -675,7 +675,7 @@ Round-robin real-time tasks get 100 ms slices (Linux man-pages project, 2024), a
 
 ## Review questions
 
-1. List the three requirements of a correct solution to the critical-section problem, and show which one the notes' naive `while (S == 0); S = 0;` lock violates, with an interleaving.
+1. List the three requirements of a correct solution to the critical-section problem, and show which one the naive `while (S == 0); S = 0;` lock violates, with an interleaving.
 2. Explain Peterson's algorithm. Why does it work on a single-core machine but fail on a modern multi-core CPU, and how is this fixed?
 3. Describe the three layers of mutual exclusion (hardware, OS, language) with one example each. What is a futex, and why does an uncontended mutex not need a system call?
 4. When is a spinlock better than a sleeping mutex, and when worse? Use the measurements of `counter` with 2 and 4 threads.

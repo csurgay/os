@@ -212,7 +212,7 @@ def dmcache():
     p.append(rect(620, 236, 230, 92, "c2", rx=8)); p.append(text(632, 258, "MISS: load the whole line", 12, 600))
     p.append(text(632, 278, "from RAM; if D = 1, first write", 11, cls="quiet")); p.append(text(632, 294, "the old line back (write-back)", 11, cls="quiet"))
     p.append(text(632, 312, "then set V = 1, D = 0, new tag", 11, cls="quiet"))
-    p.append(text(24, 360, "The lecture notes' toy example: 4 GiB of RAM (32-bit addresses) and a 16 MiB cache of 1024 lines of 16 KiB. Real caches use 64-byte lines", 11.5, cls="quiet"))
+    p.append(text(24, 360, "A toy example: 4 GiB of RAM (32-bit addresses) and a 16 MiB cache of 1024 lines of 16 KiB. Real caches use 64-byte lines", 11.5, cls="quiet"))
     p.append(text(24, 378, "and far more lines; the mechanism is the same. V (valid): the line holds real data; D (dirty): it was written and differs from RAM.", 11.5, cls="quiet"))
     return svg(880, 394, title, "\n".join(p))
 

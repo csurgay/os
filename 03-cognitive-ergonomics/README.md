@@ -25,12 +25,12 @@ By the end, students will be able to:
 - apply the Fitts and Hick–Hyman laws and colour-contrast calculations on Linux.
 
 <details>
-<summary><b>Explained simply:</b> ergonomics, cognitive, user interface, MMI, HCI, GUI, CLI, operating system shell</summary>
+<summary><b>Explained simply:</b> ergonomics, cognitive, user interface, HMI, HCI, GUI, CLI, operating system shell</summary>
 
 - **Ergonomics:** the science of fitting tools and work to people, instead of forcing people to fit the tools. A chair that supports your back is ergonomic.
 - **Cognitive:** to do with thinking: seeing, remembering, deciding, learning.
 - **User interface (UI):** everything through which a person and a machine communicate: the screen, buttons, sounds, keyboard, voice.
-- **MMI** (man–machine interface), also **HMI** (human–machine interface): an older, engineering name for the user interface.
+- **HMI** (human–machine interface): the engineering term for a user interface, common in industrial control.
 - **HCI** (human–computer interaction): the field of research that studies how people use computers and how to make that easier.
 - **GUI** (graphical user interface): using a computer through windows, icons and a pointer.
 - **CLI** (command-line interface): using a computer by typing text commands.
@@ -47,7 +47,7 @@ Two arguments make this an operating-systems topic, not only a design topic:
 - **The user is part of the system.** Several quality criteria from the [previous lecture](../02-quality-and-enterprise-linux/#what-makes-an-operating-system-good) are about people: consistent (the same things work the same way everywhere), forgiving (mistakes can be undone), convenient (easy to install, learn and use). A wrong command, a misread warning or a confusing dialog can take a system down just as a failed disk can; an interface that makes errors likely lowers availability.
 - **The operating system sets the conventions.** Applications inherit the look, the shortcuts, the dialogs, the notification system and the accessibility features from the OS and its design guidelines. When a platform changes them, millions of programs change their behaviour at once, which is why the design guidelines of Apple, Google, Microsoft and GNOME carry so much weight.
 
-The rest of the lecture follows the nine topics of the lecture notes, after a short history of how people have talked to operating systems, and closes with three topics that any OS interface must handle: feedback and response time, errors and interruptions, and accessibility.
+The rest of the lecture covers nine topics, after a short history of how people have talked to operating systems, and closes with three topics that any OS interface must handle: feedback and response time, errors and interruptions, and accessibility.
 
 ## From teletype to glasses: how OS interfaces evolved
 
@@ -129,7 +129,7 @@ Interfaces use chunking everywhere:
 - **Menu grouping.** Commands are grouped under a few headings (File, Edit, View, Help), so the user first chooses among four headings, then among four items, instead of scanning sixteen.
 - **Hierarchical design.** Folders in folders, settings in categories, the start menu grouped by application type.
 
-Two common misreadings deserve correction. First, Miller's limit concerns what must be **held in memory**, not what can be **seen**: a menu that is visible on screen does not have to be memorised, so "never more than seven menu items" is a myth. Second, deeper is not always better. Every level of a hierarchy is one more decision and one more chance to guess wrongly where something is. In a study of web link hierarchies with 512 items, three levels were slower than two, and a medium combination of depth and breadth beat the broadest structure tested (Larson & Czerwinski, 1998); menu experiments of the 1980s reached similar conclusions. The Hick–Hyman law, below, shows why splitting a menu into levels does not reduce the total amount of choosing.
+Two limits apply. First, Miller's limit concerns what must be **held in memory**, not what can be **seen**: a menu that is visible on screen does not have to be memorised, so "never more than seven menu items" is a myth. Second, deeper is not always better. Every level of a hierarchy is one more decision and one more chance to guess wrongly where something is. In a study of web link hierarchies with 512 items, three levels were slower than two, and a medium combination of depth and breadth beat the broadest structure tested (Larson & Czerwinski, 1998); menu experiments of the 1980s reached similar conclusions. The Hick–Hyman law, below, shows why splitting a menu into levels does not reduce the total amount of choosing.
 
 **The Hick–Hyman law.** The time to choose one of $n$ equally likely options grows with the information in the choice, not with $n$ itself: $T = a + b \log_2(n+1)$ (Hick, 1952; Hyman, 1953). Choosing one of $n$ carries $\log_2 n$ bits; Hick's $+1$ counts the additional possibility that no stimulus appears at all. So doubling the number of options adds a roughly constant time. The slope $b$ depends strongly on how natural the mapping between what you see and what you do is: it is large for arbitrary codes and small for highly compatible ones, such as pressing the key whose digit you see. The law applies to choosing among known options; it does not apply to searching an unfamiliar list, where time grows roughly linearly with the length.
 
@@ -147,14 +147,14 @@ Two common misreadings deserve correction. First, Miller's limit concerns what m
 
 ## III. Affordances: the object tells you how to use it
 
-The psychologist James Gibson called the actions that an environment offers an animal its **affordances**: a chair affords sitting, a handle affords pulling (Gibson, 1979). Donald Norman brought the word into design and later sharpened it: the affordance is the possible action itself, while a **signifier** is the perceivable clue that tells people the action is possible and where to do it (Norman, 2013). The lecture notes list the classic examples:
+The psychologist James Gibson called the actions that an environment offers an animal its **affordances**: a chair affords sitting, a handle affords pulling (Gibson, 1979). Donald Norman brought the word into design and later sharpened it: the affordance is the possible action itself, while a **signifier** is the perceivable clue that tells people the action is possible and where to do it (Norman, 2013). Classic examples:
 
 | Object | Action it signals |
 |---|---|
 | flat plate | push |
 | knob | turn |
 | slot | insert |
-| door handle | pull (a vertical pull bar) or push (a flat push plate) |
+| vertical pull bar | pull |
 | knurling (a fine grooved texture) | grip here |
 
 A door with a pull handle that must be pushed is so common a failure that designers call it a "Norman door". The fix is not a "PUSH" sign but a flat plate, which can only be pushed.
@@ -250,7 +250,7 @@ That such steering can work at scale was suggested, controversially, by an exper
 
 How large the harm of such systems is remains disputed, and a fair account has to show both sides. The 2020 documentary *The Social Dilemma*, in which former employees of large platforms describe engagement-optimised design as manipulation (Orlowski, 2020), brought this argument to a wide audience; Facebook answered that the film gave a distorted, sensationalist picture of how its products work (Facebook, 2020). Large studies have found the average association between adolescents' digital technology use and their well-being to be negative but very small, explaining at most 0.4% of its variation (Orben & Przybylski, 2019). Others argue that smartphones and social media are a major cause of the rise in teenage anxiety and depression since the early 2010s, and that averages hide serious effects on vulnerable groups (Haidt, 2024); critics reply that the evidence for such a causal role is weak (Odgers, 2024). The debate continues.
 
-**The operating system's role.** Phone operating systems became the referee between apps and the user's attention. Since 2018, iOS (Screen Time) and Android (Digital Wellbeing) report how much time each app takes and can limit it (Apple, 2018); focus modes and notification controls decide which app may interrupt when. Law has followed: the EU's Digital Services Act forbids online platforms to design their interfaces in a way that "deceives or manipulates" users (so-called **dark patterns**; Regulation (EU) 2022/2065, Art. 25), and the AI Act has, since 2 February 2025, prohibited AI systems that infer the emotions of people at the workplace or in education, except for medical or safety reasons (Regulation (EU) 2022/2065, Art. 25), and the AI Act has, since 2 February 2025, prohibited AI systems that infer the emotions of people at the workplace or in education, except for medical or safety reasons (Regulation (EU) 2024/1689, Art. 5(1)(f)).
+**The operating system's role.** Phone operating systems became the referee between apps and the user's attention. Since 2018, iOS (Screen Time) and Android (Digital Wellbeing) report how much time each app takes and can limit it (Apple, 2018); focus modes and notification controls decide which app may interrupt when. Law has followed: the EU's Digital Services Act forbids online platforms to design their interfaces in a way that "deceives or manipulates" users (so-called **dark patterns**; Regulation (EU) 2022/2065, Art. 25), and the AI Act has, since 2 February 2025, prohibited AI systems that infer the emotions of people at the workplace or in education, except for medical or safety reasons (Regulation (EU) 2024/1689, Art. 5(1)(f)).
 
 <details>
 <summary><b>Explained simply:</b> affect, affective state, affective computing, engagement, feed, FOMO, informed consent, expression of concern, dark pattern, objective function, Digital Services Act, AI Act</summary>
@@ -274,7 +274,7 @@ Eye contact is one of the strongest social signals. Looking someone in the eye b
 
 **The video-call problem.** In a video call, you look at the other person's face on the screen, while the camera sits above it, so to them you seem to look slightly down and away. Mutual gaze is lost, on both sides.
 
-**Augmented gaze.** Software now corrects this: it redraws the eyes in the video so that they seem to look into the camera. Apple introduced FaceTime **Eye Contact** with iOS 14 in 2020 (AppleInsider, 2020); NVIDIA added an Eye Contact effect to its Broadcast software in January 2023, which keeps natural blinking and switches off when the user looks too far away (NVIDIA, 2023); Windows offers a similar effect (Windows Studio Effects) on PCs with AI accelerators. Apple Vision Pro goes further in the other direction: its outer display (**EyeSight**) shows a rendering of the wearer's eyes to people nearby, so that they can tell when the wearer is looking at them (Apple, n.d.-b).
+**Gaze correction.** Software now corrects this: it redraws the eyes in the video so that they seem to look into the camera. Apple introduced FaceTime **Eye Contact** with iOS 14 in 2020 (AppleInsider, 2020); NVIDIA added an Eye Contact effect to its Broadcast software in January 2023, which keeps natural blinking and switches off when the user looks too far away (NVIDIA, 2023); Windows offers a similar effect (Windows Studio Effects) on PCs with AI accelerators. Apple Vision Pro goes further in the other direction: its outer display (**EyeSight**) shows a rendering of the wearer's eyes to people nearby, so that they can tell when the wearer is looking at them (Apple, n.d.-b).
 
 **Awkward side effects.** Corrected gaze is a constant stare: the corrected person never looks away, which in a live conversation can feel uncomfortable, even uncanny. It also changes what eye contact *means*: the other side sees attention that may not be there, for example while the speaker reads a script. Gaze correction is a small, real example of the questions affective computing raises about authenticity and consent. And when gaze becomes an **input**, as in a headset, a new problem appears: people look at things without meaning to select them, the so-called **Midas touch** problem, which is why Vision Pro needs a separate pinch to confirm (Jacob, 1990).
 
@@ -315,8 +315,6 @@ Mori drew the curve from intuition, not from measurements. Later experiments sup
 
 ## IX. Ethology: robots modelled on the dog, not on the human
 
-> *The lecture notes end with "IX. Ethology ..." This section gives one direction in which the topic can be continued, from the Hungarian school of ethology.*
-
 **Ethology** is the biological study of animal behaviour in natural settings. Hungarian researchers, notably the dog-cognition group at Eötvös Loránd University in Budapest, have proposed applying it to robots. Their **ethorobotics** approach starts from the uncanny valley and reaches a different conclusion than "make robots more human" (Miklósi et al., 2017):
 
 - **The dog as a model.** Dogs have lived with humans for thousands of years without looking like us. What makes them good partners is not appearance but **social competence**: attachment, attention to human gaze and pointing, communication, cooperation and learning by observation.
@@ -337,7 +335,7 @@ For operating systems, the lesson extends to software agents. A voice assistant 
 
 </details>
 
-## Beyond the notes: feedback, errors, interruptions, accessibility
+## Feedback, errors, interruptions, accessibility
 
 Three further topics belong to every operating system's interface, and each connects the nine topics above to the machinery of later lectures.
 

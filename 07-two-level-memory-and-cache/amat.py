@@ -4,7 +4,7 @@
 Usage: python3 amat.py TC TM            table for hit rates 50 ... 99.9 %
        python3 amat.py TC TM H          one hit rate (0..1)
 Times in any unit (ns). Note: some books charge a miss Tc + Tm (the cache is
-checked first); the formula here charges Tm, as in the lecture notes.
+checked first); the simpler formula here charges Tm.
 """
 import sys
 

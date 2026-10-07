@@ -1,4 +1,4 @@
-"""Generate the SVG figures for the Interrupts lecture (English labels).
+"""Generate the SVG figures for the Interrupts lecture.
 
 Same look as the Fetch-Execute Cycle figures: light/dark aware, system font, quiet strokes, one accent.
 """
@@ -107,7 +107,7 @@ def processing():
     hw = [
         ("1  Device raises interrupt request", "e.g. transfer finished, timer expired", False),
         ("2  CPU finishes current instruction", "the instruction cycle is atomic", False),
-        ("3  CPU acknowledges, device clears IR", "the request will not be taken twice", False),
+        ("3  CPU acknowledges the request", "cleared later by the handler (EOI)", False),
         ("4  CPU saves PC and PSW", "pushed on the stack (LIFO)", True),
         ("5  CPU loads new PC from vector", "interrupt vector table → handler address", False),
     ]
@@ -224,8 +224,8 @@ def race():
         return out
 
     p += panel(70, "A. The lock itself: test and take are two separate steps (S = 1 means free)",
-               [("P1", "S == 0 ?"), ("P2", "S == 0 ?"), ("P1", "S = 0"), ("P2", "S--")],
-               "S", ["1", "1", "0", "-1"], 3,
+               [("P1", "S == 0 ?"), ("P2", "S == 0 ?"), ("P1", "S = 0"), ("P2", "S = 0")],
+               "S", ["1", "1", "0", "0"], 3,
                "Both saw S = 1, so both entered. Dashed arrows: a timer interrupt switched to the other process.")
     p += panel(260, "B. Inside the critical section: another process changes X in between",
                [("P1", "X := 0"), ("P2", "X := 1"), ("P1", "X++")],
@@ -302,7 +302,7 @@ def latency():
         x += w + 12
     # device signal arrow
     p.append(path(f"M40 72V{y - 4}", m))
-    p.append(text(48, 72, "device raises IR", 11.5, 600))
+    p.append(text(48, 72, "device raises IRQ", 11.5, 600))
     # brace for latency (first four)
     lx0 = 40
     lx1 = xs[3][0] + xs[3][1]

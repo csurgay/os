@@ -37,7 +37,7 @@ No memory technology is at the same time big, fast and cheap. The fastest memori
 
 ![Registers, cache, RAM, SSD and hard disk, optical disc and tape, with access times and capacities; price per byte grows upwards](memory-hierarchy.svg)
 
-The lecture notes give round numbers for the levels: registers about 1 ns and less than a kilobyte, cache about 3 ns and megabytes, RAM about 10 ns and gigabytes, hard disks milliseconds and terabytes, tape minutes and practically unlimited capacity. The order of magnitude between levels is what matters, and the measurements on this lecture's machine ([Linux section](#the-hierarchy-measured)) show it clearly: about 1.6 ns for the first-level cache, 4.4 ns for the second, about 25 ns for the third, and 110–180 ns for RAM. The RAM figure is larger than the notes' 10 ns, and this is an important point in itself. Over the decades, processors became fast much more quickly than DRAM became quick to answer: a CPU at 2.8 GHz executes several hundred instructions in the time one random RAM access takes. Wulf and McKee (1995) called this the **memory wall**: since the gap grows exponentially, they warned, even caches with very high hit rates would eventually leave the processor waiting for memory most of the time. (The notes' 10 ns is close to the time a DRAM chip itself needs to deliver a column of data; the 100+ ns measured here is the whole path of a load that misses all caches: the cache lookups, the memory controller and the opening of a DRAM row.)
+Each level is larger and slower than the one above it: registers (well under a nanosecond, less than a kilobyte), caches (nanoseconds, kilobytes to megabytes), RAM (about a hundred nanoseconds, gigabytes), disks (microseconds for SSDs, milliseconds for hard disks, terabytes) and tape archives (seconds to minutes, practically unlimited capacity). The order of magnitude between levels is what matters, and the measurements on this lecture's machine ([Linux section](#the-hierarchy-measured)) show it clearly: about 1.6 ns for the first-level cache, 4.4 ns for the second, about 25 ns for the third, and 110–180 ns for RAM. Over the decades, processors became fast much more quickly than DRAM became quick to answer: a CPU at 2.8 GHz executes several hundred instructions in the time one random RAM access takes. Wulf and McKee (1995) called this the **memory wall**: since the gap grows exponentially, they warned, even caches with very high hit rates would eventually leave the processor waiting for memory most of the time. (A DRAM chip itself delivers a column of data from an open row in about 10–15 ns; the 100+ ns measured here is the whole path of a load that misses all caches: the cache lookups, the memory controller and the opening of a DRAM row.)
 
 The upper levels (registers, cache, RAM) are **volatile** and directly addressable by the CPU's instructions; the lower ones are **persistent** and reached through the operating system's I/O. The price per byte falls steeply from top to bottom, and capacity grows.
 
@@ -56,7 +56,7 @@ The upper levels (registers, cache, RAM) are **volatile** and directly addressab
 
 ## The magic of a two-level memory
 
-The notes draw the dilemma as a triangle: **capacity**, **speed** and **cheapness**. Any single memory is a point inside it, a compromise. The trick is to combine two memories:
+The dilemma can be drawn as a triangle: **capacity**, **speed** and **cheapness**. Any single memory is a point inside it, a compromise. The trick is to combine two memories:
 
 ![The capacity–speed–cheapness triangle, and big-slow-cheap plus small-fast-expensive equals big-fast-cheap](two-level-magic.svg)
 
@@ -64,11 +64,11 @@ A big, slow, cheap memory (RAM) plus a small, fast, expensive one (the cache) be
 
 $$T = H \cdot T_C + (1 - H) \cdot T_{RAM}$$
 
-The **miss rate** is $M = 1 - H$. With the notes' figures ($T_C = 3$ ns, $T_{RAM} = 10$ ns) and a hit rate of 95%, $T = 3.35$ ns: almost as fast as the cache. With the ratio measured on a real machine, the picture is less forgiving ([Linux section](#how-much-the-hit-rate-matters)): if the cache answers in 4.4 ns and RAM in 140 ns, a 95% hit rate gives 11.2 ns, two and a half times slower than the cache, and even 99% leaves it about 30% slower. Real caches indeed reach hit rates of 95–99% and more for typical programs (Hennessy & Patterson, 2019).
+The **miss rate** is $M = 1 - H$. With a cache only three times faster than RAM ($T_C = 3$ ns, $T_{RAM} = 10$ ns) and a hit rate of 95%, $T = 3.35$ ns: almost as fast as the cache. With the ratio measured on a real machine, the picture is less forgiving ([Linux section](#how-much-the-hit-rate-matters)): if the cache answers in 4.4 ns and RAM in 140 ns, a 95% hit rate gives 11.2 ns, two and a half times slower than the cache, and even 99% leaves it about 30% slower. Real caches indeed reach hit rates of 95–99% and more for typical programs (Hennessy & Patterson, 2019).
 
 (Some textbooks write the formula as $T = T_C + M \cdot T_{penalty}$, because on a miss the cache has already been checked before RAM is asked; the two forms differ only in what is counted as the miss time.)
 
-And how big is the cache? The notes put it at **about 0.1%** of RAM: $Cap_C \cdot 1000 = Cap_{RAM}$. The machine used below has a 33 MiB last-level cache and 8 GiB of RAM, a ratio of 0.4%; a server with 32 MiB of cache and 32 GiB of RAM is exactly at 0.1%. That a memory a thousand times smaller can serve 95–99% of all accesses is the real magic, and it needs an explanation.
+And how big is the cache? Typically of the order of **0.1%** of RAM: $Cap_C \cdot 1000 \approx Cap_{RAM}$. The machine used below has a 33 MiB last-level cache and 8 GiB of RAM, a ratio of 0.4%; a server with 32 MiB of cache and 32 GiB of RAM is exactly at 0.1%. That a memory a thousand times smaller can serve 95–99% of all accesses is the real magic, and it needs an explanation.
 
 With several cache levels, the formula is applied level by level: a miss in L1 goes to L2, a miss in L2 to L3, and so on. Each level only has to catch most of what the level above it misses. In the "check first" form, with the **local** miss rate $m_i$ of each level (the fraction of the accesses *reaching* that level that miss there):
 
@@ -88,7 +88,7 @@ With the latencies measured below (1.6, 4.4, 25 and 140 ns) and local hit rates 
 
 ## Why it works: locality of reference
 
-Programs do not access memory at random. They have **locality of reference**: in any short period, they use only a small part of their memory, and that part changes slowly (Denning, 2005). The notes list four reasons:
+Programs do not access memory at random. They have **locality of reference**: in any short period, they use only a small part of their memory, and that part changes slowly (Denning, 2005). There are four main reasons (Stallings, 2016):
 
 1. **The von Neumann principle: code is sequential.** The program counter is simply incremented (`PC++`) after most instructions, so the next instruction is almost always right after the current one. Jumps are the exception, and most of them are short.
 2. **Nested calls stay within a narrow band.** Programs call functions, which call other functions, but the call depth changes slowly, one level at a time, and wanders up and down within a few levels for long periods. Studies of programs for the Berkeley RISC processors found this, and designed **register windows** around it: the CPU keeps the registers of the last few call levels on chip, and only a call or return outside that window costs a slow transfer to memory; with 8 windows, this was needed for only about 1% of the calls and returns (Stallings, 2016, chapter on reduced instruction set computers; the four reasons above follow Stallings' appendix on the performance of two-level memories). The measurement below finds a similar picture in a modern Python program: with a window of 8 levels, 2.5% of the calls and returns fall outside it ([Linux section](#call-depth-measured)).
@@ -124,7 +124,7 @@ A cache stores copies of **lines** (blocks) of memory, together with a note of w
 
 ### The direct-mapped cache
 
-The lecture notes work through a direct-mapped cache (the notes call it a *direct access cache*; the usual English name is **direct-mapped**). In their example, RAM has 4 GiB, so an address has 32 bits; the cache has 1024 lines, each holding 4096 words of 32 bits (16 KiB), 16 MiB in all. (The notes write "4 Mb" for the cache, counting 32-bit words: 4 Mi words = 16 MiB; RAM is addressed by bytes, which is what the 14-bit byte offset below assumes.) The address is cut into three fields:
+The simplest organisation is the **direct-mapped** cache. As a toy example with round numbers, let RAM have 4 GiB, so that a byte address has 32 bits, and let the cache have 1024 lines, each holding 4096 words of 32 bits (16 KiB), 16 MiB in all. The address is cut into three fields:
 
 - the **offset** (14 bits, because a line has $2^{14}$ = 16 KiB) selects the byte within the line;
 - the **index** (10 bits, because there are $2^{10}$ = 1024 lines) selects the one line where this block may be;
@@ -146,7 +146,7 @@ Each line also has two status bits:
 
 And when a write **misses**? A **write-allocate** cache first loads the line and then writes into it (the usual partner of write-back: later writes to the same line will hit); a **no-write-allocate** cache sends the write straight to RAM and leaves the cache alone (the usual partner of write-through). This is why cachegrind, below, reports misses for writes too.
 
-**Why the index is in the middle.** The notes draw the address as *index | tag | offset*; real caches use *tag | index | offset*. The order is not a detail. With the index taken from the bits just above the offset, consecutive blocks of memory go to consecutive lines, so a program that sweeps through an array smaller than the cache can keep all of it. With the index in the top bits, all neighbouring blocks would share the same few lines and evict each other; the simulator shows the cost ([Linux section](#a-cache-simulator)). Likewise, real lines are much shorter than the notes' 16 KiB: 64 bytes on all current x86 and most ARM processors, for the reasons explained in [the section on line size](#choosing-the-line-size).
+**Why the index is in the middle.** Caches split the address as *tag | index | offset*, with the index in the middle rather than at the top. The order is not a detail. With the index taken from the bits just above the offset, consecutive blocks of memory go to consecutive lines, so a program that sweeps through an array smaller than the cache can keep all of it. With the index in the top bits, all neighbouring blocks would share the same few lines and evict each other; the simulator shows the cost ([Linux section](#a-cache-simulator)). Real lines are also much shorter than the 16 KiB of the toy example: 64 bytes on all current x86 and most ARM processors, for the reasons explained in [the section on line size](#choosing-the-line-size).
 
 A direct-mapped cache is simple and fast: one comparison per access. Its weakness is **conflicts**: two blocks whose addresses differ by a multiple of the cache size map to the same line and evict each other, even if the rest of the cache is empty.
 
@@ -165,7 +165,7 @@ A direct-mapped cache is simple and fast: one comparison per access. Its weaknes
 
 ### The fully associative cache
 
-The opposite extreme lets any block go into **any** line. The cache then has no index: the address is just tag and offset, and to find a block the cache compares the tag with the tags of **all** lines at the same time, with one comparator per line (the notes draw the comparison as an XOR/AND network over all lines). This is a **content-addressable memory**: it is searched by its content, not by position.
+The opposite extreme lets any block go into **any** line. The cache then has no index: the address is just tag and offset, and to find a block the cache compares the tag with the tags of **all** lines at the same time, with one comparator per line (each comparator is an XOR of the two tags followed by an AND of the results). This is a **content-addressable memory**: it is searched by its content, not by position.
 
 ![All stored tags are compared with the address tag in parallel; the matching line delivers the word selected by the offset](fully-associative-cache.svg)
 
@@ -199,9 +199,9 @@ The machine used below has an 8-way L1 data cache of 32 KiB (64 sets of 8 lines)
 
 ### Which line to throw out
 
-When a miss needs a line and the set (or, in a fully associative cache, the whole cache) is full, a **replacement algorithm** chooses a victim. The notes ask for the line "that nobody has looked for in a long time", and describe an **aging** scheme: at every access every line's age grows by one, and a hit halves the age of the line found, so lines that are used often stay young; the oldest line is evicted. The common policies are:
+When a miss needs a line and the set (or, in a fully associative cache, the whole cache) is full, a **replacement algorithm** chooses a victim. The ideal victim is the line that nobody has looked for in a long time. A simple counter-based **aging** scheme approximates this: at every access every line's age grows by one, and a hit halves the age of the line found, so lines that are used often stay young; the oldest line is evicted. The common policies are:
 
-- **LRU** (least recently used): evict the line unused for the longest time. It follows temporal locality, but exact LRU needs to keep the order of all lines, so hardware uses cheap approximations, such as tree-based pseudo-LRU. Counters like the notes' aging scheme are the classic approximation used by operating systems for page replacement, a topic of the virtual memory lecture. (This *aging* has nothing to do with the priority aging of the scheduling lecture.)
+- **LRU** (least recently used): evict the line unused for the longest time. It follows temporal locality, but exact LRU needs to keep the order of all lines, so hardware uses cheap approximations, such as tree-based pseudo-LRU. Counters like the aging scheme above are the classic approximation used by operating systems for page replacement, a topic of the virtual memory lecture. (This *aging* has nothing to do with the priority aging of the scheduling lecture.)
 - **FIFO**: evict the line that has been in the cache longest, regardless of use. Simple, but it can throw out a line in constant use.
 - **Random**: surprisingly competitive, and it avoids LRU's worst case, in which a regular pattern makes LRU evict exactly the line needed next.
 - **OPT** (Bélády's algorithm): evict the line whose next use lies farthest in the future. It is provably optimal, but needs knowledge of the future, so it serves as a yardstick. László Bélády, born in Budapest in 1928, published it in 1966 while working at IBM Research (Bélády, 1966). In 1969, he and his colleagues showed that for some policies, such as FIFO, a bigger memory can produce *more* misses, now called Bélády's anomaly (Bélády et al., 1969).
@@ -222,7 +222,7 @@ No policy wins on every workload. The simulator ([Linux section](#a-cache-simula
 
 ## Choosing the line size
 
-The notes' second page plots the miss rate against the line (block) size for a cache of fixed capacity. Small lines waste spatial locality: each miss brings in only a few bytes. Very large lines waste temporal locality: a cache of fixed size then has few lines, and data that is used again and again is thrown out by large blocks loaded only because they were next to something. In between lies a **sweet spot**:
+The miss rate depends on the line (block) size for a cache of fixed capacity. Small lines waste spatial locality: each miss brings in only a few bytes. Very large lines waste temporal locality: a cache of fixed size then has few lines, and data that is used again and again is thrown out by large blocks loaded only because they were next to something. In between lies a **sweet spot**:
 
 ![Simulated miss rate against line size for a 4 KiB cache: 87% at 4 bytes, minimum 9.1% at 64 bytes, rising to about 16% for large lines](miss-rate-vs-line-size.svg)
 
@@ -273,11 +273,11 @@ Caches are hardware, but the operating system's decisions change their hit rates
 
 ## Writing cache-friendly code
 
-The notes' third page recalls an example from Scott Meyers' talk *CPU Caches and Why You Care* (Meyers, 2014). C and C++ store a two-dimensional array **row by row**: `a[i][0]`, `a[i][1]`, … are neighbours in memory, while `a[i][j]` and `a[i+1][j]` are a whole row apart. Summing the array row by row walks through memory sequentially, using every byte of every line loaded; summing it column by column jumps a row's length at every step and uses one `int` of each 64-byte line before moving on:
+A classic example comes from Scott Meyers' talk *CPU Caches and Why You Care* (Meyers, 2014). C and C++ store a two-dimensional array **row by row**: `a[i][0]`, `a[i][1]`, … are neighbours in memory, while `a[i][j]` and `a[i+1][j]` are a whole row apart. Summing the array row by row walks through memory sequentially, using every byte of every line loaded; summing it column by column jumps a row's length at every step and uses one `int` of each 64-byte line before moving on:
 
 ![Row-by-row traversal follows memory and uses all 16 ints of a line; column-by-column jumps a row at every step; measured times for four sizes](traversal.svg)
 
-The notes quote a 40% difference, which is plausible on older processors or for arrays that fit in the cache; on this lecture's machine the column-wise loop was 5.7 to 19 times slower, and the gap grows as the array outgrows the caches ([Linux section](#row-by-row-or-column-by-column)). The exact factor depends on the processor, the compiler and the array size, but the direction never changes. The general rules follow from locality:
+For small arrays that fit in the cache the difference can be modest; on this lecture's machine the column-wise loop was 5.7 to 19 times slower, and the gap grows as the array outgrows the caches ([Linux section](#row-by-row-or-column-by-column)). The exact factor depends on the processor, the compiler and the array size, but the direction never changes. The general rules follow from locality:
 
 - **Traverse data in the order it is stored.** Loop nests should run the innermost loop over the last index in C/C++ (and over the first in Fortran, which stores arrays column by column).
 - **Prefer contiguous data structures.** An array of values (`std::vector`) is traversed far faster than a linked list of separately allocated nodes, which turns every step into a potential miss.
@@ -367,7 +367,7 @@ The steps are the hierarchy: up to 32 KiB the data fits in L1 (about 1.6 ns, 4�
 
 ### How much the hit rate matters
 
-`amat.py` evaluates $T = H \cdot T_C + (1-H) \cdot T_{RAM}$, first with the notes' values, then with the L2 and RAM latencies measured above:
+`amat.py` evaluates $T = H \cdot T_C + (1-H) \cdot T_{RAM}$, first with round values for a cache three times faster than RAM, then with the L2 and RAM latencies measured above:
 
 ```console
 $ python3 amat.py 3 10
@@ -390,7 +390,7 @@ cache 4.4 ns, main memory 140 ns
   H =  99.9%:  T =    4.54 ns  ( 30.9x faster than memory alone,  1.0x slower than the cache)
 ```
 
-With a speed ratio of 3, as in the notes, a 90% hit rate is already good. With a ratio of 32, as in the real machine, every percent of misses costs heavily: going from 95% to 99% halves the average access time. This is why caches have several levels, and why programs with good locality can be many times faster than programs without it.
+With a speed ratio of 3, a 90% hit rate is already good. With a ratio of 32, as in the real machine, every percent of misses costs heavily: going from 95% to 99% halves the average access time. This is why caches have several levels, and why programs with good locality can be many times faster than programs without it.
 
 ### Row by row or column by column
 
@@ -508,11 +508,11 @@ $ python3 calldepth.py
        16      1,124                0.58%
 ```
 
-Although the depth ranges over 76 levels during the run, a window of 5 levels covers 95% of the calls and returns, and 8 levels cover 97.5%: the nesting moves slowly, as the notes say. (`python3 calldepth.py --trace depth.csv` saves the full trace; the figure above shows 2,500 consecutive events from it.)
+Although the depth ranges over 76 levels during the run, a window of 5 levels covers 95% of the calls and returns, and 8 levels cover 97.5%: the nesting moves slowly. (`python3 calldepth.py --trace depth.csv` saves the full trace; the figure above shows 2,500 consecutive events from it.)
 
 ### A cache simulator
 
-`cachesim.py` simulates caches of any size, line size, associativity and replacement policy. It splits the notes' example address:
+`cachesim.py` simulates caches of any size, line size, associativity and replacement policy. It splits an address for the toy direct-mapped cache above:
 
 ```console
 $ python3 cachesim.py split 0x12345678
@@ -527,7 +527,7 @@ row by row      :    4096 misses of 65536 accesses, miss rate   6.2%
 column by column:   65536 misses of 65536 accesses, miss rate 100.0%
 ```
 
-It shows the cost of putting the index in the high bits of the address, as in the notes' drawing, for an array that fits in the cache and is read twice:
+It shows what would happen if the index were taken from the high bits of the address, for an array that fits in the cache and is read twice:
 
 ```console
 $ python3 cachesim.py order
@@ -566,7 +566,7 @@ line  2048 B (   2 lines): miss rate  16.1%
 line  4096 B (   1 lines): miss rate  16.0%
 ```
 
-And the replacement policies, including the notes' aging scheme and Bélády's optimum, on two workloads:
+And the replacement policies, including the counter-based aging scheme and Bélády's optimum, on two workloads:
 
 ```console
 $ python3 cachesim.py replace
@@ -580,28 +580,28 @@ Both workloads use 72 different lines; the difference is the *reuse distance*. I
 
 ## Lab exercises
 
-1. **Your machine's hierarchy.** Run `lscpu` and the sysfs loop on your own computer and compute sets × ways × line size for each level. Run `latency` (and `latency huge`) and mark the steps. How do your L1, L2, L3 and RAM latencies compare with the notes' 1 ns, 3 ns and 10 ns, and with this lecture's measurements? Convert them to clock cycles.
+1. **Your machine's hierarchy.** Run `lscpu` and the sysfs loop on your own computer and compute sets × ways × line size for each level. Run `latency` (and `latency huge`) and mark the steps. How do your L1, L2, L3 and RAM latencies compare with this lecture's measurements? Convert them to clock cycles.
 2. **The hit rate you need.** With `amat.py` and your measured L1 and RAM latencies, find the hit rate at which a single cache level would make memory look only 10% slower than the cache. Then extend `amat.py` to three levels (L1, L2, L3, RAM) with the multi-level formula of this lecture, and compute the average access time for *local* hit rates of 95%, 80% and 50% at the three levels. What is the global miss rate?
 3. **Loop order.** Run `traverse` for N = 512 … 8192 at `-O0`, `-O2` and `-O3`. Plot the ratio against the array size and mark where the array outgrows L2 and L3. Then write a matrix multiplication `C = A × B` for N = 1024 in the order i-j-k and i-k-j, and measure both. Which inner loop walks along memory?
 4. **Cachegrind.** Use `valgrind --tool=cachegrind --cache-sim=yes` on the two orders of your matrix multiplication. Explain the D1 miss counts using the line size. Try `--D1=32768,1,64` (a direct-mapped L1) and `--D1=32768,8,64`: what changes, and why?
-5. **The notes' direct-mapped cache.** For the notes' geometry (32-bit addresses, 1024 lines of 16 KiB), give the tag, index and offset of the addresses `0x00000000`, `0x00004000`, `0x01000000` and `0xFFFFFFFC`. Which of them compete for the same line? Check with `cachesim.py split`. Then compute how many bits of tags and status the cache needs in total, as a percentage of its data capacity.
+5. **The toy direct-mapped cache.** For the toy geometry of this lecture (32-bit addresses, 1024 lines of 16 KiB), give the tag, index and offset of the addresses `0x00000000`, `0x00004000`, `0x01000000` and `0xFFFFFFFC`. Which of them compete for the same line? Check with `cachesim.py split`. Then compute how many bits of tags and status the cache needs in total, as a percentage of its data capacity.
 6. **Simulate.** With `cachesim.py`, reproduce the `assoc` experiment with the two arrays 8 KiB + 64 bytes apart: what happens to the direct-mapped cache, and why? Add a cache-size parameter to the `blocksize` experiment and plot the curve for cache sizes of 2, 4 and 8 KiB. How does the sweet spot move?
-7. **Replacement.** Implement the classic aging algorithm (an 8-bit counter per line, shifted right at every access, with the most significant bit set on a hit) in `cachesim.py` and compare it with the notes' "+1 / halve" scheme and with LRU. Then show Bélády's anomaly: find an access sequence for which FIFO has more misses with 4 lines than with 3.
+7. **Replacement.** Implement the classic aging algorithm (an 8-bit counter per line, shifted right at every access, with the most significant bit set on a hit) in `cachesim.py` and compare it with the "+1 / halve" scheme and with LRU. Then show Bélády's anomaly: find an access sequence for which FIFO has more misses with 4 lines than with 3.
 8. **False sharing and the page cache.** Change `falseshare.c` so that the two counters are 16, 32, 64 and 128 bytes apart. Where does the slowdown disappear? Then measure a cold and a warm read of a large file on your own disk (`dd`, with `iflag=nocache` to evict it), and compare the factor with the one in this lecture.
 
 ## Review questions
 
 1. Why can a single memory not be big, fast and cheap at once? Order registers, cache, RAM, disk and tape by speed, capacity and price per byte.
 2. State the formula for the average access time of a two-level memory and compute it for $T_C$ = 3 ns, $T_{RAM}$ = 10 ns, H = 95%, and for $T_C$ = 4 ns, $T_{RAM}$ = 120 ns, H = 95%. What does the comparison show?
-3. How can a cache with 0.1% of the capacity of RAM serve 95% of the accesses? Name the four reasons for locality in the notes, and define temporal and spatial locality.
+3. How can a cache with 0.1% of the capacity of RAM serve 95% of the accesses? Name the four reasons for locality, and define temporal and spatial locality.
 4. Which part of a cache exploits temporal locality, and which spatial locality?
-5. For the notes' direct-mapped cache (32-bit addresses, 1024 lines of 4096 32-bit words), derive the widths of the tag, index and offset fields, and the sizes of the cache and of RAM.
+5. For the toy direct-mapped cache of this lecture (32-bit addresses, 1024 lines of 4096 32-bit words), derive the widths of the tag, index and offset fields, and the sizes of the cache and of RAM.
 6. Describe step by step what happens on a read hit, on a read miss with a clean line and on a read miss with a dirty line. What are the V and D bits for?
 7. Compare write-through and write-back. Which needs the dirty bit, and why do most modern caches use write-back?
 8. Why do real caches take the index from the bits just above the offset, not from the top bits of the address?
 9. Explain the fully associative cache. Why is it not used for large caches? How does a set-associative cache combine the two designs?
 10. Name and explain the three kinds of cache misses, and say which design change reduces each.
-11. Describe LRU, FIFO, random, the notes' aging scheme and Bélády's OPT. Why is OPT not used in practice, and why is it still useful? What is Bélády's anomaly?
+11. Describe LRU, FIFO, random, counter-based aging and Bélády's OPT. Why is OPT not used in practice, and why is it still useful? What is Bélády's anomaly?
 12. Why does the miss rate first fall and then rise as the line size grows, at fixed cache size? Why are 64-byte lines standard?
 13. Explain Scott Meyers' row versus column example. Why is the column-wise loop slower, and why does the gap grow with the array size?
 14. What is false sharing, and how do you avoid it? How is it connected to cache coherence?
@@ -612,7 +612,7 @@ Both workloads use 72 different lines; the difference is the *reuse distance*. I
 
 1. Fast memory (SRAM on the CPU chip) needs many transistors per bit and must be close to the core, so it is expensive and small; dense, cheap memory (DRAM, magnetic, optical) is slower. Speed and price per byte: registers > cache > RAM > SSD/disk > optical > tape; capacity the other way round.
 2. 0.95 × 3 + 0.05 × 10 = 3.35 ns (close to the cache). 0.95 × 4 + 0.05 × 120 = 9.8 ns (2.5 times the cache). The larger the speed ratio between the levels, the closer to 1 the hit rate must be.
-3. Programs use a small, slowly changing part of their memory. Notes: sequential code (PC++), call depth within a narrow band, short loops, sequential data structures. Temporal: recently used items are used again soon. Spatial: items near recently used ones are used soon.
+3. Programs use a small, slowly changing part of their memory. Reasons: sequential code (PC++), call depth within a narrow band, short loops, sequential data structures. Temporal: recently used items are used again soon. Spatial: items near recently used ones are used soon.
 4. Keeping recently used lines (and the replacement policy) exploits temporal locality; loading whole lines (and prefetching) exploits spatial locality.
 5. Line = 4096 × 4 B = 16 KiB → offset 14 bits; 1024 lines → index 10 bits; tag = 32 − 14 − 10 = 8 bits. Cache = 1024 × 16 KiB = 16 MiB (4 Mi words); RAM = 2³² B = 4 GiB.
 6. Hit: index selects the line, V = 1 and tag matches, offset selects the word. Miss, clean: load the line from RAM, store the tag, V = 1, D = 0, deliver the word. Miss, dirty: first write the old line back to RAM, then as before. V marks lines with real data (after power-on all are invalid); D marks lines changed since loading, which must be written back before being replaced.
@@ -620,13 +620,13 @@ Both workloads use 72 different lines; the difference is the *reuse distance*. I
 8. So that consecutive blocks map to consecutive lines: a contiguous region up to the cache's size can be cached completely. With the index on top, neighbouring blocks share a line and evict each other (the simulator: on the second pass every access hits with the usual order, while with the index on top the second pass misses as often as the first, 6.2% against 3.1% over both passes).
 9. Any block can go into any line; the tag is compared with all stored tags in parallel. Needs one comparator per line: expensive in area and power, so used only for small caches (TLBs). Set-associative: the index selects a set, the tag is compared within the n lines of the set: few comparators, few conflicts.
 10. Compulsory (first access; larger lines, prefetching), capacity (cache too small; bigger cache), conflict (too many blocks in one set; more associativity).
-11. LRU: evict least recently used; FIFO: evict oldest loaded; random; aging: counters approximate LRU (the notes: all +1 per access, a hit halves the age, evict the oldest); OPT: evict the line used farthest in the future. OPT needs the future, but gives the lower bound against which real policies are measured. Bélády's anomaly: for FIFO, more lines can give more misses.
+11. LRU: evict least recently used; FIFO: evict oldest loaded; random; aging: counters approximate LRU (here: all +1 per access, a hit halves the age, evict the oldest); OPT: evict the line used farthest in the future. OPT needs the future, but gives the lower bound against which real policies are measured. Bélády's anomaly: for FIFO, more lines can give more misses.
 12. Small lines bring little per miss (spatial locality wasted, many compulsory misses); large lines mean few lines, so reused data is evicted (temporal locality wasted) and each miss takes longer. 64 B balances the two for typical programs and matches DRAM burst transfers.
 13. C stores arrays by rows. Row-wise traversal uses all 16 ints of each 64-byte line (and, at -O3, allows vector instructions); column-wise uses one int per line and needs a new line per access. Small arrays still fit in cache between columns; once the array is larger than L2/L3, every column access goes to RAM.
 14. Two threads write different variables in the same cache line; the coherence protocol gives the line exclusively to the writing core, so the line bounces between cores at every write. Avoid it by padding or aligning per-thread data to the line size (64 B).
 15. The OS keeps recently read file data in unused RAM; reads that find their data there are hits (no disk access), misses go to the disk. The miss penalty is a disk access, milliseconds instead of nanoseconds, so the page cache's hit rate matters even more.
 
-**Lab answers.** Lab 1: typical desktop values are 1–1.5 ns L1 (4–5 cycles), 3–5 ns L2, 10–20 ns L3 and 70–120 ns RAM. Lab 2: with 1.5 and 100 ns, H must be about 99.85%; this is why there are three levels. With this lecture's latencies and local hit rates of 95/80/50%, T ≈ 2.8 ns (2.5 ns in the notes' form, which charges a miss only the lower level's time); global miss rate 0.5%. Lab 3: i-k-j, whose inner loop runs over the last index of B and C. Lab 4: the column order's misses stay near one per access; a direct-mapped L1 adds conflict misses. Lab 5: tags 0x00, 0x00, 0x01 and 0xFF; indices 0, 1, 0 and 1023; so `0x00000000` and `0x01000000` compete for line 0. Overhead: 1024 × (8 + 2) bits = 10 Kibit = 1.25 KiB for 16 MiB of data, under 0.01%. Lab 6: with an extra 64 bytes, the two arrays map to neighbouring lines and the conflicts disappear: the direct-mapped cache then misses 6.25%, like the 2-way one; these remaining misses are capacity misses, because 16 KiB of data is cycled through an 8 KiB cache. Lab 7: the classic example is the sequence 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5: with FIFO, 9 misses with 3 lines and 10 with 4. Lab 8: the slowdown largely disappears at 64 bytes; on Intel processors some interference may remain until 128 bytes, because the spatial prefetcher works on pairs of lines, which is why some libraries pad to 128 bytes.
+**Lab answers.** Lab 1: typical desktop values are 1–1.5 ns L1 (4–5 cycles), 3–5 ns L2, 10–20 ns L3 and 70–120 ns RAM. Lab 2: with 1.5 and 100 ns, H must be about 99.85%; this is why there are three levels. With this lecture's latencies and local hit rates of 95/80/50%, T ≈ 2.8 ns (2.5 ns in the simpler form $T = H \cdot T_C + (1-H) \cdot T_{RAM}$, which charges a miss only the lower level's time); global miss rate 0.5%. Lab 3: i-k-j, whose inner loop runs over the last index of B and C. Lab 4: the column order's misses stay near one per access; a direct-mapped L1 adds conflict misses. Lab 5: tags 0x00, 0x00, 0x01 and 0xFF; indices 0, 1, 0 and 1023; so `0x00000000` and `0x01000000` compete for line 0. Overhead: 1024 × (8 + 2) bits = 10 Kibit = 1.25 KiB for 16 MiB of data, under 0.01%. Lab 6: with an extra 64 bytes, the two arrays map to neighbouring lines and the conflicts disappear: the direct-mapped cache then misses 6.25%, like the 2-way one; these remaining misses are capacity misses, because 16 KiB of data is cycled through an 8 KiB cache. Lab 7: the classic example is the sequence 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5: with FIFO, 9 misses with 3 lines and 10 with 4. Lab 8: the slowdown largely disappears at 64 bytes; on Intel processors some interference may remain until 128 bytes, because the spatial prefetcher works on pairs of lines, which is why some libraries pad to 128 bytes.
 
 </details>
 

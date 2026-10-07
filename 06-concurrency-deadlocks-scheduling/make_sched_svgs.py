@@ -105,7 +105,7 @@ def states():
     p.append(path("M180 450C210 380 250 320 272 268", m, width=1.4, dash="4 4")); p.append(label(222, 400, "swap in", 11.5, anchor="start"))
     p.append(path("M440 368C436 400 430 420 425 446", m, width=1.4)); p.append(label(446, 412, "swap out", 11.5, anchor="start"))
     p.append(path("M346 478H226", m, width=1.4)); p.append(label(286, 470, "event done", 11.5))
-    p.append(text(24, 566, "The notes call the suspended states “blocked ready” and “blocked waiting”. In Linux, ready and running are both “R”, waiting is S or D,", 11.5, cls="quiet"))
+    p.append(text(24, 566, "Stallings calls the suspended states Ready/Suspend and Blocked/Suspend. In Linux, ready and running are both “R”, waiting is S or D,", 11.5, cls="quiet"))
     p.append(text(24, 584, "and stopped processes (T) and swapped-out memory play the role of the suspended states.", 11.5, cls="quiet"))
     return svg(870, 600, title, "\n".join(p))
 

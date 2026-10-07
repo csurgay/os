@@ -2,7 +2,7 @@
 """cachesim.py - a small cache simulator for the two-level memory lecture.
 
 Usage:
-  python3 cachesim.py split ADDR            split a 32-bit address for the notes' direct-mapped
+  python3 cachesim.py split ADDR            split a 32-bit address for the toy direct-mapped
                                             cache (1024 lines of 16 KiB: 8-bit tag, 10-bit index,
                                             14-bit offset), in the usual tag|index|offset order
   python3 cachesim.py traverse [N]          row-by-row vs column-by-column sum of an N x N int
@@ -40,7 +40,7 @@ class Cache:
         idx, tag = self.split(addr)
         s = self.set[idx]
         self.clock += 1
-        if self.policy == "aging":                             # the notes: everyone ages +1
+        if self.policy == "aging":                             # counter aging: everyone ages +1
             for t in s: s[t] += 1
         if tag in s:
             self.hits += 1

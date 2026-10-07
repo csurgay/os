@@ -119,7 +119,7 @@ def fragmentation():
     p.append(text(x, 310, "62 units free in total, but no hole is big enough;", 11.5, cls="quiet"))
     p.append(text(x, 328, "compaction (defragmentation) would move the blocks together", 11.5, cls="quiet"))
     # zebra / horse
-    p.append(text(24, 372, "The lecture notes' picture: a fragmented memory is a zebra, a defragmented one a horse with all its dark stripes in one patch.", 11.5, cls="quiet"))
+    p.append(text(24, 372, "A fragmented memory is like a zebra, a defragmented one a horse with all its dark stripes in one patch.", 11.5, cls="quiet"))
     for i in range(12):
         p.append(f'<rect x="{24 + i * 20}" y="386" width="10" height="20" class="{"acct" if i % 2 == 0 else "tint"}"/>')
     p.append(f'<rect x="300" y="386" width="120" height="20" class="acct"/><rect x="420" y="386" width="120" height="20" class="tint"/>')
@@ -168,8 +168,8 @@ def translation():
     p.append(text(60, 58, "virtual address", 12, 600, cls="quiet"))
     p.append(rect(60, 66, 320, 34, "acc", rx=3)); p.append(text(220, 88, "page number (20 bits)", 12, 600, anchor="middle"))
     p.append(rect(380, 66, 192, 34, "tint", rx=3)); p.append(text(476, 88, "offset (12 bits)", 12, 600, anchor="middle"))
-    # PTP register
-    p.append(rect(40, 170, 150, 34, "c2", rx=4)); p.append(text(115, 192, "PTP register", 12, 600, anchor="middle"))
+    # page-table base register
+    p.append(rect(40, 170, 150, 34, "c2", rx=4)); p.append(text(115, 192, "page-table base", 12, 600, anchor="middle"))
     p.append(text(115, 222, "(CR3 on x86; part of", 10.5, cls="quiet", anchor="middle")); p.append(text(115, 236, "each process's context)", 10.5, cls="quiet", anchor="middle"))
     # page table
     tx, ty = 250, 150
@@ -194,7 +194,7 @@ def translation():
     p.append(path("M458 239H556", m, width=1.5))
     p.append(path("M476 100C476 130 810 130 810 218", m, width=1.5)); p.append(text(640, 124, "copied unchanged", 11, cls="quiet"))
     p.append(text(24, 320, "V = 0: the page is not in RAM; the CPU raises a page fault (an interrupt), and the OS loads the page from disk or stops the program.", 11.5, cls="quiet"))
-    p.append(text(24, 338, "Rights (read, write, execute, user/kernel): a forbidden access also faults. One table per process: switching processes switches the PTP.", 11.5, cls="quiet"))
+    p.append(text(24, 338, "Rights (read, write, execute, user/kernel): a forbidden access also faults. One table per process: switching processes switches the base register.", 11.5, cls="quiet"))
     return svg(880, 354, title, "\n".join(p))
 
 
@@ -257,7 +257,7 @@ def belady():
     p = [text(24, 30, title, 15, 600)]
     y0 = 60
     for n in (3, 4):
-        faults, hist = ps.simulate(ps.NOTES, n, "fifo")
+        faults, hist = ps.simulate(ps.EXAMPLE, n, "fifo")
         p.append(text(24, y0 + 18, f"{n} frames", 12.5, 600))
         for j, (page, fault, mem) in enumerate(hist):
             x = 120 + j * 52

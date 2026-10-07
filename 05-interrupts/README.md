@@ -88,7 +88,7 @@ Interrupts caused by the instruction itself work slightly differently, because t
 | Program | the instruction being executed | division by zero, arithmetic overflow, illegal memory access, system call | synchronous |
 | Hardware failure | a fault in the machine | power failure, memory parity error | asynchronous |
 
-This classification follows Stallings (2018). **Synchronous** means the interrupt is caused by the instruction currently executing, so it is tied to a specific instruction rather than arriving at a random moment. **Asynchronous** means it comes from outside, at an unpredictable point in the program. Many textbooks and CPU manuals call program interrupts **exceptions** and reserve the word *interrupt* for the asynchronous ones. The handling mechanism is largely the same (the same vector table and entry path), with two differences: exceptions cannot be switched off like external interrupts, and the saved PC depends on whether the exception is a fault or a trap.
+This classification follows Stallings (2018). **Synchronous** means the interrupt is caused by the instruction currently executing, so it is tied to a specific instruction rather than arriving at a random moment. **Asynchronous** means it comes from outside, at an unpredictable point in the program. Interrupts caused by the executing instruction are usually called **exceptions** (Stallings calls them program interrupts), and the word *interrupt* on its own usually means an asynchronous one. The handling mechanism is largely the same (the same vector table and entry path), with two differences: exceptions cannot be switched off like external interrupts, and the saved PC depends on whether the exception is a fault or a trap.
 
 For an operating system, the most important program interrupt is the deliberate one: the **system call**. A program executes a special trap instruction (`syscall` on x86-64) to ask the kernel for a service, and enters the kernel through the same mechanism.
 
@@ -137,9 +137,9 @@ How does the CPU get from user mode into kernel mode? **Only through the interru
 
 The work is split between the hardware and the software (Stallings, 2018):
 
-1. **The device raises the interrupt request (IR)** on its interrupt line.
+1. **The device raises an interrupt request (IRQ)** on its interrupt line.
 2. **The CPU finishes the current instruction.** The instruction cycle is atomic.
-3. **The CPU acknowledges the request, and the device clears IR.** Otherwise the same request would be taken again right after the handler returns. (On real hardware, many devices keep the line active until the handler has serviced them, and the interrupt controller also expects an "end of interrupt" message from the handler; see the section on the interrupt controller.)
+3. **The CPU acknowledges the request.** The request must later be cleared, or it would be taken again as soon as the handler returns: the handler services the device, which then deactivates its request line, and sends an end-of-interrupt (EOI) message to the interrupt controller (see the section on the interrupt controller).
 4. **The CPU switches to kernel mode and saves the PC and the PSW** (program status word: the flags and the CPU mode, which in our model is the status register, SR) by pushing them onto the kernel's stack. On x86-64 the CPU also switches to a kernel stack first, and for some exceptions pushes an error code as well.
 5. **The CPU loads the new PC from the interrupt vector table.** Each interrupt source has a number, and the table maps that number to the start address of its handler. Typically, entering the handler also disables further external interrupts (on x86, by clearing the IF flag), until the handler decides to re-enable them.
 6. **The handler saves the other registers** it will use. Together with the PC and PSW, these form the **process state**.
@@ -147,12 +147,12 @@ The work is split between the hardware and the software (Stallings, 2018):
 8. **The handler restores the registers** in reverse order.
 9. **A special return instruction restores the PC and the PSW** (`iret` on x86). The next fetch continues the interrupted program.
 
-The hardware saves only what it must (PC and PSW), because these change the moment the handler starts running. Everything else is the handler's job. This keeps the hardware simple and, in principle, lets a short handler save only the few registers it really uses. In practice, operating system entry code (Linux's included) usually saves all general-purpose registers, because the interrupt may end in a switch to a different process, and then the whole state of the interrupted one must be kept.
+The hardware saves only what it must (PC and PSW), because these change the moment the handler starts running. Everything else is the handler's job. This keeps the hardware simple. Operating system entry code (Linux's included) usually saves all general-purpose registers, because the interrupt may end in a switch to a different process, and then the whole state of the interrupted one must be kept.
 
 <details>
-<summary><b>Explained simply:</b> IR, acknowledge, PSW, flags, stack, vector table, IF flag, process, process state</summary>
+<summary><b>Explained simply:</b> IRQ, acknowledge, PSW, flags, stack, vector table, IF flag, process, process state</summary>
 
-- **IR** (Interrupt Request): the electrical signal (or message) a device uses to ask for an interrupt, like raising your hand in class.
+- **IRQ** (Interrupt Request): the electrical signal (or message) a device uses to ask for an interrupt, like raising your hand in class.
 - **Acknowledge:** the CPU confirms "I have seen your request", like the teacher nodding at you. The device can then put its hand down.
 - **PSW** (Program Status Word): a register that describes the CPU's current state: the flags and whether it is in user or kernel mode.
 - **Flags:** single yes/no bits the CPU sets after each calculation, for example "the result was zero" or "the result was negative".
@@ -176,9 +176,9 @@ What happens if a second interrupt arrives while a handler is still running? The
 
 In the figure, the user program is interrupted after address 2. The handler starts by saving the registers. While it runs, a higher-priority interrupt arrives: the hardware saves the handler's own PC and PSW and starts the high-priority handler. When that finishes, it returns into the first handler, which in turn returns to address 3 of the user program.
 
-Because the last state saved is always the first one restored, the saved states form a **stack** (last in, first out). This is why x86 pushes the PC and PSW onto a stack instead of a single fixed place: a fixed place would be overwritten by the second interrupt. Many RISC processors (ARM, RISC-V, MIPS) do save them into fixed special registers, but then the handler must copy them to the stack itself before it re-enables interrupts. Either way, nesting needs a stack.
+Because the last state saved is always the first one restored, the saved states form a **stack** (last in, first out). This is why x86 pushes the PC and PSW onto a stack instead of a single fixed place: a fixed place would be overwritten by the second interrupt. Many RISC processors (ARM, RISC-V, MIPS) save them into special registers, and the handler copies them to the stack before it re-enables interrupts. Either way, nesting needs a stack.
 
-**Non-maskable interrupts.** Some events must never wait, typically urgent hardware events. These arrive on a **non-maskable interrupt** (NMI) line, which the normal interrupt-enable flag cannot switch off. (On modern x86 machines, memory errors are usually reported through a separate machine-check exception instead; NMI is used mostly for watchdogs and performance monitoring.)
+**Non-maskable interrupts.** Some events must never wait, typically urgent hardware events. These arrive on a **non-maskable interrupt** (NMI) line, which the normal interrupt-enable flag cannot switch off. On x86 the NMI is used mainly for watchdogs and performance monitoring, while serious hardware errors such as memory errors are reported through the machine-check exception.
 
 <details>
 <summary><b>Explained simply:</b> mask, priority, nested, RISC, ARM, RISC-V, MIPS, NMI, machine check, watchdog</summary>
@@ -275,7 +275,7 @@ Transferring a block of data (for example, a disk sector) between a device and m
 | Technique | Who moves the data | How the CPU learns of progress | Remaining cost |
 | --- | --- | --- | --- |
 | Programmed I/O (polling) | the CPU, word by word | it keeps reading the device's status register | the CPU busy-waits and does no useful work |
-| Interrupt-driven I/O (buffer + IR) | the CPU, when the device's buffer is ready | an interrupt for each buffer | no waiting, but the CPU still copies every word and handles many interrupts |
+| Interrupt-driven I/O (buffer + IRQ) | the CPU, when the device's buffer is ready | an interrupt for each buffer | no waiting, but the CPU still copies every word and handles many interrupts |
 | Direct memory access (DMA) | the DMA controller | one interrupt when the whole block is done | the DMA controller and the CPU compete for the shared bus |
 
 With DMA, the CPU only gives the DMA controller the device, the memory address, the amount of data and the direction. The DMA controller then performs the transfer on the system bus by itself and interrupts the CPU once, at the end. Since the CPU and the DMA controller share the same bus, the CPU may have to wait for the bus during the transfer. Because the DMA controller takes bus cycles away from the CPU, this is often called **cycle stealing**.
@@ -316,7 +316,7 @@ A timer interrupt can stop a process between any two of its instructions and swi
 
 The part of a program that works on shared data is a **critical section**, and the rule that at most one process may be inside it at a time is **mutual exclusion**. The classic picture is a single-track railway section shared by trains running in both directions. A **semaphore** (a railway signal) lets only one train onto the shared track at a time. Dijkstra (1965) borrowed the name for the synchronisation tool.
 
-**Panel A: the naive lock fails too.** A shared variable `S` could act as the signal: 1 means free, 0 means taken. Each process waits while `S == 0`, then takes the lock by changing `S` from 1 to 0 (P1 writes `S = 0`, P2 writes it semaphore-style as `S--`), and sets it back to 1 when it leaves. But "test" and "take" are two separate steps. If an interrupt arrives between them, both processes see `S = 1`, and both enter. `S = -1` at the end is a visible symptom: a free/taken flag should never get there. The lock has the same race as the data it was meant to protect.
+**Panel A: the naive lock fails too.** A shared variable `S` could act as the signal: 1 means free, 0 means taken. Each process waits while `S == 0`, then takes the lock by setting `S = 0`, and sets it back to 1 when it leaves. But "test" and "take" are two separate steps. If an interrupt arrives between them, both processes see `S = 1`, both set `S = 0`, and both enter the critical section. The lock has the same race as the data it was meant to protect.
 
 **Solutions:**
 
@@ -719,7 +719,7 @@ Once correct, twice wrong. This is what makes race conditions dangerous: the pro
 1. Why does the CPU check for external interrupts only after the execute phase? What would go wrong if it could stop in the middle of an instruction? How is a page fault different?
 2. Classify each event as timer, I/O, program or hardware-failure interrupt, and as synchronous or asynchronous: a disk finishes reading a sector; a program divides by zero; the time slice of a process runs out; a memory parity error is detected.
 3. Which registers does the hardware save automatically when an interrupt is taken, and why only those?
-4. Why must the device clear its interrupt request after the CPU acknowledges it?
+4. Why must an interrupt request be cleared (and an EOI sent) before the handler returns?
 5. Why are the saved PC and PSW pushed onto a stack, and not stored in a single fixed memory location?
 6. The system uses nested, priority-based interrupt processing (higher number = higher priority). A priority-2 interrupt arrives while the handler of a priority-5 interrupt is running. What happens? And the other way round? What would happen under sequential processing?
 7. Compare programmed I/O, interrupt-driven I/O and DMA: who copies the data, and what does each one still cost the CPU?
@@ -736,12 +736,12 @@ Once correct, twice wrong. This is what makes race conditions dangerous: the pro
 
 1. Each instruction must be atomic. If the CPU stopped halfway, the register and memory state would be half-updated, and the saved PC would not point to a well-defined instruction to resume from. A page fault is raised during the instruction itself: the instruction is abandoned without effect, the saved PC points to it, and it is executed again after the handler has loaded the page.
 2. Disk sector: I/O, asynchronous. Division by zero: program, synchronous. Time slice: timer, asynchronous. Parity error: hardware failure, asynchronous.
-3. The PC and the PSW (flags, CPU mode). They change as soon as the handler starts executing (the CPU also switches to kernel mode and usually disables further interrupts), so they must be saved before that. The other registers can be saved by the handler itself; in principle only those it uses, in practice an OS usually saves all of them, because the interrupt may lead to a process switch.
+3. The PC and the PSW (flags, CPU mode). They change as soon as the handler starts executing (the CPU also switches to kernel mode and usually disables further interrupts), so they must be saved before that. The other registers can be saved by the handler itself; an OS usually saves all of them, because the interrupt may lead to a process switch.
 4. Otherwise the request would still be active when the handler returns, and the CPU would take the same interrupt again, endlessly.
-5. Because interrupts can nest. A second interrupt would overwrite a fixed location before the first handler had used it. A stack keeps each saved state until its own handler returns, in last-in, first-out order. (CPUs that do save into fixed registers, as many RISC designs do, make the handler move them to the stack before re-enabling interrupts.)
+5. Because interrupts can nest. A second interrupt would overwrite a fixed location before the first handler had used it. A stack keeps each saved state until its own handler returns, in last-in, first-out order. (CPUs that save into special registers, as many RISC designs do, make the handler move them to the stack before re-enabling interrupts.)
 6. The priority-2 request waits until the priority-5 handler finishes. In the other case, the priority-5 request interrupts the priority-2 handler immediately, and the priority-2 handler continues afterwards. Under sequential processing, any new request waits until the running handler finishes, whatever its priority.
 7. Programmed I/O: the CPU copies and busy-waits. Interrupt-driven: the CPU copies, but only when data is ready, at the cost of one interrupt per buffer. DMA: the DMA controller copies; the CPU handles one interrupt per block, but may have to wait for the shared bus.
-8. P1 tests S and sees 1 → interrupt, switch to P2 → P2 tests S and sees 1 → interrupt, switch to P1 → P1 takes the lock (S = 0) and enters → later P2 continues, takes the lock as well (S-- makes it −1) and enters. With an atomic test-and-set, the test and the take happen in one instruction, so no interrupt can fall between them. The second process always sees the value the first one wrote, and keeps waiting.
+8. P1 tests S and sees 1 → interrupt, switch to P2 → P2 tests S and sees 1 → interrupt, switch to P1 → P1 takes the lock (S = 0) and enters → later P2 continues, takes the lock as well (sets S = 0 again) and enters. With an atomic test-and-set, the test and the take happen in one instruction, so no interrupt can fall between them. The second process always sees the value the first one wrote, and keeps waiting.
 9. A user program could keep the CPU forever by never re-enabling interrupts, so the instruction is privileged. On a multicore machine, disabling interrupts on one core does not stop the other cores from accessing the same data.
 10. Race conditions depend on timing. A correct result only shows that no bad interleaving happened in that run, not that one cannot happen. Correctness must be argued from the code: every access to the shared data must be inside a properly locked critical section.
 11. For example: `cli` (switch off interrupts: the timer could never take the CPU back, so one program could keep it forever); `in`/`out` (direct device access: read any file straight from the disk, bypassing file permissions); loading CR3 (change the memory map: read or overwrite the kernel and other programs). Also acceptable: `hlt` (stop the CPU). The only way into kernel mode is through the interrupt mechanism: a hardware interrupt, an exception or a system call, each of which jumps to an entry point the kernel has set up.
