@@ -1,0 +1,5 @@
+# A minimal image: no base distribution at all, just two files.
+FROM scratch
+COPY whoami-os /whoami-os
+COPY os-release /etc/os-release
+CMD ["/whoami-os"]

@@ -1,34 +1,12 @@
-# Operating Systems
+# Operating Systems · Operációs rendszerek
 
-Lecture notes for a university Operating Systems course, with Linux (x86-64) examples and lab exercises. Each lecture lives in its own folder: the notes are in the folder's `README.md`, next to its figures (SVG) and the source files used in the labs.
+Lecture notes for a university Operating Systems course, with Linux (x86-64) examples, figures and lab exercises, in two languages.
 
-The lectures are written for university students, but every abbreviation and technical term comes with a collapsible **Explained simply** box, so readers with only basic computer knowledge can follow too.
+Egyetemi operációsrendszer-kurzus előadásanyaga linuxos (x86-64) példákkal, ábrákkal és laborfeladatokkal, két nyelven.
 
-| # | Lecture | Topics |
-| --- | --- | --- |
-| 1 | [Operating Systems Historic Evolution](01-historic-evolution/) | why operating systems exist: batch processing, the resident monitor, multiprogramming, virtual memory, time sharing, Multics and Unix, MS-DOS, networks and mobile devices; the roles and layers of an OS |
-| 2 | [Quality, Commercial Aspects and the Enterprise Linux Ecosystem](02-quality-and-enterprise-linux/) | quality criteria and ISO/IEC 25010, MTTF/MTTR/MTBF and availability, SLI/SLO/SLA, the commercial model of open source, branch/fork/upstream/backport, Fedora, CentOS Stream, RHEL, AlmaLinux, Rocky Linux; container images, UBI, registries, Podman and image mode |
-| 3 | [Cognitive Ergonomics and Operating Systems UI](03-cognitive-ergonomics/) | cognitive ergonomics; OS interfaces from the command line to phones, watches, voice and headsets; colour (lightness vs hue, contrast, colour blindness), short-term memory and chunking, affordances and signifiers, Fitts and Hick–Hyman laws, recognition vs recall, expertise, affective computing, mutual gaze, the uncanny valley, ethorobotics |
-| 4 | [The Fetch-Execute Cycle](04-fetch-execute-cycle/) | von Neumann architecture, CPU registers and buses, the instruction cycle, addressing modes, flags and jumps, memory permissions (NX), x86-64 and `gdb` |
-| 5 | [Interrupts](05-interrupts/) | interrupt classes, user and kernel mode, interrupt processing, nested interrupts, the interrupt controller, interrupt latency, programmed I/O vs interrupts vs DMA, race conditions, test-and-set and semaphores, `/proc/interrupts` |
-| 6 | [Concurrency, Deadlocks, Process States and Linux Scheduling](06-concurrency-deadlocks-scheduling/) | the critical-section problem, Peterson's algorithm and memory fences, atomics, spinlocks, mutexes and futexes, semaphores and producer–consumer, monitors, deadlock (Coffman conditions, prevention, banker's algorithm, detection), livelock and priority inversion, process states and the three schedulers, zombies, FIFO/SJF/SRTF/Round Robin, Linux scheduling classes, nice and EEVDF |
-| 7 | [Two-Level Memories and Caches](07-two-level-memory-and-cache/) | the memory hierarchy, the two-level memory and its average access time, locality of reference, direct-mapped, fully associative and set-associative caches, valid and dirty bits, write-through and write-back, replacement (LRU, FIFO, aging, Bélády's OPT), line size, prefetching, coherence and false sharing, the page cache, cache-friendly loops |
-| 8 | [Virtual Memory](08-virtual-memory/) | separation and relocation, internal and external fragmentation, paging, page tables and the page-table pointer, valid and access-rights bits, x86-64 multi-level page tables, the TLB and huge pages, page faults, demand paging and copy-on-write, page replacement (FIFO, OPT, LRU, clock), Bélády's anomaly, working sets and thrashing, caches vs virtual memory |
+| | |
+| --- | --- |
+| **[English](en/)** | eight lectures, from the history of operating systems to virtual memory |
+| **[Magyar](hu/)** | nyolc előadás, az operációs rendszerek történetétől a virtuális memóriáig |
 
-## Running the labs
-
-The lab programs need a Linux machine (or WSL) with `gcc`, `binutils` (`as`, `ld`, `objdump`) and `gdb`. On Debian or Ubuntu:
-
-```console
-$ sudo apt install build-essential gdb
-```
-
-Lecture 6 also uses `strace`, Python 3 and (optionally) a Java JDK, and lecture 7 `valgrind` (`sudo apt install strace default-jdk valgrind`). The container labs of lecture 2 need Podman (or Docker), ideally on Fedora, CentOS Stream, AlmaLinux or Rocky Linux (`sudo dnf install podman skopeo`).
-
-## Figures
-
-The figures are plain SVG files and switch to dark colours automatically when GitHub is in dark mode. Each folder also holds the Python script (`make_*.py`) that generates its figures, so they can be edited and regenerated.
-
-## License
-
-See [LICENSE](LICENSE).
+License / Licenc: [LICENSE](LICENSE).
