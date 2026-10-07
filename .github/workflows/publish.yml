@@ -2,7 +2,7 @@
 # and publishes it to GitHub Pages and/or a web host over FTP.
 #
 # Switch the targets on in Settings -> Secrets and variables -> Actions:
-#   Variables: PUBLISH_TO_GITHUB_PAGES = true      (GitHub Pages)
+#   Variables: PUBLISH_TO_GITHUB_PAGES = false     (GitHub Pages is on by default; 'false' turns it off)
 #              FTP_SERVER     = ftp.example.com    (web host; empty = off)
 #              FTP_SERVER_DIR = /public_html/os/   (target folder, ends with /)
 #              FTP_PROTOCOL   = ftps               (ftps, ftps-legacy or ftp)
@@ -46,8 +46,13 @@ jobs:
       - name: Check links, anchors and images
         run: python tools/check_site.py site
 
+      - name: Show publishing settings
+        run: |
+          echo "PUBLISH_TO_GITHUB_PAGES='${{ vars.PUBLISH_TO_GITHUB_PAGES }}' (Pages is on unless this is 'false')"
+          echo "FTP_SERVER='${{ vars.FTP_SERVER }}' (FTP upload is off while this is empty)"
+
       - name: Prepare for GitHub Pages
-        if: vars.PUBLISH_TO_GITHUB_PAGES == 'true'
+        if: vars.PUBLISH_TO_GITHUB_PAGES != 'false'
         uses: actions/upload-pages-artifact@v5
         with:
           path: site
@@ -64,7 +69,7 @@ jobs:
           server-dir: ${{ vars.FTP_SERVER_DIR || './' }}
 
   pages:
-    if: vars.PUBLISH_TO_GITHUB_PAGES == 'true'
+    if: vars.PUBLISH_TO_GITHUB_PAGES != 'false'
     needs: build
     runs-on: ubuntu-latest
     permissions:
