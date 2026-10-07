@@ -12,6 +12,7 @@ The lectures are written for university students, but every abbreviation and tec
 | 4 | [The Fetch-Execute Cycle](04-fetch-execute-cycle/) | von Neumann architecture, CPU registers and buses, the instruction cycle, addressing modes, flags and jumps, memory permissions (NX), x86-64 and `gdb` |
 | 5 | [Interrupts](05-interrupts/) | interrupt classes, user and kernel mode, interrupt processing, nested interrupts, the interrupt controller, interrupt latency, programmed I/O vs interrupts vs DMA, race conditions, test-and-set and semaphores, `/proc/interrupts` |
 | 6 | [Concurrency, Deadlocks, Process States and Linux Scheduling](06-concurrency-deadlocks-scheduling/) | the critical-section problem, Peterson's algorithm and memory fences, atomics, spinlocks, mutexes and futexes, semaphores and producer–consumer, monitors, deadlock (Coffman conditions, prevention, banker's algorithm, detection), livelock and priority inversion, process states and the three schedulers, zombies, FIFO/SJF/SRTF/Round Robin, Linux scheduling classes, nice and EEVDF |
+| 7 | [Two-Level Memories and Caches](07-two-level-memory-and-cache/) | the memory hierarchy, the two-level memory and its average access time, locality of reference, direct-mapped, fully associative and set-associative caches, valid and dirty bits, write-through and write-back, replacement (LRU, FIFO, aging, Bélády's OPT), line size, prefetching, coherence and false sharing, the page cache, cache-friendly loops |
 
 ## Running the labs
 
@@ -21,7 +22,7 @@ The lab programs need a Linux machine (or WSL) with `gcc`, `binutils` (`as`, `ld
 $ sudo apt install build-essential gdb
 ```
 
-Lecture 6 also uses `strace`, Python 3 and (optionally) a Java JDK (`sudo apt install strace default-jdk`). The container labs of lecture 2 need Podman (or Docker), ideally on Fedora, CentOS Stream, AlmaLinux or Rocky Linux (`sudo dnf install podman skopeo`).
+Lecture 6 also uses `strace`, Python 3 and (optionally) a Java JDK, and lecture 7 `valgrind` (`sudo apt install strace default-jdk valgrind`). The container labs of lecture 2 need Podman (or Docker), ideally on Fedora, CentOS Stream, AlmaLinux or Rocky Linux (`sudo dnf install podman skopeo`).
 
 ## Figures
 

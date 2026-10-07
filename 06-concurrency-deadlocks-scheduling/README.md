@@ -2,7 +2,7 @@
 
 *Operating Systems lecture: how processes share a CPU and shared data safely, why they can block each other for ever, which states a process passes through, and how Linux decides who runs next*
 
-Previous: [Interrupts](../05-interrupts/).
+Previous: [Interrupts](../05-interrupts/). Next: [Two-Level Memories and Caches](../07-two-level-memory-and-cache/).
 
 > **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
 
