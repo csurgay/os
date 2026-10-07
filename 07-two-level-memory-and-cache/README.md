@@ -2,7 +2,7 @@
 
 *Operating Systems lecture: why a small, fast memory in front of a big, slow one makes the whole system look big and fast, how a cache finds its data (direct-mapped, fully associative, set-associative), which line to throw out, and how to write programs that the cache likes*
 
-Previous: [Concurrency, Deadlocks, Process States and Linux Scheduling](../06-concurrency-deadlocks-scheduling/).
+Previous: [Concurrency, Deadlocks, Process States and Linux Scheduling](../06-concurrency-deadlocks-scheduling/). Next: [Virtual Memory](../08-virtual-memory/).
 
 > **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
 
