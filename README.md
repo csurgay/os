@@ -11,6 +11,7 @@ The lectures are written for university students, but every abbreviation and tec
 | 3 | [Cognitive Ergonomics and Operating Systems UI](03-cognitive-ergonomics/) | cognitive ergonomics; OS interfaces from the command line to phones, watches, voice and headsets; colour (lightness vs hue, contrast, colour blindness), short-term memory and chunking, affordances and signifiers, Fitts and Hick–Hyman laws, recognition vs recall, expertise, affective computing, mutual gaze, the uncanny valley, ethorobotics |
 | 4 | [The Fetch-Execute Cycle](04-fetch-execute-cycle/) | von Neumann architecture, CPU registers and buses, the instruction cycle, addressing modes, flags and jumps, memory permissions (NX), x86-64 and `gdb` |
 | 5 | [Interrupts](05-interrupts/) | interrupt classes, user and kernel mode, interrupt processing, nested interrupts, the interrupt controller, interrupt latency, programmed I/O vs interrupts vs DMA, race conditions, test-and-set and semaphores, `/proc/interrupts` |
+| 6 | [Concurrency, Deadlocks, Process States and Linux Scheduling](06-concurrency-deadlocks-scheduling/) | the critical-section problem, Peterson's algorithm and memory fences, atomics, spinlocks, mutexes and futexes, semaphores and producer–consumer, monitors, deadlock (Coffman conditions, prevention, banker's algorithm, detection), livelock and priority inversion, process states and the three schedulers, zombies, FIFO/SJF/SRTF/Round Robin, Linux scheduling classes, nice and EEVDF |
 
 ## Running the labs
 
@@ -20,7 +21,7 @@ The lab programs need a Linux machine (or WSL) with `gcc`, `binutils` (`as`, `ld
 $ sudo apt install build-essential gdb
 ```
 
-The container labs of lecture 2 need Podman (or Docker), ideally on Fedora, CentOS Stream, AlmaLinux or Rocky Linux (`sudo dnf install podman skopeo`).
+Lecture 6 also uses `strace`, Python 3 and (optionally) a Java JDK (`sudo apt install strace default-jdk`). The container labs of lecture 2 need Podman (or Docker), ideally on Fedora, CentOS Stream, AlmaLinux or Rocky Linux (`sudo dnf install podman skopeo`).
 
 ## Figures
 
