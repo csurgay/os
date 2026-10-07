@@ -262,8 +262,107 @@ def layers():
     return svg(760, y0 + 6 * h + 42, title, "\n".join(p))
 
 
+# ---------------- 6. Job deck with control cards, and a batch of jobs ----------------
+def carddeck():
+    m = "cd"
+    title = "A job deck: control cards frame the program and its data; jobs are stacked into a batch"
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600),
+         text(24, 50, "Job control language in Stallings' FORTRAN example. The card reader reads the front card first.", 11.5, cls="quiet")]
+    # front card first; drawn back to front so that each card covers the lower part of the one behind it
+    cards = [("$JOB  user, account, limits", "ctl"), ("$FTN  compile what follows", "ctl"),
+             ("program card", "prog"), ("program card", "prog"), ("program card", "prog"),
+             ("$LOAD  load the compiled program", "ctl"), ("$RUN  start it on the data", "ctl"),
+             ("data card", "data"), ("data card", "data"), ("$END  end of this job", "ctl")]
+    x0, y0, w, h, dx, dy = 40, 330, 250, 70, 16, -24
+    for i in reversed(range(len(cards))):
+        lab, kind = cards[i]
+        cx, cy = x0 + i * dx, y0 + i * dy
+        d = f"M{cx} {cy}H{cx + w - 14}L{cx + w} {cy + 12}V{cy + h}H{cx}Z"
+        if kind == "ctl":
+            p.append(f'<path d="{d}" class="tint"/><path d="{d}" class="accf"/>'
+                     f'<path d="{d}" fill="none" class="acc" stroke-width="1.5"/>')
+            p.append(text(cx + 10, cy + 16, lab, 11.5, 600, cls="acct"))
+        elif kind == "data":
+            p.append(f'<path d="{d}" class="tint"/><path d="{d}" class="c2f"/>'
+                     f'<path d="{d}" fill="none" class="c2s" stroke-width="1.25"/>')
+            p.append(text(cx + 10, cy + 16, lab, 11.5))
+        else:
+            p.append(f'<path d="{d}" class="tint"/><path d="{d}" fill="none" class="edge" stroke-width="1.25"/>')
+            p.append(text(cx + 10, cy + 16, lab, 11.5))
+    p.append(text(x0 + 10, y0 + 50, "front: read first", 11.5, cls="quiet"))
+    # legend
+    ly = y0 + h + 30
+    p.append(rect(24, ly - 11, 14, 14, "acc", rx=2))
+    p.append(text(44, ly, "control card (JCL), for the monitor", 11.5))
+    p.append(rect(260, ly - 11, 14, 14, "plain", rx=2))
+    p.append(text(280, ly, "program (source code)", 11.5))
+    p.append(rect(440, ly - 11, 14, 14, "c2", rx=2))
+    p.append(text(460, ly, "input data for the program", 11.5))
+    # batch on the right: several decks one behind the other
+    bx, by = 500, 96
+    p.append(text(bx, by - 18, "A batch: job after job", 13, 600))
+    for j, name in enumerate(["job 3", "job 2", "job 1"]):
+        yy = by + j * 46
+        p.append(rect(bx, yy, 210, 38, "tint", rx=3))
+        p.append(f'<rect x="{bx}" y="{yy}" width="10" height="38" class="accf"/>')
+        p.append(f'<rect x="{bx + 200}" y="{yy}" width="10" height="38" class="accf"/>')
+        p.append(text(bx + 22, yy + 17, name, 12.5, 600))
+        p.append(text(bx + 22, yy + 32, "$JOB … $END", 11, cls="quiet"))
+    yr = by + 3 * 46
+    p.append(path(f"M{bx + 105} {yr + 2}V{yr + 30}", m))
+    p.append(rect(bx, yr + 34, 210, 30, "acc", rx=4))
+    p.append(text(bx + 105, yr + 54, "card reader → monitor", 12, 600, anchor="middle"))
+    p.append(text(bx, yr + 84, "job 1 is read first; at $END the", 11.5, cls="quiet"))
+    p.append(text(bx, yr + 100, "monitor starts the next job", 11.5, cls="quiet"))
+    p.append(text(bx, yr + 116, "without an operator stepping in", 11.5, cls="quiet"))
+    return svg(760, ly + 24, title, "\n".join(p))
+
+
+# ---------------- 7. Recycling of solutions ----------------
+def recycling():
+    m = "rc"
+    title = "Recycling of solutions: old techniques return when economics, technology or needs change"
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600)]
+    # triangle of drivers
+    cx, cy = 150, 170
+    pts = {"economics": (cx, cy - 82), "technology": (cx - 92, cy + 72), "needs": (cx + 92, cy + 72)}
+    subs = {"economics": "what is cheap", "technology": "what is possible", "needs": "what users want"}
+    a, b, c = pts["economics"], pts["technology"], pts["needs"]
+    p.append(f'<path d="M{a[0]} {a[1]}L{b[0]} {b[1]}L{c[0]} {c[1]}Z" fill="none" class="edge" stroke-width="1.25"/>')
+    for k, (x, y) in pts.items():
+        p.append(f'<circle cx="{x}" cy="{y}" r="44" class="tint"/><circle cx="{x}" cy="{y}" r="44" class="accf"/>'
+                 f'<circle cx="{x}" cy="{y}" r="44" fill="none" class="acc" stroke-width="1.5"/>')
+        p.append(text(x, y - 2, k, 12, 600, anchor="middle"))
+        p.append(text(x, y + 13, subs[k], 10, cls="quiet", anchor="middle"))
+    p.append(text(cx, cy + 12, "which solution", 11, cls="quiet", anchor="middle"))
+    p.append(text(cx, cy + 26, "fits now?", 11, cls="quiet", anchor="middle"))
+    # pairs: old -> new
+    rows = [("Contiguous file allocation", "CD-ROM (ISO 9660): written once"),
+            ("FAT (floppy disks, MS-DOS)", "USB sticks, SD cards, EFI partition"),
+            ("Dynamic linking (Multics)", "shared libraries (.so, .dll)"),
+            ("Hardwired control (before S/360)", "RISC; simple micro-ops inside x86"),
+            ("Interpreted virtual instructions", "Java VM bytecode"),
+            ("Virtual machines (IBM VM/370)", "hypervisors: VMware, Xen, KVM"),
+            ("Time sharing, computer utility", "cloud computing, pay per use"),
+            ("Batch processing", "HPC job schedulers, nightly jobs")]
+    ox, nx, ty = 290, 524, 74
+    p.append(text(ox, ty, "Earlier solution", 12.5, 600))
+    p.append(text(nx, ty, "Where it came back", 12.5, 600))
+    for i, (o, n) in enumerate(rows):
+        y = ty + 26 + i * 30
+        p.append(f'<line x1="{ox}" y1="{y - 18}" x2="740" y2="{y - 18}" class="grid"/>')
+        p.append(text(ox, y, o, 11.5, cls="quiet"))
+        p.append(path(f"M{nx - 24} {y - 4}H{nx - 8}", m))
+        p.append(text(nx, y, n, 11.5))
+    yb = ty + 26 + len(rows) * 30
+    p.append(text(24, yb + 10, "A technique is not obsolete, only waiting: when the conditions it was invented for appear again in a new", 11.5, cls="quiet"))
+    p.append(text(24, yb + 26, "place, for example a small, cheap controller in a camera or a USB stick, the old solution fits again.", 11.5, cls="quiet"))
+    return svg(760, yb + 44, title, "\n".join(p))
+
+
 if __name__ == "__main__":
     for name, f in [("os-timeline", timeline), ("batch-monitor", batch), ("multiprogramming", multiprog),
-                    ("virtual-memory", vmem), ("os-layers", layers)]:
+                    ("virtual-memory", vmem), ("os-layers", layers), ("card-deck", carddeck),
+                    ("recycling", recycling)]:
         open(f"{name}.svg", "w", encoding="utf-8").write(f())
     print("ok")

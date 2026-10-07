@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 776" width="760" height="776" role="img" aria-label="Egy közös síntől a sínek és kapcsolatok hierarchiájáig">
+<title>Egy közös síntől a sínek és kapcsolatok hierarchiájáig</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}
+  }
+</style>
+<defs><marker id="bh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Egy közös síntől a sínek és kapcsolatok hierarchiájáig</text>
+<text x="24" y="64" font-size="13" font-weight="600" class="quiet" text-anchor="start">A   Az 1990-es évek vége: hidakkal összekötött sínek</text>
+<rect x="40" y="84" width="110" height="44" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="95.0" y="103.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">L2</text>
+<text x="95.0" y="120.0" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">gyorsítótár</text>
+<rect x="230" y="84" width="110" height="44" rx="8" class="accf"/><rect x="230" y="84" width="110" height="44" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="285.0" y="111.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">CPU</text>
+<rect x="420" y="84" width="120" height="44" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="480.0" y="111.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">PCI-híd</text>
+<rect x="620" y="84" width="110" height="44" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="675.0" y="103.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">Központi</text>
+<text x="675.0" y="120.0" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">memória</text>
+<path d="M150 106H230" fill="none" class="edge" stroke-width="2.5"/>
+<path d="M340 106H420" fill="none" class="edge" stroke-width="2.5"/>
+<path d="M540 106H620" fill="none" class="edge" stroke-width="2.5"/>
+<text x="190" y="98" font-size="11" font-weight="400" class="quiet" text-anchor="middle">cache-sín</text>
+<text x="380" y="98" font-size="11" font-weight="400" class="quiet" text-anchor="middle">helyi sín</text>
+<text x="580" y="98" font-size="11" font-weight="400" class="quiet" text-anchor="middle">memóriasín</text>
+<path d="M480 128V170" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M40 170H730" fill="none" class="edge" stroke-width="2.5"/>
+<text x="730" y="162" font-size="11.5" font-weight="600" class="ink" text-anchor="end">PCI sín (33 MHz, közös)</text>
+<path d="M85.0 170V196" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="40" y="196" width="90" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="85.0" y="221.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">SCSI</text>
+<path d="M190.0 170V196" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="145" y="196" width="90" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="190.0" y="221.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">USB</text>
+<path d="M300.0 170V196" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="250" y="196" width="100" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="300.0" y="221.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">Hálózat</text>
+<path d="M415.0 170V196" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="365" y="196" width="100" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="415.0" y="221.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">Grafika</text>
+<rect x="480" y="196" width="110" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="535.0" y="221.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">ISA-híd</text>
+<path d="M535 170V196" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="630" y="196" width="100" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="680.0" y="221.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">IDE-lemezek</text>
+<path d="M590 216H630" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M535 236V284" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M40 284H730" fill="none" class="edge" stroke-width="2.5"/>
+<text x="730" y="276" font-size="11.5" font-weight="600" class="ink" text-anchor="end">ISA sín (8 MHz, közös)</text>
+<path d="M90.0 284V310" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="40" y="310" width="100" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="90.0" y="335.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">Modem</text>
+<path d="M210.0 284V310" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="155" y="310" width="110" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="210.0" y="335.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">Hangkártya</text>
+<path d="M330.0 284V310" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="280" y="310" width="100" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="330.0" y="335.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">Nyomtató</text>
+<text x="730" y="328" font-size="11.5" font-weight="400" class="quiet" text-anchor="end">gyors a CPU közelében, lassú távolabb</text>
+<line x1="24" y1="378" x2="736" y2="378" class="grid"/>
+<text x="24" y="408" font-size="13" font-weight="600" class="quiet" text-anchor="start">B   Ma (egyszerűsítve): pont–pont kapcsolatok, vezérlők a CPU-ban</text>
+<rect x="40" y="424" width="480" height="100" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="52" y="444" font-size="11.5" font-weight="600" class="quiet" text-anchor="start">CPU-tok</text>
+<rect x="56" y="456" width="140" height="52" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="126.0" y="479.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">PCIe</text>
+<text x="126.0" y="496.0" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">root complex</text>
+<rect x="212" y="456" width="140" height="52" rx="8" class="accf"/><rect x="212" y="456" width="140" height="52" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="282.0" y="479.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">Magok</text>
+<text x="282.0" y="496.0" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">gyorsítótárakkal</text>
+<rect x="368" y="456" width="140" height="52" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="438.0" y="479.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">Memória-</text>
+<text x="438.0" y="496.0" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">vezérlő</text>
+<rect x="600" y="456" width="130" height="52" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="665.0" y="479.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">DRAM</text>
+<text x="665.0" y="496.0" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">DDR-csatornák</text>
+<path d="M508 482H600" fill="none" class="edge" stroke-width="2.5"/>
+<path d="M196 482H212" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M352 482H368" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M100 508V572" fill="none" class="edge" stroke-width="2.5"/>
+<rect x="30" y="572" width="140" height="44" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="100.0" y="599.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">Grafikus kártya</text>
+<path d="M160 508V548H260V572" fill="none" class="edge" stroke-width="2.5"/>
+<rect x="190" y="572" width="140" height="44" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="260.0" y="599.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">NVMe SSD</text>
+<text x="208" y="544" font-size="11" font-weight="400" class="quiet" text-anchor="start">PCIe-sávok</text>
+<path d="M470 524V572" fill="none" class="edge" stroke-width="2.5"/>
+<text x="480" y="552" font-size="11" font-weight="400" class="quiet" text-anchor="start">DMI-kapcsolat</text>
+<rect x="400" y="572" width="140" height="44" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="470.0" y="599.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">Chipset (PCH)</text>
+<path d="M470 616V640" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M290 640H690" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M290 640V660" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="250" y="660" width="80" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="290.0" y="685.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">USB</text>
+<path d="M390 640V660" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="350" y="660" width="80" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="390.0" y="685.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">SATA</text>
+<path d="M490 640V660" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="450" y="660" width="80" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="490.0" y="685.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">Hálózat</text>
+<path d="M590 640V660" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="550" y="660" width="80" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="590.0" y="685.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">Hang</text>
+<path d="M690 640V660" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="650" y="660" width="90" height="40" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="695.0" y="677.0" font-size="13" font-weight="600" class="ink" text-anchor="middle">PCIe-</text>
+<text x="695.0" y="694.0" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">foglalatok</text>
+<text x="24" y="742" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Minden PCIe-kapcsolat pont–pont: az eszközök már nem osztoznak egy sínen, és nem várnak egymásra.</text>
+<text x="24" y="760" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">A lassú eszközök a chipset egyetlen CPU-kapcsolatán osztoznak; a gyorsak saját sávokat kapnak.</text>
+</svg>

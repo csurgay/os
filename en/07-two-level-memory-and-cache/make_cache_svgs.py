@@ -83,11 +83,18 @@ def hierarchy():
         p.append(rect(24, y, 740, 36, k, rx=6))
         p.append(text(36, y + 23, a, 12.5, 600)); p.append(text(240, y + 23, b, 12)); p.append(text(420, y + 23, c, 12))
         p.append(text(600, y + 23, d, 11.5, cls="quiet"))
-    p.append(path("M790 340V84", m, width=2)); p.append(text(804, 210, "price per byte", 11.5, cls="quiet"))
-    p.append(text(804, 226, "and speed", 11.5, cls="quiet"))
+    # Stallings' grouping: inboard (rows 0-2), outboard (rows 3-4), off-line (row 5)
+    for r0, r1, name in ((0, 2, "inboard"), (3, 4, "outboard"), (5, 5, "off-line")):
+        ya, yb = 72 + r0 * 46 + 2, 72 + r1 * 46 + 34
+        p.append(path(f"M774 {ya}H780V{yb}H774", width=1.5))
+        p.append(text(788, (ya + yb) / 2 + 4, name, 12, 600))
+        p.append(text(788, (ya + yb) / 2 + 19, "storage", 11, cls="quiet"))
+    p.append(path("M890 340V84", m, width=2)); p.append(text(902, 210, "price per byte", 11.5, cls="quiet"))
+    p.append(text(902, 226, "and speed", 11.5, cls="quiet"))
     p.append(text(24, 368, "Blue: the cache–RAM pair of this lecture (volatile, managed by hardware). Orange: storage below, where RAM acts as the", 11.5, cls="quiet"))
     p.append(text(24, 386, "cache of the disk (page cache, virtual memory). Cache times: measured on this lecture's machine (latency.c).", 11.5, cls="quiet"))
-    return svg(900, 402, title, "\n".join(p))
+    p.append(text(24, 404, "Inboard storage is reached by the CPU's instructions, outboard storage through I/O, off-line storage needs a medium to be mounted.", 11.5, cls="quiet"))
+    return svg(1000, 420, title, "\n".join(p))
 
 
 # ---------------- 2. The triangle and the magic ----------------
@@ -322,10 +329,64 @@ def traversal():
     return svg(840, 380, title, "\n".join(p))
 
 
+# ---------------- 10. SRAM and DRAM cells ----------------
+def cells():
+    title = "Why fast memory is expensive: an SRAM cell has six transistors, a DRAM cell one transistor and a capacitor"
+    p = [text(24, 30, "Why fast memory is expensive: one bit of SRAM and one bit of DRAM", 15, 600)]
+
+    def tr(x, y, name):                      # a transistor as a small switch box, gate on top
+        return rect(x, y, 44, 26, "c2", rx=3) + text(x + 22, y + 17, name, 11, 600, anchor="middle")
+
+    def inv(x, y, right=True):              # an inverter: triangle with a small circle at its output
+        d = 1 if right else -1
+        tri = f"M{x} {y - 14}L{x + d * 34} {y}L{x} {y + 14}Z"
+        return (f'<path d="{tri}" class="accf"/><path d="{tri}" fill="none" class="acc" stroke-width="1.5"/>'
+                f'<circle cx="{x + d * 38}" cy="{y}" r="4" fill="none" class="acc" stroke-width="1.5"/>')
+
+    # ---- SRAM, left panel ----
+    p.append(text(24, 64, "SRAM cell (caches): 6 transistors", 13, 600))
+    p.append(path("M40 92H400", width=2)); p.append(text(404, 96, "word line", 11, cls="quiet"))
+    p.append(path("M60 80V290", width=2)); p.append(text(60, 308, "bit line", 11, cls="quiet", anchor="middle"))
+    p.append(path("M380 80V290", width=2)); p.append(text(380, 308, "inverted bit line", 11, cls="quiet", anchor="middle"))
+    p.append(tr(98, 170, "T5")); p.append(tr(298, 170, "T6"))
+    p.append(path("M120 92V170")); p.append(path("M320 92V170"))
+    p.append(path("M60 183H98")); p.append(path("M342 183H380"))
+    # node Q (x=170) feeds the upper inverter, node not-Q (x=270) the lower one; outputs cross over
+    p.append(path("M142 183H170V150H186")); p.append(path("M224 150H270V183"))
+    p.append(path("M298 183H270V216H254")); p.append(path("M216 216H170V183"))
+    p.append(inv(186, 150, True)); p.append(inv(254, 216, False))
+    p.append('<circle cx="170" cy="183" r="3" class="edgef"/><circle cx="270" cy="183" r="3" class="edgef"/>')
+    p.append(text(164, 200, "Q", 11, 600, anchor="end")); p.append(text(276, 200, "not Q", 11, 600))
+    p.append(text(220, 252, "two inverters (2 transistors each) feed each other:", 11, cls="quiet", anchor="middle"))
+    p.append(text(220, 266, "the bit stays as long as there is power", 11, cls="quiet", anchor="middle"))
+    # ---- DRAM, right panel ----
+    x0 = 500
+    p.append(text(x0, 64, "DRAM cell (main memory): 1 transistor + 1 capacitor", 13, 600))
+    p.append(path(f"M{x0 + 10} 92H{x0 + 300}", width=2)); p.append(text(x0 + 304, 96, "word line", 11, cls="quiet"))
+    p.append(path(f"M{x0 + 40} 80V290", width=2)); p.append(text(x0 + 40, 308, "bit line", 11, cls="quiet", anchor="middle"))
+    p.append(tr(x0 + 120, 170, "T"))
+    p.append(path(f"M{x0 + 142} 92V170")); p.append(path(f"M{x0 + 40} 183H{x0 + 120}"))
+    p.append(path(f"M{x0 + 164} 183H{x0 + 220}V206"))
+    p.append(f'<path d="M{x0 + 196} 206H{x0 + 244}M{x0 + 196} 216H{x0 + 244}" fill="none" class="acc" stroke-width="3"/>')
+    p.append(path(f"M{x0 + 220} 216V236")); p.append(path(f"M{x0 + 204} 236H{x0 + 236}M{x0 + 210} 242H{x0 + 230}M{x0 + 216} 248H{x0 + 224}", width=1.5))
+    p.append(text(x0 + 254, 208, "capacitor: the bit", 11, cls="quiet")); p.append(text(x0 + 254, 222, "is a tiny charge", 11, cls="quiet"))
+    p.append(text(x0 + 205, 272, "the charge leaks away: every row must be refreshed", 11, cls="quiet", anchor="middle"))
+    p.append(text(x0 + 205, 286, "(within 32–64 ms in DDR memory), and reading drains it", 11, cls="quiet", anchor="middle"))
+    # ---- comparison ----
+    rows = [("SRAM", "about 6 transistors per bit, no refresh, ~1 ns on the CPU chip: fast, large area, expensive → caches", "acct"),
+            ("DRAM", "1 transistor + 1 capacitor per bit, needs refresh, ~100 ns through the memory controller: dense, cheap → RAM", "c2"),
+            ("CAM", "an SRAM cell plus comparison logic, about 9–10 transistors per bit → only small fully associative caches, TLBs", "bad")]
+    for i, (a, b, c) in enumerate(rows):
+        y = 342 + i * 22
+        p.append(text(24, y, a, 12, 600, cls=c)); p.append(text(76, y, b, 11.5, cls="quiet"))
+    return svg(900, 410, title, "\n".join(p))
+
+
 if __name__ == "__main__":
     for name, fn in [("memory-hierarchy", hierarchy), ("two-level-magic", triangle), ("latency-ladder", ladder),
                      ("call-depth", calldepth), ("direct-mapped-cache", dmcache), ("fully-associative-cache", facache),
-                     ("block-placement", placement), ("miss-rate-vs-line-size", blocksize), ("traversal", traversal)]:
+                     ("block-placement", placement), ("miss-rate-vs-line-size", blocksize), ("traversal", traversal),
+                     ("memory-cells", cells)]:
         with open(os.path.join(HERE, f"{name}.svg"), "w") as f:
             f.write(fn())
         print("wrote", name + ".svg")

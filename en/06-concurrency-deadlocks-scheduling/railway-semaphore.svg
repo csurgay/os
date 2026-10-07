@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 844 378" width="844" height="378" role="img" aria-label="The railway semaphore: one train at a time on a single-track section">
+<title>The railway semaphore: one train at a time on a single-track section</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">The railway semaphore: one train at a time on a single-track section</text>
+<rect x="250" y="122" width="350" height="36" rx="6" class="accf"/>
+<path d="M30 110H200L250 140H600L650 110H820" class="edge" stroke-width="3" fill="none"/>
+<path d="M30 170H200L250 140M600 140L650 170H820" class="edge" stroke-width="3" fill="none"/>
+<rect x="360" y="128" width="96" height="24" rx="10" class="c2f"/><rect x="360" y="128" width="96" height="24" rx="10" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="408" y="145" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">train A →</text>
+<rect x="680" y="96" width="96" height="24" rx="10" class="c2f"/><rect x="680" y="96" width="96" height="24" rx="10" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="728" y="113" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">← train B</text>
+<path d="M240 114V58" class="edge" stroke-width="3" fill="none"/><path d="M233 114H247" class="edge" stroke-width="3" fill="none"/><path d="M240 62H274" class="bads" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="240" cy="62" r="4" class="ink"/>
+<path d="M610 114V58" class="edge" stroke-width="3" fill="none"/><path d="M603 114H617" class="edge" stroke-width="3" fill="none"/><path d="M610 62H576" class="bads" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="610" cy="62" r="4" class="ink"/>
+<text x="425" y="186" font-size="12" font-weight="600" class="acct" text-anchor="middle">single-track section = critical section;  S = 0 (occupied)</text>
+<text x="425" y="204" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">A entered with P(S) and holds the line; B stops at the east signal until A leaves with V(S)</text>
+<text x="228" y="66" font-size="11" font-weight="400" class="quiet" text-anchor="end">west signal</text>
+<text x="622" y="66" font-size="11" font-weight="400" class="quiet" text-anchor="start">east signal</text>
+<rect x="24" y="228" width="800" height="108" rx="8" class="tint"/><rect x="24" y="228" width="800" height="108" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M80 320V264" class="edge" stroke-width="3" fill="none"/><path d="M73 320H87" class="edge" stroke-width="3" fill="none"/><path d="M80 268H114" class="bads" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="80" cy="268" r="4" class="ink"/>
+<path d="M470 320V264" class="edge" stroke-width="3" fill="none"/><path d="M463 320H477" class="edge" stroke-width="3" fill="none"/><path d="M470 268L494 244" class="acc" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="470" cy="268" r="4" class="ink"/>
+<text x="140" y="262" font-size="12.5" font-weight="600" class="ink" text-anchor="start">arm horizontal: STOP</text>
+<text x="140" y="282" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">S = 0: a train that does P(S) must wait</text>
+<text x="140" y="300" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">(the section is occupied)</text>
+<text x="530" y="262" font-size="12.5" font-weight="600" class="ink" text-anchor="start">arm raised: GO</text>
+<text x="530" y="282" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">S = 1: P(S) passes and sets S = 0,</text>
+<text x="530" y="300" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">the signals return to stop behind the train</text>
+<text x="24" y="362" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Leaving the section is V(S): S becomes 1 again and one waiting train may enter. A semaphore that starts at n admits n trains at once.</text>
+</svg>

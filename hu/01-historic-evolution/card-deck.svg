@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 454" width="760" height="454" role="img" aria-label="Munkacsomag: a vezérlőkártyák közrefogják a programot és adatait; a munkák köteget alkotnak">
+<title>Munkacsomag: a vezérlőkártyák közrefogják a programot és adatait; a munkák köteget alkotnak</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+  }
+</style>
+<defs><marker id="cd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Munkacsomag: a vezérlőkártyák közrefogják a programot és adatait; a munkák köteget alkotnak</text>
+<text x="24" y="50" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Munkavezérlő nyelv Stallings FORTRAN-példájában. A kártyaolvasó az elülső kártyát olvassa be először.</text>
+<path d="M184 114H440L454 126V184H184Z" class="tint"/><path d="M184 114H440L454 126V184H184Z" class="accf"/><path d="M184 114H440L454 126V184H184Z" fill="none" class="acc" stroke-width="1.5"/>
+<text x="194" y="130" font-size="11.5" font-weight="600" class="acct" text-anchor="start">$END  a munka vége</text>
+<path d="M168 138H424L438 150V208H168Z" class="tint"/><path d="M168 138H424L438 150V208H168Z" class="c2f"/><path d="M168 138H424L438 150V208H168Z" fill="none" class="c2s" stroke-width="1.25"/>
+<text x="178" y="154" font-size="11.5" font-weight="400" class="ink" text-anchor="start">adatkártya</text>
+<path d="M152 162H408L422 174V232H152Z" class="tint"/><path d="M152 162H408L422 174V232H152Z" class="c2f"/><path d="M152 162H408L422 174V232H152Z" fill="none" class="c2s" stroke-width="1.25"/>
+<text x="162" y="178" font-size="11.5" font-weight="400" class="ink" text-anchor="start">adatkártya</text>
+<path d="M136 186H392L406 198V256H136Z" class="tint"/><path d="M136 186H392L406 198V256H136Z" class="accf"/><path d="M136 186H392L406 198V256H136Z" fill="none" class="acc" stroke-width="1.5"/>
+<text x="146" y="202" font-size="11.5" font-weight="600" class="acct" text-anchor="start">$RUN  elindítja az adatokon</text>
+<path d="M120 210H376L390 222V280H120Z" class="tint"/><path d="M120 210H376L390 222V280H120Z" class="accf"/><path d="M120 210H376L390 222V280H120Z" fill="none" class="acc" stroke-width="1.5"/>
+<text x="130" y="226" font-size="11.5" font-weight="600" class="acct" text-anchor="start">$LOAD  betölti a lefordított programot</text>
+<path d="M104 234H360L374 246V304H104Z" class="tint"/><path d="M104 234H360L374 246V304H104Z" fill="none" class="edge" stroke-width="1.25"/>
+<text x="114" y="250" font-size="11.5" font-weight="400" class="ink" text-anchor="start">programkártya</text>
+<path d="M88 258H344L358 270V328H88Z" class="tint"/><path d="M88 258H344L358 270V328H88Z" fill="none" class="edge" stroke-width="1.25"/>
+<text x="98" y="274" font-size="11.5" font-weight="400" class="ink" text-anchor="start">programkártya</text>
+<path d="M72 282H328L342 294V352H72Z" class="tint"/><path d="M72 282H328L342 294V352H72Z" fill="none" class="edge" stroke-width="1.25"/>
+<text x="82" y="298" font-size="11.5" font-weight="400" class="ink" text-anchor="start">programkártya</text>
+<path d="M56 306H312L326 318V376H56Z" class="tint"/><path d="M56 306H312L326 318V376H56Z" class="accf"/><path d="M56 306H312L326 318V376H56Z" fill="none" class="acc" stroke-width="1.5"/>
+<text x="66" y="322" font-size="11.5" font-weight="600" class="acct" text-anchor="start">$FTN  lefordítja, ami utána jön</text>
+<path d="M40 330H296L310 342V400H40Z" class="tint"/><path d="M40 330H296L310 342V400H40Z" class="accf"/><path d="M40 330H296L310 342V400H40Z" fill="none" class="acc" stroke-width="1.5"/>
+<text x="50" y="346" font-size="11.5" font-weight="600" class="acct" text-anchor="start">$JOB  felhasználó, számla, korlátok</text>
+<text x="50" y="380" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">elöl: ezt olvassa be először</text>
+<rect x="24" y="419" width="14" height="14" rx="2" class="accf"/><rect x="24" y="419" width="14" height="14" rx="2" fill="none" class="acc" stroke-width="2"/>
+<text x="44" y="430" font-size="11.5" font-weight="400" class="ink" text-anchor="start">vezérlőkártya (JCL) a monitornak</text>
+<rect x="260" y="419" width="14" height="14" rx="2" fill="none" class="edge" stroke-width="1.25"/>
+<text x="280" y="430" font-size="11.5" font-weight="400" class="ink" text-anchor="start">program (forráskód)</text>
+<rect x="440" y="419" width="14" height="14" rx="2" class="c2f"/><rect x="440" y="419" width="14" height="14" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="460" y="430" font-size="11.5" font-weight="400" class="ink" text-anchor="start">a program bemenő adatai</text>
+<text x="500" y="78" font-size="13" font-weight="600" class="ink" text-anchor="start">Egy köteg: munka munka után</text>
+<rect x="500" y="96" width="210" height="38" rx="3" class="tint"/><rect x="500" y="96" width="210" height="38" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="500" y="96" width="10" height="38" class="accf"/>
+<rect x="700" y="96" width="10" height="38" class="accf"/>
+<text x="522" y="113" font-size="12.5" font-weight="600" class="ink" text-anchor="start">3. munka</text>
+<text x="522" y="128" font-size="11" font-weight="400" class="quiet" text-anchor="start">$JOB … $END</text>
+<rect x="500" y="142" width="210" height="38" rx="3" class="tint"/><rect x="500" y="142" width="210" height="38" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="500" y="142" width="10" height="38" class="accf"/>
+<rect x="700" y="142" width="10" height="38" class="accf"/>
+<text x="522" y="159" font-size="12.5" font-weight="600" class="ink" text-anchor="start">2. munka</text>
+<text x="522" y="174" font-size="11" font-weight="400" class="quiet" text-anchor="start">$JOB … $END</text>
+<rect x="500" y="188" width="210" height="38" rx="3" class="tint"/><rect x="500" y="188" width="210" height="38" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="500" y="188" width="10" height="38" class="accf"/>
+<rect x="700" y="188" width="10" height="38" class="accf"/>
+<text x="522" y="205" font-size="12.5" font-weight="600" class="ink" text-anchor="start">1. munka</text>
+<text x="522" y="220" font-size="11" font-weight="400" class="quiet" text-anchor="start">$JOB … $END</text>
+<path d="M605 236V264" fill="none" class="edge" stroke-width="1.25" marker-end="url(#cd)"/>
+<rect x="500" y="268" width="210" height="30" rx="4" class="accf"/><rect x="500" y="268" width="210" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="605" y="288" font-size="12" font-weight="600" class="ink" text-anchor="middle">kártyaolvasó → monitor</text>
+<text x="500" y="318" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Az 1. munkát olvassa be először;</text>
+<text x="500" y="334" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">a $END-nél a monitor operátor</text>
+<text x="500" y="350" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">nélkül indítja a következő munkát</text>
+</svg>

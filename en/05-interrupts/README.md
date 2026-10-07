@@ -25,10 +25,12 @@ By the end, students will be able to:
 - name the four classes of interrupts and give an example of each;
 - explain user mode and kernel mode, and why some instructions are privileged;
 - list the steps of interrupt processing and say which are done by the hardware and which by the handler;
+- explain the vector-table lookup, what the PSW contains, and how register banks speed up interrupt entry;
 - explain how nested interrupts and priorities work, and why the saved state forms a stack;
 - describe what the interrupt controller does, and the difference between edge- and level-triggered interrupts;
 - define interrupt latency, name its parts, and explain why the worst case matters;
 - compare programmed I/O, interrupt-driven I/O and DMA, and estimate their CPU cost;
+- follow a page fault that needs the disk through exception, DMA, scheduling and interrupt;
 - explain why interrupts cause race conditions, and how test-and-set and semaphores give mutual exclusion;
 - find these mechanisms on a running Linux system (`/proc/interrupts`, `/proc/softirqs`, signals, threads, latency measurement).
 
@@ -61,6 +63,8 @@ For external interrupts (timer, I/O), fetch, decode and execute form one **atomi
 - the PC already points to the next instruction (it was advanced during fetch), so that is exactly the address to return to.
 
 If no interrupt is pending, the next fetch follows immediately. If one is pending, the next fetch is the first instruction of the interrupt handler.
+
+More precisely, the Check Interrupt step tests two conditions together: **interrupts are enabled AND an interrupt is pending**. A request that arrives while interrupts are disabled (masked) is not lost: it stays pending, and it is taken at the first instruction boundary after interrupts are enabled again. Because the check happens only at instruction boundaries, every single instruction is atomic with respect to interrupts on its own core: no handler, and no other process the handler might switch to, can ever see an instruction half done. An atomic test-and-set instruction relies on exactly this (see [Interrupts and concurrency](#interrupts-and-concurrency)).
 
 Interrupts caused by the instruction itself work slightly differently, because they arise while the instruction is being fetched or executed (see the next section). A **fault**, such as a page fault, abandons the instruction before it has any effect, and the saved PC points to the *faulting* instruction, so it can be executed again once the handler has fixed the problem (for example, loaded the missing page). A **trap**, such as a system call instruction, completes first, and the saved PC points to the next instruction. (A few long x86 instructions, such as `rep movs`, may also be interrupted between their repetitions and resumed later.)
 
@@ -148,6 +152,39 @@ The work is split between the hardware and the software (Stallings, 2018):
 9. **A special return instruction restores the PC and the PSW** (`iret` on x86). The next fetch continues the interrupted program.
 
 The hardware saves only what it must (PC and PSW), because these change the moment the handler starts running. Everything else is the handler's job. This keeps the hardware simple. Operating system entry code (Linux's included) usually saves all general-purpose registers, because the interrupt may end in a switch to a different process, and then the whole state of the interrupted one must be kept.
+
+**A vector-table lookup in numbers.** Take a simple machine whose vector table holds one 16-bit handler address per entry. Interrupt source 17 raises a request; in step 5 the CPU reads entry 17 of the table, finds FBCAh there, and loads it into the PC. The next fetch is the first instruction of the handler at address FBCAh.
+
+![Interrupt number 17 selects entry 17 of the vector table, which holds FBCAh, the start address of the handler in memory](vector-table.svg)
+
+The table is an extra level of indirection: the hardware only knows "interrupt 17 → entry 17", and the operating system decides where the handler is by filling in the entry. The Z80 works like this in its interrupt mode 2: the device puts the low byte of the table address on the data bus, the CPU's I register supplies the high byte, and the CPU reads the 16-bit handler address from that table entry (Zilog, 2016). On x86-64 the table is the IDT (interrupt descriptor table), located by the IDTR register; its entries are 16 bytes long because each also holds the code segment and privilege settings, and vectors 0–31 are reserved for exceptions, so device interrupts get vectors 32 to 255.
+
+**What is in the PSW?** The program status word collects the part of the CPU state that is not in the general-purpose registers but must survive the handler:
+
+- the **condition codes** (flags) of the last operation: zero, sign, carry, overflow;
+- the **interrupt enable bit or interrupt mask**: which interrupts may be taken now;
+- the **mode bit**: kernel or user mode;
+- on some machines, **memory protection information**.
+
+The name comes from the IBM System/360 (1964), whose 64-bit PSW held all of these (interrupt mask bits, storage protection key, problem-state bit for user mode, condition code) and also the instruction address itself, so on that machine "save the PSW" really meant "save PC and status" in one step. x86-64 has no single register called PSW. Its role is played by RFLAGS (the flags, IF and the I/O privilege level) together with the current privilege level, which is kept in the lowest two bits of the CS register. This is why an x86-64 interrupt pushes RIP, CS and RFLAGS (and also the interrupted stack pointer, SS and RSP).
+
+**Saving the state faster: register banks.** Saving registers to memory takes time, and that time adds to the interrupt latency. Some processors therefore keep a spare copy of registers in hardware. The Z80 has an alternate register set A′, F′, B′, C′, D′, E′, H′, L′: the instruction `EX AF,AF'` swaps A and F with their copies, and `EXX` swaps BC, DE and HL with theirs (Zilog, 2016). A handler that has the alternate set to itself begins with these two instructions and ends with them, so it "saves" and "restores" all eight registers without a single memory access. 32-bit ARM processors do the same for their fast interrupt (**FIQ**): on entry to FIQ mode, registers R8–R14 are replaced by banked copies, the return address goes into the banked R14 and the status register into the banked SPSR, so a short FIQ handler can do its work without saving anything to memory (Arm Limited, 2018). The limit is that there is only one spare set: it serves one level of interrupts (or one interrupt class), and nested interrupts still need the stack.
+
+<details>
+<summary><b>Explained simply:</b> indirection, IDT, IDTR, condition codes, interrupt mask, mode bit, IBM System/360, RFLAGS, CS, privilege level, register bank, alternate register set, FIQ, SPSR</summary>
+
+- **Indirection:** looking something up in a list instead of knowing it directly, like dialling "emergency number 17" from a list by the door instead of memorising every number. Whoever updates the list can change the destination.
+- **IDT** (Interrupt Descriptor Table): the x86 name for the vector table. **IDTR** is the CPU register that holds the table's address.
+- **Condition codes:** the flags (zero, negative, carry, overflow) that describe the result of the last calculation.
+- **Interrupt mask:** a set of on/off bits saying which interrupts may come through right now.
+- **Mode bit:** one bit that says whether the CPU is in kernel mode or user mode.
+- **IBM System/360:** an influential family of IBM mainframe computers from 1964; many terms of operating systems come from it.
+- **RFLAGS, CS:** RFLAGS is the x86-64 flags register. CS (code segment) is a register whose lowest two bits tell the current privilege level, the "ring" (0 = kernel, 3 = user).
+- **Register bank, alternate register set:** a second, hidden copy of some registers. Switching to it is like turning over a whiteboard: the other side is clean, and the old notes are still there when you turn it back.
+- **FIQ** (Fast Interrupt reQuest): ARM's special interrupt for the most urgent device, with its own register bank so its handler can start at once.
+- **SPSR** (Saved Program Status Register): the ARM register that receives a copy of the status register (ARM's PSW) when an interrupt is taken.
+
+</details>
 
 <details>
 <summary><b>Explained simply:</b> IRQ, acknowledge, PSW, flags, stack, vector table, IF flag, process, process state</summary>
@@ -280,6 +317,14 @@ Transferring a block of data (for example, a disk sector) between a device and m
 
 With DMA, the CPU only gives the DMA controller the device, the memory address, the amount of data and the direction. The DMA controller then performs the transfer on the system bus by itself and interrupts the CPU once, at the end. Since the CPU and the DMA controller share the same bus, the CPU may have to wait for the bus during the transfer. Because the DMA controller takes bus cycles away from the CPU, this is often called **cycle stealing**.
 
+**In one line each:**
+
+- **programmed I/O:** the CPU waits for the device, "busy doing nothing";
+- **interrupt-driven I/O:** the CPU is free while the device works, but it still moves every word itself;
+- **DMA:** the CPU only starts the transfer and handles its end; the data moves without it, so the load falls on the bus, not on the CPU.
+
+This works because the DMA controller is a second **bus master**: a device that can start bus transfers by itself, not only answer them. Since the CPU and the DMA controller share the bus, they must take turns, and **bus arbitration** decides who gets it: the DMA controller requests the bus, and the CPU grants it at the end of a bus cycle. In today's PCs most fast devices (disk and network controllers) are bus masters themselves on PCI Express ([bus hierarchy](../04-fetch-execute-cycle/#from-one-bus-to-a-hierarchy-of-buses)); their transfers no longer wait for one shared bus, but they still compete with the CPU cores for memory bandwidth.
+
 **A worked example.** How much CPU time does each technique cost? Take a device that delivers one byte every 10 µs, and a 4 KiB (4096-byte) block, so the transfer takes 40.96 ms whatever we do. The other numbers below are round, assumed values chosen to make the arithmetic easy; real ones depend on the hardware, but the proportions are typical.
 
 | Technique | Assumptions | CPU time spent | Share of the 40.96 ms |
@@ -303,6 +348,34 @@ The device is equally slow in all four cases. What changes is how much of that t
 - **DMA** (Direct Memory Access): a helper chip that copies data between a device and memory by itself, so the CPU does not have to. Like hiring movers instead of carrying every box yourself: you only tell them what to move where, and they ring you when they're done.
 - **Bus:** the shared set of wires that connects the CPU, memory and devices. Only one of them can use it at a time.
 - **Cycle stealing:** while DMA is using the bus, the CPU occasionally has to wait for it: the DMA "steals" a few of the CPU's bus turns.
+- **Bus master:** a device that may start a transfer on the bus by itself. The CPU is one; a DMA controller is another. Other devices only answer when spoken to.
+- **Bus arbitration:** deciding who may use the bus next when several masters want it, like a referee who gives the ball to one player at a time.
+- **Memory bandwidth:** how much data the memory can deliver per second. All cores and devices share it.
+
+</details>
+
+## Putting it together: a page fault that needs the disk
+
+The mechanisms of this lecture rarely act alone. A single page fault that has to wait for the disk shows them working together, and connects this lecture with process states and scheduling ([lecture 6](../06-concurrency-deadlocks-scheduling/)) and with virtual memory ([lecture 8](../08-virtual-memory/)):
+
+![Timeline: process A page-faults, the kernel starts a DMA read and runs process B, the disk interrupt makes A ready again](page-fault-chain.svg)
+
+1. Process A executes an instruction that touches a page which is not in memory. The MMU raises a **page fault**: an exception, synchronous, caused by A's own instruction.
+2. The fault handler checks that the access is legal, finds a free frame (if necessary, it first evicts a page and writes it back to the disk if it was modified), and tells the disk controller to read the missing page into that frame by **DMA**. A cannot continue until the page arrives, so the kernel marks it **blocked**.
+3. The scheduler runs another process, B. The CPU does useful work while the disk and the DMA controller transfer the page.
+4. When the transfer is complete, the disk raises an **interrupt**: asynchronous, from outside. It interrupts B, although B has nothing to do with it.
+5. The interrupt handler updates A's page table entry and makes A **ready**. When the scheduler next runs A, the faulting instruction is executed again (a page fault is a *fault*, so the saved PC points to that instruction), and this time it succeeds.
+
+The same event is therefore handled twice through the interrupt mechanism, once as an exception and once as an interrupt, with DMA in between and a process switch on each side. [A page fault that waits for the disk](#a-page-fault-that-waits-for-the-disk) measures this chain on Linux.
+
+<details>
+<summary><b>Explained simply:</b> MMU, frame, evict, page table entry, blocked, ready</summary>
+
+- **MMU** (Memory Management Unit): the part of the CPU that translates the addresses a program uses into real memory addresses, and raises a page fault when it cannot.
+- **Frame:** a page-sized slot in the real memory, into which a page can be loaded.
+- **Evict:** to throw a page out of memory to make room, like taking a book off a full shelf.
+- **Page table entry:** the line in a process's page table that says where one of its pages is (in which frame, or "not in memory").
+- **Blocked, ready:** a blocked process waits for something (here, the page) and cannot use the CPU; a ready process could run and only waits for its turn.
 
 </details>
 
@@ -321,7 +394,7 @@ The part of a program that works on shared data is a **critical section**, and t
 **Solutions:**
 
 - **Disable interrupts** during the critical section. Without interrupts there is no switch, so the section runs alone. This works only on a single CPU, and only in the kernel: a user program must not be able to switch off the timer and keep the CPU forever, which is exactly why `cli` is a privileged instruction.
-- **An atomic test-and-set instruction.** The CPU reads the old value and writes the new one in a single, indivisible instruction, so no interrupt and no other core can come between the test and the set. On x86 this is the `xchg` instruction (exchange register with memory), which is automatically locked. A lock built on it, where the waiting process keeps retrying in a loop, is a **spinlock**.
+- **An atomic test-and-set instruction.** The CPU reads the old value and writes the new one in a single, indivisible instruction, so no interrupt and no other core can come between the test and the set. Against interrupts this is automatic, because interrupts are only taken between instructions (see [the instruction cycle](#where-interrupts-fit-in-the-instruction-cycle)); against the other cores the CPU must also lock the memory location for the duration of the instruction. On x86 this is the `xchg` instruction (exchange register with memory), which is automatically locked. A lock built on it, where the waiting process keeps retrying in a loop, is a **spinlock**.
 - **A semaphore**, provided by the operating system (Silberschatz et al., 2018; Stallings, 2018). For mutual exclusion, S starts at 1. `wait(S)` decrements S, and if the result is negative, the process is blocked (put to sleep) instead of busy-waiting. `signal(S)` increments S, and if processes are waiting, wakes one of them up. The OS makes both operations atomic, using the two techniques above inside the kernel. (In Dijkstra's original definition, called P and V, S never goes below zero: P simply waits until S > 0. Both forms are in use.)
 
 <details>
@@ -523,6 +596,59 @@ Modern disks and network cards use **DMA**: they read and write main memory dire
 
 </details>
 
+### A page fault that waits for the disk
+
+`pagefault.c` maps a 16 MiB file into memory with `mmap` and reads one byte from each of its 4096 pages, so every page is touched for the first time. It counts the page faults with `getrusage`: a **major fault** needed a disk read, a **minor fault** found the page already in memory (in the page cache) and only had to map it. By default it switches off read-ahead (`madvise(MADV_RANDOM)`), so that each fault reads exactly one page; with the argument `readahead` it leaves read-ahead on. The script `pagefault.sh` empties the page cache, runs the program twice (cold, then warm), and counts the disk's interrupts (`virtio1-req.0` in `/proc/interrupts`, the disk seen in the earlier listing) during each run:
+
+```c
+    if (argc < 3)                                  /* no read-ahead: one fault = one page */
+        madvise((void *)p, st.st_size, MADV_RANDOM);
+    ...
+    for (long i = 0; i < pages; i++)
+        sum += p[i * pg];                          /* first touch of each page */
+```
+
+```console
+$ gcc -O1 -o pagefault pagefault.c
+$ sudo sh ./pagefault.sh
+4096 pages touched in 161.6 ms (checksum 511876)
+major faults (needed the disk): 4096
+minor faults (page already in memory): 2
+cold run: disk interrupts (virtio1-req.0): 4102
+
+4096 pages touched in 1.4 ms (checksum 511876)
+major faults (needed the disk): 0
+minor faults (page already in memory): 258
+warm run: disk interrupts (virtio1-req.0): 0
+
+$ sudo sh ./pagefault.sh readahead
+4096 pages touched in 7.3 ms (checksum 511876)
+major faults (needed the disk): 1
+minor faults (page already in memory): 134
+cold run: disk interrupts (virtio1-req.0): 73
+...
+```
+
+- **Cold, without read-ahead:** 4096 major faults and 4102 disk interrupts, one completion interrupt per page read (the extra 6 came from other disk activity during the run). This is the chain of the [previous section](#putting-it-together-a-page-fault-that-needs-the-disk), 4096 times over: about 39 µs per page, almost all of it spent waiting for the disk, time in which the CPU could run other processes.
+- **Warm:** the same loop takes 1.4 ms, more than 100 times faster: no major faults and no disk interrupts. The 258 minor faults are far fewer than 4096 pages, because at each fault Linux also maps neighbouring pages that are already in the page cache (*fault-around*).
+- **Cold, with read-ahead:** only 1 major fault and 73 interrupts. Seeing the first fault, the kernel read large pieces of the file ahead in a few dozen big DMA transfers, and the later accesses found their pages already in memory. Fewer, larger transfers mean fewer interrupts: the same lesson as "interrupt per buffer" versus "interrupt per byte" above.
+
+This is a virtual machine whose disk is itself emulated by the host, so the absolute times will differ on a physical disk (an HDD is far slower per read, an NVMe SSD somewhat faster), but the counts tell the same story everywhere.
+
+<details>
+<summary><b>Explained simply:</b> mmap, getrusage, major fault, minor fault, page cache, read-ahead, madvise, drop_caches, fault-around</summary>
+
+- **`mmap`:** asks the OS to make a file appear as part of the program's memory. The data is loaded only when a page is first touched, through a page fault.
+- **`getrusage`:** a Linux function that reports how many resources the program has used so far, including how many page faults it caused.
+- **Major fault / minor fault:** a major fault has to wait for the disk; a minor fault finds the data already in memory and only fixes up the page table.
+- **Page cache:** the part of memory where Linux keeps copies of recently used file data, so the disk does not have to be read again.
+- **Read-ahead:** when a file is read from the start, the OS guesses that the next parts will be needed soon and reads them in advance, like a waiter who brings the next course before you ask.
+- **`madvise`:** a function that tells the OS how the program will use its memory; `MADV_RANDOM` says "in random order, don't read ahead".
+- **`drop_caches`:** writing 3 to `/proc/sys/vm/drop_caches` makes Linux empty its page cache, so the next read has to come from the disk.
+- **Fault-around:** on a fault, Linux also maps neighbouring pages that are already in memory, saving later faults.
+
+</details>
+
 ### Measuring interrupt latency
 
 `latency.c` asks to be woken up every millisecond at an exact time, 5000 times, and measures how late each wake-up actually is. Each wake-up needs a timer interrupt, the kernel's interrupt handling and the scheduler, so this measures the whole chain from the latency section: interrupt latency plus scheduling latency, plus one more Linux detail, **timer slack**. To save energy, Linux may deliberately wake an ordinary program up to 50 µs late, so that several wake-ups can be handled together; real-time tasks get no slack. The `noslack` option asks the kernel to switch the slack off for this program. (The program is a simplified version of `cyclictest`, the standard Linux tool for this.)
@@ -713,6 +839,7 @@ Once correct, twice wrong. This is what makes race conditions dangerous: the pro
 5. **The race.** Run `race.c` in all three modes, several times each. Then pin it to one core with `taskset -c 0`. Why are errors so much rarer on one core? Increase `N` until you see them.
 6. **Latency.** Run `latency.c` on an idle machine, then while `yes > /dev/null` runs once per core: as it is, with the `noslack` option, and (if you have administrator rights) with `sudo chrt -f 80`. Fill in a table of median, 99% and max. Which setting changes the median, and which one changes the worst cases? Why does the max matter more than the median for a motor controller?
 7. **Your own semaphore.** Rewrite `race.c` with a POSIX semaphore (`sem_t`, `sem_init`, `sem_wait`, `sem_post`). Measure the run time of the spinlock and the semaphore versions with `time`. Which is faster here, and why might that change if the critical section were long?
+8. **A page fault that waits for the disk.** Run `pagefault.sh` (as root) without and with the `readahead` argument. (On your machine, first find the disk's line in `/proc/interrupts` and pass its name in the `DISK` variable, for example `sudo DISK=nvme0q1 sh ./pagefault.sh`; an NVMe disk has several queues, so choose one or sum them.) How many disk interrupts arrive per major fault? Why does read-ahead reduce both the faults and the interrupts? While the cold run is waiting, what does the CPU do?
 
 ## Review questions
 
@@ -730,6 +857,10 @@ Once correct, twice wrong. This is what makes race conditions dangerous: the pro
 12. List the components of interrupt latency. Which one does the operating system control most directly, and how does it keep it short?
 13. A device uses a level-triggered line, and its handler returns without servicing the device. What happens? What would happen with an edge-triggered line if the interrupt arrived while that line was masked?
 14. In the worked I/O example, the device becomes 5 times faster (one byte every 2 µs). Recalculate the CPU share for interrupt-per-byte and for DMA. What do you conclude?
+15. The Check Interrupt step tests "interrupts enabled AND an interrupt pending". What happens to a request that arrives while interrupts are disabled? Why does this rule make every single instruction atomic with respect to interrupts, and why is that not enough on a multicore machine?
+16. In a simple machine the vector table starts at address 0 and holds one 2-byte handler address per entry. Interrupt 17 arrives, and the entry holds FBCAh. At which address is the entry, and what is the PC after step 5? What does the OS have to change to install a new handler for interrupt 17?
+17. What does the PSW contain, and why must the hardware itself save it, together with the PC, before the handler starts? How do the Z80's alternate registers or ARM's FIQ banked registers shorten interrupt handling, and what is their limit?
+18. A process touches a page that is on the disk. List the events until it continues, and mark which of them is an exception, which is an interrupt, and what the CPU does in between.
 
 <details>
 <summary><strong>Answer key (for instructors)</strong></summary>
@@ -748,10 +879,16 @@ Once correct, twice wrong. This is what makes race conditions dangerous: the pro
 12. Finishing the current instruction; waiting while interrupts are masked (or a higher-priority handler runs); the hardware entry (acknowledge, mode switch, save PC/PSW, vector lookup); the handler saving registers. The OS controls the masked periods most directly: it keeps them as short as possible, keeps hardware handlers short and moves the rest to deferred work (and with PREEMPT_RT, runs most handlers as prioritised, preemptible threads).
 13. Level-triggered: the line is still active, so the same interrupt is taken again immediately after the return, over and over (an interrupt storm); the system may hang. (Linux detects this, reports "irq N: nobody cared" and switches the line off.) Edge-triggered: the edge is a single event; if it arrives while the line is masked and the controller does not latch it, the interrupt is lost, and the device may wait forever.
 14. The transfer now takes 4096 × 2 µs = 8,192 µs. Interrupt per byte: 4096 × 2 µs = 8,192 µs, which is 100% of the transfer time: the CPU does nothing but handle interrupts, no better than polling. DMA: still 3 µs, now 3 / 8,192 ≈ 0.04%. Conclusion: the faster the device, the more per-byte interrupts cost relative to the transfer; fast devices need buffering or DMA.
+15. It stays pending and is taken at the first instruction boundary after interrupts are enabled again; it is not lost. Since the check is made only between instructions, an interrupt (and any process switch it causes) can never fall inside an instruction, so on one core every instruction, including a test-and-set, is indivisible. On a multicore machine another core runs at the same time and can access the same memory location in the middle of the instruction, so the CPU must also lock that location (the bus or cache line) for the instruction, as `xchg` does.
+16. Entry 17 is at address 17 × 2 = 34 = 22h. After step 5 the PC is FBCAh, so the next fetch is the first instruction of the handler. To install a new handler, the OS writes the new handler's start address into entry 17; the hardware is not changed.
+17. The condition codes (flags), the interrupt enable bit or mask, the kernel/user mode bit and, on some machines, memory protection information. The hardware changes the mode and the interrupt mask the moment it enters the handler, and the handler's first instructions would change the flags and the PC, so the old values must be saved before any handler instruction runs. Alternate or banked registers let the handler switch to a spare set instead of saving registers to memory, which saves time and reduces latency; but there is only one spare set, so it serves one level of interrupt (one handler at a time), and nested interrupts still need the stack.
+18. (1) The instruction causes a page fault: an exception, synchronous. (2) The kernel's handler finds a free frame (evicting and writing back a page if needed), starts a DMA read from the disk and blocks the process. (3) The scheduler runs another process, so the CPU does useful work during the transfer. (4) The disk raises an interrupt when the transfer is done: asynchronous. (5) The handler updates the page table and makes the process ready; when it is scheduled again, it re-executes the faulting instruction, which now succeeds.
 
 </details>
 
 ## References
+
+Arm Limited. (2018). *ARM architecture reference manual: ARMv7-A and ARMv7-R edition* (ARM DDI 0406C.d). Arm Limited.
 
 Dijkstra, E. W. (1965). *Cooperating sequential processes* (EWD 123). Technological University Eindhoven.
 
@@ -760,6 +897,8 @@ Silberschatz, A., Galvin, P. B., & Gagne, G. (2018). *Operating system concepts*
 Stallings, W. (2018). *Operating systems: Internals and design principles* (9th ed.). Pearson.
 
 The kernel development community. (n.d.). *Linux generic IRQ handling*. The Linux Kernel documentation. Retrieved October 6, 2026, from https://docs.kernel.org/core-api/genericirq.html
+
+Zilog. (2016). *Z80 CPU user manual* (UM0080, Rev. 11). Zilog.
 
 ## Further reading
 

@@ -338,10 +338,117 @@ def thrash():
     return svg(800, 376, title, "\n".join(p))
 
 
+# ---------------- 10. Before paging: overlays and swapping ----------------
+def overlays():
+    m = "ov"
+    title = "Before paging: overlays (one program in phases) and swapping (whole jobs)"
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600)]
+    p.append(text(24, 62, "Overlays: the resident part loads one phase at a time into the same overlay area", 13, 600))
+    phases = [("1. editor", "acc"), ("2. compiler", "c2"), ("3. linker", "bad")]
+    for i, (name, k) in enumerate(phases):
+        x = 40 + i * 170
+        # memory column, top = high addresses: free, overlay area, resident part, OS
+        p.append(rect(x, 80, 120, 50, "tint", rx=0)); p.append(text(x + 60, 110, "free", 11, cls="quiet", anchor="middle"))
+        p.append(rect(x, 130, 120, 80, k, rx=0)); p.append(text(x + 60, 174, name, 12, 600, anchor="middle"))
+        p.append(rect(x, 210, 120, 30, "plain", rx=0)); p.append(text(x + 60, 230, "resident part", 11, anchor="middle"))
+        p.append(rect(x, 240, 120, 34, "tint", rx=0)); p.append(text(x + 60, 262, "OS", 12, 600, anchor="middle"))
+        # the program file on disk with its three overlay segments
+        for j, (_, kk) in enumerate(phases):
+            xx = x + j * 40
+            p.append(rect(xx, 310, 40, 30, kk if j == i else "plain", rx=0))
+            p.append(text(xx + 20, 330, str(j + 1), 12, 600 if j == i else 400, cls="ink" if j == i else "quiet", anchor="middle"))
+        p.append(text(x + 60, 358, "program file on disk", 10.5, cls="quiet", anchor="middle"))
+        xs = x + i * 40 + 20
+        p.append(path(f"M{xs} 308C{xs} 292 {x + 146} 300 {x + 146} 220S{x + 140} 170 {x + 124} 170", m, width=1.5))
+    p.append(text(24, 388, "The program itself (its resident part) decides when to load the next phase over the previous one;", 11.5, cls="quiet"))
+    p.append(text(24, 404, "the programmer must split the program so that no two phases are needed at the same time.", 11.5, cls="quiet"))
+    # swapping
+    x0 = 580
+    p.append(text(x0, 62, "Swapping: the OS moves whole jobs", 13, 600))
+    for i, (who, k) in enumerate((("job 1", "acc"), ("job 2", "c2"))):
+        x = x0 + i * 160
+        p.append(rect(x, 80, 120, 70, "tint", rx=0)); p.append(text(x + 60, 120, "free", 11, cls="quiet", anchor="middle"))
+        p.append(rect(x, 150, 120, 90, k, rx=0)); p.append(text(x + 60, 200, who, 12, 600, anchor="middle"))
+        p.append(rect(x, 240, 120, 34, "tint", rx=0)); p.append(text(x + 60, 262, "OS", 12, 600, anchor="middle"))
+        p.append(text(x + 60, 290, "before" if i == 0 else "after", 11, cls="quiet", anchor="middle"))
+    p.append(rect(x0 + 100, 310, 100, 34, "plain", rx=4))
+    p.append(f'<rect x="{x0 + 104}" y="314" width="44" height="26" class="accf"/><rect x="{x0 + 152}" y="314" width="44" height="26" class="c2f"/>')
+    p.append(text(x0 + 126, 332, "job 1", 10.5, anchor="middle")); p.append(text(x0 + 174, 332, "job 2", 10.5, anchor="middle"))
+    p.append(text(x0 + 150, 362, "swap area on disk", 10.5, cls="quiet", anchor="middle"))
+    p.append(path(f"M{x0 + 60} 300C{x0 + 60} 318 {x0 + 80} 326 {x0 + 96} 326", m, width=1.5))
+    p.append(text(x0 + 54, 328, "swap out", 10.5, cls="quiet", anchor="end"))
+    p.append(path(f"M{x0 + 204} 326C{x0 + 240} 326 {x0 + 250} 310 {x0 + 250} 300", m, width=1.5))
+    p.append(text(x0 + 258, 328, "swap in", 10.5, cls="quiet"))
+    return svg(900, 420, title, "\n".join(p))
+
+
+# ---------------- 11. Page-fault handling: hardware and OS ----------------
+def faultflow():
+    m = "ff"
+    title = "One memory access with a page fault: what the hardware does and what the operating system does"
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, "One memory access with a page fault: hardware and operating system", 15, 600)]
+    X, W = 70, 240
+
+    def box(y, s, k="tint", x=X, w=W, h=36, lines=None):
+        out = rect(x, y, w, h, k, rx=6)
+        ls = lines or [s]
+        for i, l in enumerate(ls):
+            out += text(x + w / 2, y + h / 2 + 4 + (i - (len(ls) - 1) / 2) * 15, l, 11.5, 600 if k != "tint" else 400, anchor="middle")
+        return out
+
+    def arrow(d, lab=None, lx=0, ly=0, anchor="start"):
+        out = path(d, m, width=1.4)
+        if lab:
+            out += text(lx, ly, lab, 10.5, cls="quiet", anchor=anchor)
+        return out
+
+    p.append(text(X, 60, "hardware (CPU and MMU)", 12.5, 600, cls="quiet"))
+    p.append(box(90, "CPU issues a virtual address", "acc"))
+    p.append(box(150, "translation in the TLB?", "c2"))
+    p.append(box(210, "page-table walk"))
+    p.append(box(270, "page valid, access allowed?", "c2"))
+    p.append(box(330, "store the translation in the TLB"))
+    p.append(box(390, "physical address → cache, RAM", "acc"))
+    p.append(arrow("M190 126V146")); p.append(arrow("M190 186V206", "no (TLB miss)", 198, 200))
+    p.append(arrow("M190 246V266")); p.append(arrow("M190 306V326", "yes", 198, 320)); p.append(arrow("M190 366V386"))
+    p.append(arrow("M70 168H50V408H66", "hit", 44, 290, "end"))
+    p.append(arrow("M310 288H426", "no: page fault", 368, 280, "middle"))
+    p.append(text(368, 304, "(an exception)", 10.5, cls="quiet", anchor="middle"))
+    # OS lane
+    p.append('<rect x="400" y="236" width="490" height="452" rx="10" fill="none" class="edge" stroke-width="1.25" stroke-dasharray="6 4"/>')
+    p.append(text(416, 256, "operating system: the page-fault handler", 12.5, 600, cls="quiet"))
+    OX, OW = 430, 270
+    p.append(box(270, "address in a VMA, access allowed?", "c2", OX, OW))
+    p.append(box(270, "SIGSEGV: program error", "bad", 730, 140))
+    p.append(arrow("M700 288H726", "no", 713, 282, "middle"))
+    p.append(box(330, "a free frame?", "c2", OX, OW))
+    p.append(box(318, "", "tint", 730, 140, 60, ["evict a victim; if", "dirty, write it to", "disk first"]))
+    p.append(arrow("M700 348H726", "no", 713, 342, "middle"))
+    p.append(arrow("M800 378V408H704"))
+    p.append(box(390, "start reading the page from disk (DMA)", "tint", OX, OW))
+    p.append(box(450, "block the process, run another one", "tint", OX, OW))
+    p.append(box(510, "disk interrupt: the read is complete", "acc", OX, OW))
+    p.append(box(570, "page-table entry: frame, valid = 1", "tint", OX, OW))
+    p.append(box(630, "process ready; it restarts the instruction", "tint", OX, OW))
+    p.append(arrow("M565 306V326", "yes", 573, 320)); p.append(arrow("M565 366V386", "yes", 573, 380))
+    p.append(arrow("M565 426V446")); p.append(arrow("M565 486V506")); p.append(arrow("M565 546V566")); p.append(arrow("M565 606V626"))
+    p.append(arrow("M700 648H900V78H190V86"))
+    p.append(text(560, 70, "the same access again: now the page is valid", 10.5, cls="quiet", anchor="middle"))
+    # minor-fault note in the free area
+    for i, l in enumerate(["Minor faults (first touch of a page, copy-on-write,",
+                           "a page already in the page cache) need no disk:",
+                           "the kernel zero-fills, copies or just maps a frame",
+                           "and skips the disk read, the wait and the interrupt."]):
+        p.append(text(420, 130 + i * 18, l, 11.5, cls="quiet"))
+    p.append(text(24, 712, "The page fault is an exception raised by the faulting instruction; only the end of the disk read is an interrupt request (IRQ).", 11.5, cls="quiet"))
+    return svg(920, 728, title, "\n".join(p))
+
+
 if __name__ == "__main__":
     for name, fn in [("separation", separation), ("fragmentation", fragmentation), ("paging", paging),
                      ("address-translation", translation), ("x86-64-page-walk", multilevel), ("tlb-path", tlbpath),
-                     ("belady-anomaly", belady), ("tlb-measured", tlbchart), ("thrashing", thrash)]:
+                     ("belady-anomaly", belady), ("tlb-measured", tlbchart), ("thrashing", thrash),
+                     ("overlays-swapping", overlays), ("page-fault-flow", faultflow)]:
         with open(os.path.join(HERE, f"{name}.svg"), "w") as f:
             f.write(fn())
         print("wrote", name + ".svg")

@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 414" width="880" height="414" role="img" aria-label="Egy fájl módja: 4 típusbit, 3 speciális bit és 9 jogosultságbit">
+<title>Egy fájl módja: 4 típusbit, 3 speciális bit és 9 jogosultságbit</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Egy fájl módja: 4 típusbit, 3 speciális bit és 9 jogosultságbit</text>
+<marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker>
+<text x="176.0" y="74" font-size="12" font-weight="600" class="ink" text-anchor="middle">fájltípus</text>
+<path d="M90 84V90H262V84" fill="none" class="edge" stroke-width="1"/>
+<rect x="88" y="96" width="44" height="34" rx="0" class="tint"/><rect x="88" y="96" width="44" height="34" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="110.0" y="178" font-size="13" font-weight="600" class="acct" text-anchor="middle">1</text>
+<rect x="132" y="96" width="44" height="34" rx="0" class="tint"/><rect x="132" y="96" width="44" height="34" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="154.0" y="178" font-size="13" font-weight="600" class="quiet" text-anchor="middle">0</text>
+<rect x="176" y="96" width="44" height="34" rx="0" class="tint"/><rect x="176" y="96" width="44" height="34" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="198.0" y="178" font-size="13" font-weight="600" class="quiet" text-anchor="middle">0</text>
+<rect x="220" y="96" width="44" height="34" rx="0" class="tint"/><rect x="220" y="96" width="44" height="34" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="242.0" y="178" font-size="13" font-weight="600" class="quiet" text-anchor="middle">0</text>
+<text x="330.0" y="74" font-size="12" font-weight="600" class="ink" text-anchor="middle">speciális</text>
+<path d="M266 84V90H394V84" fill="none" class="edge" stroke-width="1"/>
+<rect x="264" y="96" width="44" height="34" rx="0" class="accf"/><rect x="264" y="96" width="44" height="34" rx="0" fill="none" class="acc" stroke-width="2"/>
+<text x="286.0" y="117" font-size="10" font-weight="600" class="ink" text-anchor="middle">setuid</text>
+<text x="286.0" y="148" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">4</text>
+<text x="286.0" y="178" font-size="13" font-weight="600" class="acct" text-anchor="middle">1</text>
+<rect x="308" y="96" width="44" height="34" rx="0" class="accf"/><rect x="308" y="96" width="44" height="34" rx="0" fill="none" class="acc" stroke-width="2"/>
+<text x="330.0" y="117" font-size="10" font-weight="600" class="ink" text-anchor="middle">setgid</text>
+<text x="330.0" y="148" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">2</text>
+<text x="330.0" y="178" font-size="13" font-weight="600" class="acct" text-anchor="middle">1</text>
+<rect x="352" y="96" width="44" height="34" rx="0" class="accf"/><rect x="352" y="96" width="44" height="34" rx="0" fill="none" class="acc" stroke-width="2"/>
+<text x="374.0" y="117" font-size="10" font-weight="600" class="ink" text-anchor="middle">sticky</text>
+<text x="374.0" y="148" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">1</text>
+<text x="374.0" y="178" font-size="13" font-weight="600" class="acct" text-anchor="middle">1</text>
+<text x="462.0" y="74" font-size="12" font-weight="600" class="ink" text-anchor="middle">tulajdonos (u)</text>
+<path d="M398 84V90H526V84" fill="none" class="edge" stroke-width="1"/>
+<rect x="396" y="96" width="44" height="34" rx="0" class="c2f"/><rect x="396" y="96" width="44" height="34" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="418.0" y="117" font-size="13" font-weight="600" class="ink" text-anchor="middle">r</text>
+<text x="418.0" y="148" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">4</text>
+<text x="418.0" y="178" font-size="13" font-weight="600" class="acct" text-anchor="middle">1</text>
+<rect x="440" y="96" width="44" height="34" rx="0" class="c2f"/><rect x="440" y="96" width="44" height="34" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="462.0" y="117" font-size="13" font-weight="600" class="ink" text-anchor="middle">w</text>
+<text x="462.0" y="148" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">2</text>
+<text x="462.0" y="178" font-size="13" font-weight="600" class="acct" text-anchor="middle">1</text>
+<rect x="484" y="96" width="44" height="34" rx="0" class="c2f"/><rect x="484" y="96" width="44" height="34" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="506.0" y="117" font-size="13" font-weight="600" class="ink" text-anchor="middle">x</text>
+<text x="506.0" y="148" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">1</text>
+<text x="506.0" y="178" font-size="13" font-weight="600" class="acct" text-anchor="middle">1</text>
+<text x="594.0" y="74" font-size="12" font-weight="600" class="ink" text-anchor="middle">csoport (g)</text>
+<path d="M530 84V90H658V84" fill="none" class="edge" stroke-width="1"/>
+<rect x="528" y="96" width="44" height="34" rx="0" class="c2f"/><rect x="528" y="96" width="44" height="34" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="550.0" y="117" font-size="13" font-weight="600" class="ink" text-anchor="middle">r</text>
+<text x="550.0" y="148" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">4</text>
+<text x="550.0" y="178" font-size="13" font-weight="600" class="acct" text-anchor="middle">1</text>
+<rect x="572" y="96" width="44" height="34" rx="0" class="c2f"/><rect x="572" y="96" width="44" height="34" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="594.0" y="117" font-size="13" font-weight="600" class="ink" text-anchor="middle">w</text>
+<text x="594.0" y="148" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">2</text>
+<text x="594.0" y="178" font-size="13" font-weight="600" class="quiet" text-anchor="middle">0</text>
+<rect x="616" y="96" width="44" height="34" rx="0" class="c2f"/><rect x="616" y="96" width="44" height="34" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="638.0" y="117" font-size="13" font-weight="600" class="ink" text-anchor="middle">x</text>
+<text x="638.0" y="148" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">1</text>
+<text x="638.0" y="178" font-size="13" font-weight="600" class="quiet" text-anchor="middle">0</text>
+<text x="726.0" y="74" font-size="12" font-weight="600" class="ink" text-anchor="middle">mindenki más (o)</text>
+<path d="M662 84V90H790V84" fill="none" class="edge" stroke-width="1"/>
+<rect x="660" y="96" width="44" height="34" rx="0" class="c2f"/><rect x="660" y="96" width="44" height="34" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="682.0" y="117" font-size="13" font-weight="600" class="ink" text-anchor="middle">r</text>
+<text x="682.0" y="148" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">4</text>
+<text x="682.0" y="178" font-size="13" font-weight="600" class="quiet" text-anchor="middle">0</text>
+<rect x="704" y="96" width="44" height="34" rx="0" class="c2f"/><rect x="704" y="96" width="44" height="34" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="726.0" y="117" font-size="13" font-weight="600" class="ink" text-anchor="middle">w</text>
+<text x="726.0" y="148" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">2</text>
+<text x="726.0" y="178" font-size="13" font-weight="600" class="acct" text-anchor="middle">1</text>
+<rect x="748" y="96" width="44" height="34" rx="0" class="c2f"/><rect x="748" y="96" width="44" height="34" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="770.0" y="117" font-size="13" font-weight="600" class="ink" text-anchor="middle">x</text>
+<text x="770.0" y="148" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">1</text>
+<text x="770.0" y="178" font-size="13" font-weight="600" class="acct" text-anchor="middle">1</text>
+<text x="76" y="148" font-size="11" font-weight="400" class="quiet" text-anchor="end">súly</text>
+<text x="76" y="178" font-size="11" font-weight="400" class="quiet" text-anchor="end">bitek</text>
+<text x="76" y="208" font-size="11" font-weight="400" class="quiet" text-anchor="end">oktális</text>
+<text x="176" y="208" font-size="12" font-weight="400" class="quiet" text-anchor="middle">közönséges fájl</text>
+<text x="330.0" y="208" font-size="15" font-weight="600" class="ink" text-anchor="middle">7</text>
+<text x="462.0" y="208" font-size="15" font-weight="600" class="ink" text-anchor="middle">7</text>
+<text x="594.0" y="208" font-size="15" font-weight="600" class="ink" text-anchor="middle">4</text>
+<text x="726.0" y="208" font-size="15" font-weight="600" class="ink" text-anchor="middle">3</text>
+<text x="528" y="234" font-size="13" font-weight="600" class="ink" text-anchor="middle">chmod 7743 f   →   az ls -l kiírása:   -rwsr-S-wt</text>
+<text x="24" y="272" font-size="12.5" font-weight="600" class="ink" text-anchor="start">Így mutatja az ls a speciális bitet: egy x helyén osztozik vele</text>
+<text x="40" y="298" font-size="11.5" font-weight="600" class="quiet" text-anchor="start"></text>
+<text x="300" y="298" font-size="11.5" font-weight="600" class="quiet" text-anchor="middle">nincs x</text>
+<text x="420" y="298" font-size="11.5" font-weight="600" class="quiet" text-anchor="middle">van x</text>
+<text x="40" y="322" font-size="12" font-weight="400" class="ink" text-anchor="start">nincs speciális bit</text>
+<text x="300" y="322" font-size="14" font-weight="600" class="ink" text-anchor="middle">-</text>
+<text x="420" y="322" font-size="14" font-weight="600" class="ink" text-anchor="middle">x</text>
+<text x="40" y="348" font-size="12" font-weight="400" class="ink" text-anchor="start">setuid / setgid beállítva</text>
+<text x="300" y="348" font-size="14" font-weight="600" class="bad" text-anchor="middle">S</text>
+<text x="420" y="348" font-size="14" font-weight="600" class="acct" text-anchor="middle">s</text>
+<text x="40" y="374" font-size="12" font-weight="400" class="ink" text-anchor="start">sticky beállítva</text>
+<text x="300" y="374" font-size="14" font-weight="600" class="bad" text-anchor="middle">T</text>
+<text x="420" y="374" font-size="14" font-weight="600" class="acct" text-anchor="middle">t</text>
+<text x="500" y="298" font-size="11.5" font-weight="600" class="ink" text-anchor="start">A nagy S vagy T figyelmeztető jel:</text>
+<text x="500" y="318" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">a speciális bit be van állítva, de a hozzá tartozó</text>
+<text x="500" y="336" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">x nincs, így általában nincs hatása.</text>
+<text x="500" y="362" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Típusmező: 1000 közönséges, 0100 könyvtár,</text>
+<text x="500" y="380" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">1010 szimbolikus link, 0001 FIFO, 1100 socket,</text>
+<text x="500" y="398" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">0110 blokkeszköz, 0010 karakteres eszköz</text>
+</svg>

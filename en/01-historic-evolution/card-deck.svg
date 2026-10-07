@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 454" width="760" height="454" role="img" aria-label="A job deck: control cards frame the program and its data; jobs are stacked into a batch">
+<title>A job deck: control cards frame the program and its data; jobs are stacked into a batch</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+  }
+</style>
+<defs><marker id="cd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">A job deck: control cards frame the program and its data; jobs are stacked into a batch</text>
+<text x="24" y="50" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Job control language in Stallings' FORTRAN example. The card reader reads the front card first.</text>
+<path d="M184 114H420L434 126V184H184Z" class="tint"/><path d="M184 114H420L434 126V184H184Z" class="accf"/><path d="M184 114H420L434 126V184H184Z" fill="none" class="acc" stroke-width="1.5"/>
+<text x="194" y="130" font-size="11.5" font-weight="600" class="acct" text-anchor="start">$END  end of this job</text>
+<path d="M168 138H404L418 150V208H168Z" class="tint"/><path d="M168 138H404L418 150V208H168Z" class="c2f"/><path d="M168 138H404L418 150V208H168Z" fill="none" class="c2s" stroke-width="1.25"/>
+<text x="178" y="154" font-size="11.5" font-weight="400" class="ink" text-anchor="start">data card</text>
+<path d="M152 162H388L402 174V232H152Z" class="tint"/><path d="M152 162H388L402 174V232H152Z" class="c2f"/><path d="M152 162H388L402 174V232H152Z" fill="none" class="c2s" stroke-width="1.25"/>
+<text x="162" y="178" font-size="11.5" font-weight="400" class="ink" text-anchor="start">data card</text>
+<path d="M136 186H372L386 198V256H136Z" class="tint"/><path d="M136 186H372L386 198V256H136Z" class="accf"/><path d="M136 186H372L386 198V256H136Z" fill="none" class="acc" stroke-width="1.5"/>
+<text x="146" y="202" font-size="11.5" font-weight="600" class="acct" text-anchor="start">$RUN  start it on the data</text>
+<path d="M120 210H356L370 222V280H120Z" class="tint"/><path d="M120 210H356L370 222V280H120Z" class="accf"/><path d="M120 210H356L370 222V280H120Z" fill="none" class="acc" stroke-width="1.5"/>
+<text x="130" y="226" font-size="11.5" font-weight="600" class="acct" text-anchor="start">$LOAD  load the compiled program</text>
+<path d="M104 234H340L354 246V304H104Z" class="tint"/><path d="M104 234H340L354 246V304H104Z" fill="none" class="edge" stroke-width="1.25"/>
+<text x="114" y="250" font-size="11.5" font-weight="400" class="ink" text-anchor="start">program card</text>
+<path d="M88 258H324L338 270V328H88Z" class="tint"/><path d="M88 258H324L338 270V328H88Z" fill="none" class="edge" stroke-width="1.25"/>
+<text x="98" y="274" font-size="11.5" font-weight="400" class="ink" text-anchor="start">program card</text>
+<path d="M72 282H308L322 294V352H72Z" class="tint"/><path d="M72 282H308L322 294V352H72Z" fill="none" class="edge" stroke-width="1.25"/>
+<text x="82" y="298" font-size="11.5" font-weight="400" class="ink" text-anchor="start">program card</text>
+<path d="M56 306H292L306 318V376H56Z" class="tint"/><path d="M56 306H292L306 318V376H56Z" class="accf"/><path d="M56 306H292L306 318V376H56Z" fill="none" class="acc" stroke-width="1.5"/>
+<text x="66" y="322" font-size="11.5" font-weight="600" class="acct" text-anchor="start">$FTN  compile what follows</text>
+<path d="M40 330H276L290 342V400H40Z" class="tint"/><path d="M40 330H276L290 342V400H40Z" class="accf"/><path d="M40 330H276L290 342V400H40Z" fill="none" class="acc" stroke-width="1.5"/>
+<text x="50" y="346" font-size="11.5" font-weight="600" class="acct" text-anchor="start">$JOB  user, account, limits</text>
+<text x="50" y="380" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">front: read first</text>
+<rect x="24" y="419" width="14" height="14" rx="2" class="accf"/><rect x="24" y="419" width="14" height="14" rx="2" fill="none" class="acc" stroke-width="2"/>
+<text x="44" y="430" font-size="11.5" font-weight="400" class="ink" text-anchor="start">control card (JCL), for the monitor</text>
+<rect x="260" y="419" width="14" height="14" rx="2" fill="none" class="edge" stroke-width="1.25"/>
+<text x="280" y="430" font-size="11.5" font-weight="400" class="ink" text-anchor="start">program (source code)</text>
+<rect x="440" y="419" width="14" height="14" rx="2" class="c2f"/><rect x="440" y="419" width="14" height="14" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="460" y="430" font-size="11.5" font-weight="400" class="ink" text-anchor="start">input data for the program</text>
+<text x="500" y="78" font-size="13" font-weight="600" class="ink" text-anchor="start">A batch: job after job</text>
+<rect x="500" y="96" width="210" height="38" rx="3" class="tint"/><rect x="500" y="96" width="210" height="38" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="500" y="96" width="10" height="38" class="accf"/>
+<rect x="700" y="96" width="10" height="38" class="accf"/>
+<text x="522" y="113" font-size="12.5" font-weight="600" class="ink" text-anchor="start">job 3</text>
+<text x="522" y="128" font-size="11" font-weight="400" class="quiet" text-anchor="start">$JOB … $END</text>
+<rect x="500" y="142" width="210" height="38" rx="3" class="tint"/><rect x="500" y="142" width="210" height="38" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="500" y="142" width="10" height="38" class="accf"/>
+<rect x="700" y="142" width="10" height="38" class="accf"/>
+<text x="522" y="159" font-size="12.5" font-weight="600" class="ink" text-anchor="start">job 2</text>
+<text x="522" y="174" font-size="11" font-weight="400" class="quiet" text-anchor="start">$JOB … $END</text>
+<rect x="500" y="188" width="210" height="38" rx="3" class="tint"/><rect x="500" y="188" width="210" height="38" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="500" y="188" width="10" height="38" class="accf"/>
+<rect x="700" y="188" width="10" height="38" class="accf"/>
+<text x="522" y="205" font-size="12.5" font-weight="600" class="ink" text-anchor="start">job 1</text>
+<text x="522" y="220" font-size="11" font-weight="400" class="quiet" text-anchor="start">$JOB … $END</text>
+<path d="M605 236V264" fill="none" class="edge" stroke-width="1.25" marker-end="url(#cd)"/>
+<rect x="500" y="268" width="210" height="30" rx="4" class="accf"/><rect x="500" y="268" width="210" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="605" y="288" font-size="12" font-weight="600" class="ink" text-anchor="middle">card reader → monitor</text>
+<text x="500" y="318" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">job 1 is read first; at $END the</text>
+<text x="500" y="334" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">monitor starts the next job</text>
+<text x="500" y="350" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">without an operator stepping in</text>
+</svg>

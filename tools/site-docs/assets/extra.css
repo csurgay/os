@@ -1,0 +1,16 @@
+/* "Explained simply" boxes: look like the collapsible boxes on GitHub. */
+.md-typeset details {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.3rem;
+  padding: 0.2rem 0.8rem;
+  margin: 1em 0;
+}
+.md-typeset details > summary {
+  cursor: pointer;
+  font-weight: normal;
+}
+/* Figures: never wider than the text column. */
+.md-typeset img[src$=".svg"] {
+  max-width: 100%;
+  height: auto;
+}

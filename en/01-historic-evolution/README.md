@@ -12,6 +12,7 @@ Almost every feature of a modern operating system was invented to remove a speci
 
 By the end, students will be able to:
 
+- define an operating system as a multiplexing, resource-managing virtual machine, explain why operating systems are hard to build, and state the trade-off between convenience, security and efficiency;
 - explain how the relative cost of hardware and of people drove the history of operating systems;
 - describe batch processing, the resident monitor, multiprogramming, virtual memory and time sharing, and the problem each one solved;
 - explain why multiprogramming raises CPU utilisation, and calculate it from a timeline;
@@ -19,6 +20,8 @@ By the end, students will be able to:
 - place Multics, Unix, minicomputers, CP/M and MS-DOS in this history, and explain why the first personal-computer systems gave up features that mainframes already had;
 - tell the documented story of how MS-DOS and the graphical interface reached the market, and separate it from the legends;
 - name four roles of an operating system and place the OS in the layers of a computer system;
+- classify operating systems by licence, platform, interface, number of users and tasks, and kernel structure;
+- explain, with examples, why old operating-system techniques return when economics, technology or needs change;
 - find each historical idea on a running Linux system.
 
 <details>
@@ -30,13 +33,54 @@ By the end, students will be able to:
 
 </details>
 
+## What an operating system is, and why it is hard
+
+A short definition that the rest of the lecture fills in: **the operating system turns the machine into another machine, and one machine into many.**
+
+- **Machine → another machine (abstraction).** The hardware offers numbered disk blocks, device registers and one processor. Programs see named files that can grow, processes that each seem to have a processor, and a private memory that starts at address 0. The machine the OS creates can be **completely different** from the real one: nothing on a disk looks like a folder, and nothing in a CPU looks like a process.
+- **One machine → N machines (multiplexing).** Many programs and many users share the one real machine, in time (the CPU runs them in turn) and in space (each gets part of the memory and the disk), and each one feels it has a whole machine of its own.
+
+Put together: the OS is a **multiplexing, resource-managing virtual machine**. The four roles [later in the lecture](#the-roles-of-an-operating-system) describe the same job in more detail.
+
+**Why operating systems are hard.** An OS is one of the most difficult kinds of program to build, for reasons that add up:
+
+- **Too big for one person.** A modern OS has millions of lines of code; the source tree of the Linux kernel alone has tens of millions, most of it device drivers. Nobody understands all of it, so it must be built from parts with clean interfaces.
+- **A long lifetime.** Unix ideas date from 1969, and the Windows NT kernel from 1993. An OS lives for decades, must keep running old programs, and must adopt hardware that did not exist when it was designed.
+- **Asynchronous events.** Devices, timers and the network interrupt the processor at any moment, between any two instructions. Bugs that depend on timing appear rarely and are hard to reproduce.
+- **General purpose, for unknown users.** The OS is written before the programs that will run on it. It cannot be tuned for one program, and must stay fair and safe for programs it knows nothing about, including hostile ones.
+- **If it stops, everything stops.** A bug in an application kills that application; a bug in the kernel stops every program on the machine.
+- **It manages the most resources.** Processor time, memory, storage, devices, network and energy, with demands that conflict, and some of its problems (fair and fast scheduling for every goal at once, for example) have no perfect solution, only trade-offs.
+
+**Why study them.** Few people write operating systems, but everybody depends on them, and their ideas are reused everywhere: caching, scheduling, virtualization, locking and logging come back in databases, web browsers, game engines and cloud platforms. Knowing what the OS does underneath is also what lets a programmer explain why a program is slow, or why it crashed.
+
+<details>
+<summary><b>Explained simply:</b> abstraction, multiplexing, virtual machine, asynchronous, line of code, kernel</summary>
+
+- **Abstraction:** a simpler picture that hides the details, like a map instead of the landscape.
+- **Multiplexing:** letting many users share one thing so that each seems to have it alone, like many phone calls sharing one cable.
+- **Virtual machine:** here, the pretend machine that the OS shows to programs, nicer than the real one.
+- **Asynchronous:** happening at unpredictable times, not in step with the program; like phone calls that can come at any moment while you are cooking.
+- **Line of code:** one line of a program's text. A million lines would fill about 20,000 printed pages.
+- **Kernel:** the core of the operating system, the part with full control of the hardware.
+
+</details>
+
 ## Two forces behind the history
 
 **The drive: the relative cost of hardware and of people.** For the first twenty years, a computer cost millions and filled a room, while the people using it were comparatively cheap. Everything was organised to keep the expensive machine busy, even if people had to wait. As hardware became cheaper and people's time became the more expensive resource, the priority turned around: now the machine should wait for people, not the other way round. Most turns in this history follow from that one change.
 
 **The scope: which problems are solved with computers.** Early computers calculated: firing tables, census statistics, engineering problems. Later they kept records, connected people, played music and went into pockets. Every new kind of problem brought new demands on the operating system.
 
-Throughout the history, two goals pull in different directions: **efficiency** (get as much useful work as possible out of the machine) and **security** (keep programs and users from harming each other). Every protection mechanism costs some efficiency, and every shortcut that saves time opens a risk.
+Throughout the history, three goals pull in different directions: **convenience** (the machine is easy to use and saves people's time), **security** (programs and users cannot harm each other) and **efficiency** (as much useful work as possible comes out of the machine). Each pair conflicts. Every protection mechanism costs some efficiency, and every shortcut that saves time opens a risk; a comfortable interface costs processor time and memory; and checks and passwords make a system safer but less convenient. No system can maximise all three, so every design chooses a balance.
+
+Which goal wins depends on what is expensive at the time, so each era had one **dominant criterion**:
+
+| Era | What was expensive | Dominant criterion |
+| --- | --- | --- |
+| batch era (steps I–VII) | the machine | utilisation: keep the CPU and the devices busy |
+| time sharing (steps VIII–XI) | people's time | interactivity: response time, programmer productivity |
+| personal computers (step XII) | the price for one buyer | low price, short time to market |
+| networks and mobile devices (steps XIII–XIV) | damage from attacks, battery charge | security, energy |
 
 **Efficiency, precisely.** In general, efficiency is the share of useful work in the total:
 
@@ -49,7 +93,7 @@ $$\eta_{OS} = \frac{t_{user}}{t_{user} + t_{OS}}$$
 An OS that makes the machine much easier to use but eats half its time ($\eta_{OS} = 0.5$, i.e. 50%) is a bad deal when the machine is expensive, and may be a good one when people's time is the expensive part. The Linux section shows how to measure $t_{user}$ and $t_{OS}$. The formula assumes that the time spent in the user's program is the useful part; that is usually, but not always, true.
 
 <details>
-<summary><b>Explained simply:</b> hardware, efficiency, security, overhead, CPU, η</summary>
+<summary><b>Explained simply:</b> hardware, efficiency, security, overhead, CPU, η, convenience, trade-off, criterion</summary>
 
 - **Hardware:** the physical parts of a computer: chips, wires, disks, screen. The programs are the **software**.
 - **CPU** (Central Processing Unit), the **processor:** the chip that executes the programs' instructions, one small step after another.
@@ -57,6 +101,9 @@ An OS that makes the machine much easier to use but eats half its time ($\eta_{O
 - **η** (the Greek letter eta): the usual symbol for efficiency.
 - **Overhead:** work that has to be done but is not the work you actually wanted, like the time spent filling in forms before a doctor's appointment.
 - **Security:** protection against harm, whether deliberate (an attacker) or accidental (a buggy program).
+- **Convenience:** how easy and comfortable something is to use.
+- **Trade-off:** a choice where getting more of one good thing means getting less of another, like speed and fuel use in a car.
+- **Criterion** (plural: criteria): the measure by which something is judged.
 
 </details>
 
@@ -68,10 +115,12 @@ Machines started to process data in bulk for statistics. For the **1890 US censu
 
 **The Second World War** brought the first electronic computers, built for military goals with military resources: Colossus for codebreaking in Britain (1944), and ENIAC in the United States, designed during the war to calculate artillery firing tables and completed in late 1945.
 
-**In the 1940s and early 1950s** there was no operating system at all. A programmer booked the whole machine for a period of time and operated it directly through **switches, push buttons and rows of lamps** on its front panel, or by rewiring **plugboards**. The machine was interactive, but for one user at a time, and the user interface *was* the raw hardware. A famous episode from this era: in September 1947, the operators of the Harvard Mark II relay computer found a moth trapped in a relay and taped it into the logbook as the "first actual case of bug being found". The word *bug* for a fault is older (Edison used it in the 1870s); the joke was that this time it was a real insect.
+ENIAC was programmed by setting switches and plugging cables, so changing the program took days. The decisive idea came from its own designers and from John von Neumann's 1945 report on its successor, the EDVAC: the **stored-program** principle, which keeps the **instructions in the same memory as the data** (Stallings, 2018). The first machine to run a stored program was the Manchester "Baby" in June 1948, and Cambridge's EDSAC (1949) was the first to offer it as a service to its users. The consequences reach into every later step of this history. Because a program is just data in memory, one program can **write or load another**: loaders, compilers and the operating system itself all depend on this. And because instructions can be changed like data, a program can even **modify its own code**; early machines without index registers did exactly this to step through an array. The same property is a security hole when the "data" comes from an attacker, which is why today's processors can mark memory as non-executable (NX), as the [fetch-execute lecture](../04-fetch-execute-cycle/#the-von-neumann-principle) shows.
+
+**In the 1940s and early 1950s** there was no operating system at all. A programmer booked the whole machine for a period of time and operated it directly through **switches, push buttons and rows of lamps** on its front panel, or by rewiring **plugboards**. The machine was interactive, but for one user at a time, and the user interface *was* the raw hardware. This is the starting point of the history, **step 0**: a single user, the programmer at the console, debugging interactively, and an expensive machine that stood idle while the programmer thought. A famous episode from this era: in September 1947, the operators of the Harvard Mark II relay computer found a moth trapped in a relay and taped it into the logbook as the "first actual case of bug being found". The word *bug* for a fault is older (Edison used it in the 1870s); the joke was that this time it was a real insect.
 
 <details>
-<summary><b>Explained simply:</b> abacus, memory, census, punched card, tabulating machine, front panel, plugboard, Colossus, ENIAC, relay, bug</summary>
+<summary><b>Explained simply:</b> abacus, memory, census, punched card, tabulating machine, front panel, plugboard, Colossus, ENIAC, stored program, EDVAC, Manchester Baby, EDSAC, self-modifying code, index register, NX, relay, bug</summary>
 
 - **Abacus:** a frame with beads on rods, used for calculating for thousands of years.
 - **Memory:** the part of a computer that stores numbers so they can be used later.
@@ -81,6 +130,11 @@ Machines started to process data in bulk for statistics. For the **1890 US censu
 - **Front panel:** the control board of an early computer, full of switches to enter numbers and lamps that showed what was stored inside.
 - **Plugboard:** a board of sockets connected with cables; changing the cables changed what the machine did, a program made of wires.
 - **Colossus, ENIAC:** two of the first electronic computers. Colossus helped break German codes (codebreaking: reading secret messages without the key); ENIAC calculated firing tables, the tables gunners used to aim artillery.
+- **Stored program:** the program's instructions are kept in the computer's memory as numbers, next to the data, instead of being set with cables and switches. Changing the program is then as easy as loading new numbers.
+- **EDVAC, Manchester Baby, EDSAC:** early stored-program computers in the United States and in England (Manchester and Cambridge) of the late 1940s.
+- **Self-modifying code:** a program that changes its own instructions while it runs.
+- **Index register:** a register that holds a number added to an address, so that the same instruction can reach element 1, 2, 3 … of a list.
+- **NX** (No eXecute): a mark on a piece of memory that says "data only, never run it as instructions".
 - **Relay:** an electrically operated switch with a moving metal contact. Early computers were built from thousands of them, and a moth could get stuck between the contacts.
 - **Bug:** a fault in a program or machine. **Debugging** is finding and removing bugs.
 
@@ -88,7 +142,7 @@ Machines started to process data in bulk for statistics. For the **1890 US censu
 
 ## Fourteen steps, one operating system
 
-From here, the history can be read as a sequence of problems. Each step solves the bottleneck of the previous one, and the solution becomes a permanent part of the operating system. The order is logical rather than strictly chronological: many of these ideas appeared at almost the same time, in the late 1950s and early 1960s.
+From here, the history can be read as a sequence of problems, starting from step 0, the single programmer at the console. Each step solves the bottleneck of the previous one, and the solution becomes a permanent part of the operating system; many steps also create a new cost that a later step has to pay back. The order is logical rather than strictly chronological: many of these ideas appeared at almost the same time, in the late 1950s and early 1960s.
 
 ![Each era added a new OS idea; the ideas outlived the machines](os-timeline.svg)
 
@@ -147,7 +201,7 @@ This shared, resident collection of device routines is the seed of the operating
 
 ### III. Expensive hardware, slow setup: specialised staff
 
-The hardware, especially CPU time, was very expensive, and setting the machine up for each job was slow. Installations therefore hired **specialised staff**: programmers who wrote the programs, but did not touch the machine; **operators** who set it up, loaded the jobs and changed tapes; maintenance engineers; even people to clean the card readers. The programmer handed in a deck of cards and came back hours (or a day) later for the printout.
+The hardware, especially CPU time, was very expensive, and setting the machine up for each job was slow. Installations therefore hired **specialised staff**: programmers who wrote the programs, but did not touch the machine; **operators** who set it up, loaded the jobs and changed tapes; maintenance engineers; even people to clean the card readers. Operators, who did nothing else all day, set up and ran the machine faster and with fewer mistakes than programmers who used it now and then. The programmer handed in a deck of cards and came back hours (or a day) later for the printout.
 
 ### IV. Faster CPUs: the batch monitor
 
@@ -184,10 +238,18 @@ A batch monitor is only safe if the programs it runs cannot break it. Stallings 
 
 Together these features need two modes of operation: a **user mode** for the programs, with the restrictions, and a privileged **monitor mode** (today: kernel mode) for the monitor itself.
 
-The monitor also needed to know what to do with each part of the deck. Special **control cards** told it, written in a **job control language (JCL)**. In Stallings' example, a FORTRAN job looks like this: `$JOB` starts the job, `$FTN` calls the FORTRAN compiler for the cards that follow, `$LOAD` loads the result, `$RUN` starts it on the data cards behind it, and `$END` closes the job. JCL was the ancestor of today's shell scripts.
+The monitor also needed to know what to do with each part of the deck. Special **control cards** told it, written in a **job control language (JCL)**. In Stallings' example, a FORTRAN job looks like this: `$JOB` starts the job, `$FTN` calls the FORTRAN compiler for the cards that follow, `$LOAD` loads the result, `$RUN` starts it on the data cards behind it, and `$END` closes the job. JCL was the ancestor of today's shell scripts. Several such decks, one job after the other, made up a batch:
+
+![A job deck: control cards frame the program and its data; jobs are stacked into a batch](card-deck.svg)
+
+### The price of batch: debugging offline
+
+Batch processing made the machine efficient and the programmer inefficient. In step 0, a programmer at the console could stop the program, look at the lamps, change a value and try again within minutes. Now the programmer never touched the machine: a single wrong card cost a whole **turnaround**, hours or a day until the printout came back, often with nothing more than an error message or a **memory dump**, pages of numbers showing the memory at the moment of the crash. Programmers checked their code by hand at their desks before handing it in, and a bug that needed five attempts took a week. Debugging had gone **offline**.
+
+As long as the machine was far more expensive than the programmers, this was the right trade. It is also the cost that a later step paid back: when people's time became the expensive resource, time sharing (step VIII) returned interactive work to the programmer. The designers of CTSS named exactly this, the long turnaround of batch work and the difficulty of debugging through it, as the reason for their system (Corbató et al., 1962).
 
 <details>
-<summary><b>Explained simply:</b> memory protection, timer, privileged instruction, user mode, monitor mode, control card, JCL, shell script</summary>
+<summary><b>Explained simply:</b> memory protection, timer, privileged instruction, user mode, monitor mode, control card, JCL, shell script, turnaround, memory dump, offline</summary>
 
 - **Memory protection:** a hardware check that stops a program from touching memory that is not its own.
 - **Timer:** a hardware clock that can interrupt the processor after a set time, like a kitchen timer.
@@ -195,6 +257,9 @@ The monitor also needed to know what to do with each part of the deck. Special *
 - **User mode / monitor mode:** two modes of the processor. In user mode the dangerous instructions are forbidden; in monitor (kernel) mode everything is allowed.
 - **Control card, JCL** (Job Control Language): special punched cards that did not contain program or data, but instructions for the monitor: "compile this", "now run it".
 - **Shell script:** a text file with a list of commands that the shell runs one after another, today's version of a job deck.
+- **Turnaround:** the time from handing in a job until getting the result back.
+- **Memory dump:** a printout of the contents of memory, usually made when a program crashes, for finding the error afterwards.
+- **Offline:** here, away from the machine: the programmer worked on paper, not at the computer.
 
 </details>
 
@@ -273,7 +338,7 @@ Batch systems cared about how many jobs were done per day (**throughput**). A pe
 
 ### X. Priority scheduling
 
-Not all work is equally urgent: a user waiting at a terminal should come before a long background calculation. **Priority scheduling** gives each program a priority, and the scheduler prefers the more important ones. Linux still does this, as the `nice` demonstration below shows.
+Not all work is equally urgent: a user waiting at a terminal should come before a long background calculation. **Priority scheduling** gives each program a priority, and the scheduler prefers the more important ones. Users are not all equal either: when the head of the department wants a fast answer, their jobs should not queue behind the students' homework. Next to priorities, shared systems therefore introduced **quotas**: limits on how much CPU time, disk space or printer paper a user or a job may consume, so that nobody can use up a shared resource. Linux still does both: priorities, as the `nice` demonstration below shows, and quotas through disk quotas and per-process resource limits (`ulimit`).
 
 ### XI. Persistent data: file systems
 
@@ -286,7 +351,7 @@ The most ambitious time-sharing project was **Multics**, started in 1965 by MIT,
 At Bell Labs, Ken Thompson and Dennis Ritchie then wrote a much **simpler** system, at first on a small PDP-7 computer: **Unix** (its name is a pun on Multics). Unix kept the essentials (time sharing, a hierarchical file system, processes) in a small **kernel**, and moved everything else, even the command interpreter (the shell), into ordinary programs. In 1973 it was rewritten in the new programming language C, which made it easy to move to other computers (Ritchie & Thompson, 1974). Its simplicity was deliberate. Tom Van Vleck, a Multics developer, recalls that half of his Multics code was error recovery, and that Ritchie told him Unix had left all of that out: on a serious error, a routine called `panic()` simply stopped the machine, and someone restarted it (Van Vleck, n.d.). Linux's "kernel panic" message still carries that name.
 
 <details>
-<summary><b>Explained simply:</b> multi-user, host, CTSS, time sharing, throughput, response time, preemptive, time slice, priority, persistent, directory, kernel, shell, Unix, C, MIT, Bell Labs, PDP-7, Multics, hierarchical file system, protection rings, kernel panic</summary>
+<summary><b>Explained simply:</b> multi-user, host, CTSS, time sharing, throughput, response time, preemptive, time slice, priority, quota, persistent, directory, kernel, shell, Unix, C, MIT, Bell Labs, PDP-7, Multics, hierarchical file system, protection rings, kernel panic</summary>
 
 - **Multi-user:** many people use the same computer at the same time, each with their own account.
 - **Host:** the central computer that many terminals are connected to.
@@ -296,6 +361,7 @@ At Bell Labs, Ken Thompson and Dennis Ritchie then wrote a much **simpler** syst
 - **Preemptive:** the OS can take the processor away from a program at any moment, without asking it.
 - **Time slice:** the short turn a program gets before the next one comes, typically a few milliseconds.
 - **Priority:** how urgent something is. An ambulance has priority over a delivery van.
+- **Quota:** a fixed share that may not be exceeded, like a monthly data limit on a phone plan.
 - **Persistent:** still there after the program ends or the computer is switched off.
 - **Directory:** a folder that holds files and other folders.
 - **Kernel:** the core of the operating system, the part with full control of the hardware.
@@ -414,6 +480,42 @@ Alongside the main line of this history, specialised kinds of operating systems 
 
 </details>
 
+## Recycling of solutions
+
+Personal computers showed that the history does not only move forward: MS-DOS fell back to step II, and the old features returned one by one. This is a general pattern. Operating-system techniques are rarely thrown away for good; they wait until the conditions they were invented for appear again, often in a new kind of device. Three forces decide which solution fits at a given time: **economics** (what is cheap and what is expensive), **technology** (what can be built) and **needs** (what users and programs require). When one of them changes, an old solution can become the right one again.
+
+![Recycling of solutions: old techniques return when economics, technology or needs change](recycling.svg)
+
+- **FAT on memory cards.** The File Allocation Table file system of floppy disks and MS-DOS is primitive by today's standards, but it is simple enough for the tiny controller of a camera, a car radio or a TV, and every OS can read it. Its descendants FAT32 and exFAT are therefore the standard file systems of USB sticks and SD cards, and the EFI system partition from which a PC boots is FAT as well. The [file systems lecture](../09-file-systems/) describes how FAT works.
+- **Contiguous allocation on CD-ROM.** Storing each file in one unbroken run of blocks was the simplest early allocation method, and it was abandoned on disks because files grow and the free space fragments. A CD-ROM is written once and never changes, so neither problem exists, and its ISO 9660 file system stores each file contiguously: the fastest layout to read.
+- **Dynamic linking.** Multics linked a program to the routines it called at run time, when they were first used, and shared one copy of a routine among all users (Daley & Dennis, 1968). Unix systems first used static linking, which copied the libraries into every program. When graphical environments such as the X Window System brought very large libraries, shared libraries returned in the late 1980s, and today almost every program uses them (the [`ldd` demonstration](#step-ii-today-the-shared-library) in the Linux section).
+- **Microprogrammed or hardwired control.** IBM's System/360 (1964) used microcode, a small interpreter inside the CPU, in most of its models, so that one instruction set could run on cheap and expensive machines alike, and microprogrammed complex instruction sets (CISC) dominated the 1970s. When compilers improved and chips could hold more, the RISC designs of the 1980s went back to simple hardwired instructions (Patterson & Ditzel, 1980). Today's x86 processors combine both: they translate their CISC instructions into simple micro-operations inside the chip.
+- **Interpreters and virtual instruction sets.** The same idea one level up: the Java virtual machine (1995) runs a portable bytecode on any processor, as microcode runs one instruction set on different hardware.
+- **Virtual machines.** IBM's CP-67 and VM/370 (1972) gave every user a complete virtual copy of the mainframe; Popek and Goldberg (1974) stated the conditions a processor must meet for this. PCs did not meet them, and virtual machines disappeared from view until VMware (1999) and Xen (2003) brought them back with software techniques; hardware support in the processors themselves followed (Intel VT-x, AMD-V, 2005–2006), and KVM (2007) is built on it. Today they carry the cloud.
+- **Time sharing and the computer utility.** The 1960s dream of computing sold like electricity, from a central machine to many users, faded when everyone got a PC; it returned as cloud computing, where one pays for processor time and storage by use.
+- **Batch processing.** Supercomputer centres run their work as batch jobs in queues managed by job schedulers such as Slurm, and companies run nightly batch jobs for billing and backups, because for long, non-interactive work utilisation is again what matters.
+
+For an engineer, the lesson is practical: before declaring a technique obsolete, ask which of its conditions no longer hold, and whether they could hold again somewhere else.
+
+<details>
+<summary><b>Explained simply:</b> FAT, exFAT, SD card, EFI system partition, contiguous allocation, ISO 9660, dynamic and static linking, X Window System, microcode, CISC, RISC, micro-operation, bytecode, Java VM, hypervisor, VT-x, AMD-V, Slurm</summary>
+
+- **FAT, FAT32, exFAT:** a family of simple file systems from the floppy-disk era, still used on memory cards because every device understands them.
+- **SD card:** the small memory card in cameras and some phones.
+- **EFI system partition:** a small area on a PC's disk that holds the programs which start the operating system.
+- **Contiguous allocation:** storing a file in one unbroken run of blocks, like seats for a group all in one row.
+- **ISO 9660:** the standard file system of CD-ROMs.
+- **Static / dynamic linking:** with static linking, the library routines are copied into every program; with dynamic linking, programs find and share one copy of the library when they run.
+- **X Window System:** the classic graphical system of Unix, which draws windows on the screen.
+- **Microcode:** tiny programs inside a processor that carry out its more complicated instructions step by step.
+- **CISC / RISC:** Complex / Reduced Instruction Set Computer. A CISC processor has many powerful instructions; a RISC processor has fewer, simpler ones that run very fast.
+- **Micro-operation:** one of the simple internal steps into which a modern x86 processor breaks each instruction.
+- **Bytecode, Java VM:** bytecode is a made-up machine language that no real processor runs; the Java virtual machine is the program that runs it on any real computer.
+- **Hypervisor:** the software that runs virtual machines, each with its own operating system. **VT-x, AMD-V:** the processor features that help it.
+- **Slurm:** a widely used program that queues and schedules jobs on supercomputers.
+
+</details>
+
 ## Reading this lecture with the textbooks
 
 This lecture tells the history as a chain of problems and solutions. The standard textbooks tell the same story in other frames, so students reading them side by side can use this map:
@@ -452,7 +554,7 @@ Looking back over the fourteen steps, the operating system plays four roles:
 | **Fast-food franchise** | gives the same experience in different environments: a program written for the OS runs on very different hardware, as a burger tastes the same in every branch | II, the portability of Unix |
 | **Security guard** | protects shared resources: keeps programs and users from harming each other (security) and keeps the system working when something fails (safety) | VII, VIII, XIII, XIV |
 
-A widely used textbook describes the same jobs with three roles: the OS as **illusionist** (our magician), **referee** (our conductor and security guard) and **glue** (the shared services that give every program the same experience) (Anderson & Dahlin, 2014).
+The magician is the first half of the definition at the start of the lecture (one machine turned into another), and the conductor the second (one machine turned into many). A widely used textbook describes the same jobs with three roles: the OS as **illusionist** (our magician), **referee** (our conductor and security guard) and **glue** (the shared services that give every program the same experience) (Anderson & Dahlin, 2014).
 
 <details>
 <summary><b>Explained simply:</b> resource, allocate, virtual machine, portability, safety</summary>
@@ -484,6 +586,44 @@ Where exactly the operating system ends is a matter of definition. In the narrow
 - **System call:** a program's request to the kernel to do something it may not do itself, for example "read this file" or "send this over the network".
 - **Firmware:** software built permanently into a piece of hardware, for example the program that starts a computer when it is switched on.
 - **Utility:** a small helper program, for example one that copies files or shows the free disk space.
+
+</details>
+
+## Classifying operating systems
+
+Operating systems can be grouped along several independent axes:
+
+- **Licence:** open source (Linux, FreeBSD, the Android Open Source Project), whose source code anyone may read, change and redistribute, or proprietary (Windows, iOS), whose source the vendor keeps closed. Mixtures exist: the core of macOS (Darwin) is open source, the rest is not.
+- **Platform:** mainframe, server, desktop, mobile, embedded or real-time; the platform decides what matters most, from throughput on a server to battery life on a phone and guaranteed deadlines in a car.
+- **Interface:** command line (CLI) or graphical (GUI). Most systems offer both; servers are usually run through the command line.
+- **Users and tasks:** whether several users can work at the same time, and whether several programs can run at the same time.
+- **Kernel structure:** monolithic, microkernel or hybrid (below).
+
+The two "how many" axes give a small table, with one corner practically empty:
+
+| | one task at a time | many tasks at a time |
+| --- | --- | --- |
+| **one user** | CP/M, MS-DOS | Windows 95/98, classic Mac OS, a phone in everyday use |
+| **many users at the same time** | (practically empty) | Unix, Linux, the Windows NT family |
+
+Several users working at the same time need several programs running at the same time, at least one for each of them, so a multi-user, single-task system makes little sense; a batch monitor that runs the jobs of many users one after the other is single-user at any given moment. Note that "single-user" describes how a system is used, not what it can do: Android and iOS run many processes and use separate user IDs to keep apps apart, but serve one person at a time.
+
+**Kernel structure.** In a **monolithic kernel**, all OS services (process and memory management, file systems, the network stack, device drivers) run together in kernel mode, in one address space. Calls between them are ordinary function calls, so it is fast, but a bug in any driver can crash the whole system. Unix and Linux are monolithic; Linux adds **loadable modules**, so drivers can be loaded and unloaded while the system runs, but a loaded module still runs inside the kernel. A **microkernel** keeps only the minimum in kernel mode (address spaces, threads, message passing between processes) and runs drivers and file systems as ordinary processes in user mode. A crashed driver can then be restarted, and the small kernel is easier to verify, at the price of more messages and context switches. Minix 3, QNX (common in cars and industrial devices) and seL4, whose correctness has been formally proved (Klein et al., 2009), are microkernels. **Hybrid kernels** start from a microkernel design but run most services in kernel mode for speed: the Windows NT kernel, and XNU, the kernel of macOS and iOS, which joins the Mach microkernel and parts of BSD Unix in one address space (Tanenbaum & Bos, 2015).
+
+<details>
+<summary><b>Explained simply:</b> open source, proprietary, platform, embedded, monolithic kernel, loadable module, microkernel, hybrid kernel, address space, message passing, formal verification, Minix, QNX, seL4, XNU, Mach, BSD</summary>
+
+- **Open source:** software whose source code is published, and which anyone may study, change and share. **Proprietary:** owned by a company that keeps the source code secret.
+- **Platform:** the kind of machine an OS is made for: a server, a desktop, a phone, a washing machine.
+- **Monolithic kernel:** the whole OS core is one big program that runs with full rights. Fast, but one faulty part can bring everything down.
+- **Loadable module:** a piece of the kernel, usually a driver, that can be added or removed while the system is running, like a plug-in.
+- **Microkernel:** a very small kernel that does only the essentials; everything else runs as separate programs that send each other messages. Like a manager who delegates almost everything.
+- **Hybrid kernel:** a mixture of the two.
+- **Address space:** the range of memory addresses a program can use.
+- **Message passing:** programs cooperate by sending each other messages instead of calling each other's code directly.
+- **Formal verification:** proving mathematically that a program does exactly what its specification says.
+- **Minix, QNX, seL4:** microkernel operating systems: Minix for teaching (Linux was started on it), QNX for cars and machines, seL4 for systems that must be provably secure.
+- **XNU, Mach, BSD:** XNU is Apple's kernel; Mach is a microkernel from Carnegie Mellon University; BSD is a version of Unix from the University of California, Berkeley.
 
 </details>
 
@@ -697,6 +837,35 @@ Even `ls` needs 76 system calls: to load its libraries (`mmap`, `openat`), to re
 
 </details>
 
+### A monolithic kernel, measured
+
+Linux is a monolithic kernel: file systems, the network stack and drivers are all part of it. Many kernels expose the configuration they were built with in `/proc/config.gz`. Each option is either compiled into the kernel (`=y`), built as a loadable module (`=m`) or left out:
+
+```console
+$ uname -sr
+Linux 6.18.44-fc-v77
+$ zcat /proc/config.gz | grep 'CONFIG_MODULES[= ]'
+# CONFIG_MODULES is not set
+$ zcat /proc/config.gz | grep -c '=y$'
+1635
+$ zcat /proc/config.gz | grep -c '=m$'
+0
+$ grep -w ext4 /proc/filesystems
+	ext4
+```
+
+This kernel, built for a small cloud virtual machine, is monolithic in the strictest sense: module support is switched off, and all 1635 enabled features are compiled into one kernel image, including the ext4 file system, which `/proc/filesystems` lists among the file systems the kernel itself can mount. A general-purpose distribution kernel (Ubuntu, Fedora) is built the other way round, with thousands of drivers as `=m` modules that are loaded only when matching hardware is found; `lsmod` lists the loaded ones (lab exercise 8). Either way, everything runs in kernel mode: a module is a plug-in to the monolithic kernel, not a separate process as in a microkernel.
+
+<details>
+<summary><b>Explained simply:</b> kernel configuration, /proc/config.gz, zcat, grep, kernel image, lsmod</summary>
+
+- **Kernel configuration:** the list of choices made when a kernel is compiled: which features and drivers to include, and how.
+- **`/proc/config.gz`:** a compressed copy of that list, provided by the running kernel itself. **`zcat`** prints a compressed file; **`grep`** keeps the lines that match a pattern (`-c` only counts them).
+- **Kernel image:** the single file that holds the compiled kernel and is loaded when the computer starts.
+- **`lsmod`:** a command that lists the kernel modules currently loaded.
+
+</details>
+
 ## Lab exercises
 
 1. **Shared libraries.** Run `ldd` on three programs (`/bin/ls`, `/bin/bash`, `python3` or another). Which library appears in all of them? Then count how many running processes use it: `sudo sh -c 'grep -l libc.so.6 /proc/[0-9]*/maps 2>/dev/null | wc -l'` (without `sudo` you can only see your own processes).
@@ -706,6 +875,8 @@ Even `ls` needs 76 system calls: to load its libraries (`mmap`, `openat`), to re
 5. **Virtual memory.** Run `vm.c`. Then change it so that the child prints `x` once more, *before* it sets `x = 2`. Explain why the child sees `x = 1` at first, but its change does not reach the parent. Bonus: add a `printf` in the parent before `fork()`, without a newline or `fflush(stdout)`, and run `./vm | cat`. Why is that text printed twice?
 6. **Overhead.** Repeat the `dd` experiment with block sizes 1, 16, 512, 4096 and 1M bytes (keep 10 MB in total: adjust `count`). Plot the total CPU time (`user` + `sys`) against the block size. At which block size does the cost of the system calls stop mattering, and why?
 7. **System calls.** Run `strace -c` on `ls`, on `cat /etc/os-release` and on `python3 -c 'print(1)'`. Which needs the most system calls, and why?
+8. **Monolithic, but modular.** On a Linux installation of your own (a laptop or a VM with a distribution kernel), count the built-in and the module options: `grep -c '=y$' /boot/config-$(uname -r)` and `grep -c '=m$' /boot/config-$(uname -r)` (or use `/proc/config.gz` if it exists). Then run `lsmod | wc -l` and `lsmod | head`. Which drivers are loaded, and which hardware are they for (`modinfo <name>`)? Compare with the numbers in the Linux section, and explain why a distribution kernel needs modules while a kernel for one known virtual machine does not.
+9. **Recycled solutions.** On your own computer, list the file systems with `lsblk -f` (Linux), `diskutil list` (macOS) or Disk Management (Windows), with a USB stick or SD card plugged in. Which partitions use FAT or exFAT, and why there? Find one more example of a recycled solution, not listed in this lecture, and name the change in economics, technology or needs that brought it back.
 
 ## Review questions
 
@@ -724,6 +895,12 @@ Even `ls` needs 76 system calls: to load its libraries (`mmap`, `openat`), to re
 13. Which four hardware features did batch monitors need, and what would go wrong without each of them?
 14. Why did MS-DOS, and not CP/M, become the operating system of the IBM PC and its clones? Separate the documented facts from the legend.
 15. "Apple stole the graphical interface from Xerox, and Microsoft stole it from Apple." What is accurate in this sentence, and what is not? What did the courts decide about the GUI, and why does that matter for operating systems?
+16. "The operating system turns the machine into another machine, and one machine into many." Explain both halves with an example of each, and give four reasons why operating systems are hard to build.
+17. Give an example of a conflict between each pair of convenience, security and efficiency. Which criterion dominated in the batch era, in the time-sharing era and in the first personal-computer era, and why?
+18. What did programmers lose when batch processing replaced step 0, why was that acceptable at the time, and which step gave it back?
+19. Fill in the table of single- and multi-user, single- and multi-tasking systems with one example in each possible cell. Why is one cell practically empty?
+20. Compare monolithic kernels, microkernels and hybrid kernels: where does a device driver run in each, what happens when it crashes, and which systems are examples of each? Is a Linux kernel with loadable modules a microkernel?
+21. Give three examples of recycled operating-system solutions. For each, name the change in economics, technology or needs that brought it back.
 
 <details>
 <summary><strong>Answer key (for instructors)</strong></summary>
@@ -743,6 +920,12 @@ Even `ls` needs 76 system calls: to load its libraries (`mmap`, `openat`), to re
 13. Memory protection (otherwise a job could overwrite the monitor), a timer (otherwise a job in an endless loop would never give control back), privileged instructions (otherwise a job could do its own I/O, for example read the next job's cards), and interrupts (otherwise the monitor could not regain control or overlap I/O with computing). They require a user mode and a privileged monitor (kernel) mode.
 14. Documented: IBM approached Digital Research first (August 1980); the dispute over IBM's non-disclosure agreement delayed the first meeting, and the talks failed over DRI's wish for royalties instead of a one-time fee and the late CP/M-86. Microsoft licensed and then bought 86-DOS (QDOS) from Seattle Computer Products and supplied it to IBM; PC DOS cost 40 dollars, CP/M-86 later 240 dollars; and Microsoft kept the right to license MS-DOS to clone makers. Legend: that Kildall simply "went flying" instead of meeting IBM and lost the deal through carelessness; he did fly that day, but on business, and the reasons were contractual and commercial. The claim that DOS's code was copied is not supported: DOS deliberately reproduced CP/M's system-call interface (which is what Kildall objected to), but its code and internals were different.
 15. Accurate: the GUI ideas came from Xerox PARC, Apple developed them after Jobs's visits, and Microsoft built Windows after seeing the Mac. Not accurate: "stole" for Apple (the visits were part of a share deal, no code was taken, the ideas had been shown widely, and the Lisa project predated the visits), and for Microsoft (Apple had licensed some Mac elements to Microsoft in 1985, and Apple lost its lawsuit). The courts found (1992, 1994) that most disputed elements were licensed, and that the basic ideas of a GUI cannot be protected, only close copying of specific designs; so the GUI became a common part of every operating system.
+16. Machine → another machine: the OS hides the real hardware behind a different, more convenient machine, for example named, growing files instead of numbered disk blocks, or a private virtual memory from address 0. One → many: it multiplexes the real machine among many programs and users, in time (CPU time slices) and in space (memory, disk), so each seems to have a machine of its own. Reasons it is hard (any four): too big for one person (millions of lines), a lifetime of decades with compatibility demands, asynchronous events (interrupts at any moment, timing-dependent bugs), general purpose for unknown and possibly hostile programs, if it stops everything stops, it manages the most and the most conflicting resources, and some of its problems have only trade-offs, no perfect solution.
+17. Convenience vs efficiency: a graphical desktop or animations use CPU time and memory. Security vs efficiency: memory protection, permission checks and encryption cost time. Convenience vs security: passwords, confirmations and permission prompts slow users down, while automatic login is comfortable but unsafe. Batch era: utilisation, because the machine was the expensive part. Time sharing: interactivity (response time, programmer productivity), because people's time had become expensive. First PCs: low price and short time to market, because one person had to afford the whole machine.
+18. Interactive debugging at the console: a mistake now cost a whole turnaround of hours or a day, and debugging was done offline from printouts and memory dumps. It was acceptable because the machine was far more expensive than the programmers' time, and batch kept it busy. Time sharing (step VIII) gave interactivity back once people's time became the expensive resource.
+19. One user, one task: CP/M, MS-DOS. One user, many tasks: Windows 95/98, classic Mac OS, a phone in everyday use. Many users, many tasks: Unix, Linux, Windows NT family. Many users at the same time with only one task at a time is practically empty: each user working at the same time needs at least one running program, so serving several users simultaneously requires running several programs; a system that serves users one after another is single-user at any moment.
+20. Monolithic: drivers run in kernel mode inside the kernel's address space; a crashing driver can bring down the whole system; Unix, Linux. Microkernel: drivers run as user-mode processes and communicate by messages; a crashed driver can be restarted while the rest keeps running, at the cost of more context switches; Minix 3, QNX, seL4. Hybrid: microkernel-style design with most services in kernel mode for speed; Windows NT, XNU (macOS, iOS). Linux with loadable modules is still monolithic: a module, once loaded, runs in kernel mode as part of the kernel.
+21. For example: FAT on USB sticks and SD cards (needs: a simple format that tiny controllers and every OS can read; economics: cheap controllers); contiguous allocation on CD-ROM (technology: write-once media, so files never grow and space never fragments); shared libraries (needs: large graphical libraries such as X would otherwise be copied into every program); RISC (technology: better compilers and larger chips made simple hardwired instructions faster); virtual machines and hypervisors (economics: many under-used servers to consolidate, then processor support); cloud computing (economics: renting by use is cheaper than owning for many); batch job schedulers (needs: long non-interactive work, where utilisation matters again).
 
 </details>
 
@@ -755,6 +938,8 @@ Apple Computer, Inc. v. Microsoft Corp. (n.d.). In *Wikipedia*. Retrieved Octobe
 Computer History Museum Software Preservation Group. (n.d.). *Operating systems at conception*. Retrieved October 6, 2026, from https://softwarepreservation.computerhistory.org/os/gm.html
 
 Corbató, F. J., Merwin-Daggett, M., & Daley, R. C. (1962). An experimental time-sharing system. In *Proceedings of the May 1–3, 1962, Spring Joint Computer Conference* (pp. 335–344). Association for Computing Machinery. https://doi.org/10.1145/1460833.1460871
+
+Daley, R. C., & Dennis, J. B. (1968). Virtual memory, processes, and sharing in MULTICS. *Communications of the ACM, 11*(5), 306–312. https://doi.org/10.1145/363095.363139
 
 Gary Kildall. (n.d.). In *Wikipedia*. Retrieved October 6, 2026, from https://en.wikipedia.org/wiki/Gary_Kildall
 
@@ -770,11 +955,17 @@ Information Processing Society of Japan. (n.d.). *Minicomputers: Brief history*.
 
 Kilburn, T., Edwards, D. B. G., Lanigan, M. J., & Sumner, F. H. (1962). One-level storage system. *IRE Transactions on Electronic Computers, EC-11*(2), 223–235. https://doi.org/10.1109/TEC.1962.5219356
 
+Klein, G., Elphinstone, K., Heiser, G., Andronick, J., Cock, D., Derrin, P., Elkaduwe, D., Engelhardt, K., Kolanski, R., Norrish, M., Sewell, T., Tuch, H., & Winwood, S. (2009). seL4: Formal verification of an OS kernel. In *Proceedings of the ACM SIGOPS 22nd Symposium on Operating Systems Principles* (pp. 207–220). Association for Computing Machinery. https://doi.org/10.1145/1629575.1629596
+
 Living Computers: Museum + Labs. (2020, April 9). *What really happened: Steve Jobs @ Xerox PARC '79*. https://www.livingcomputers.org/Blog/What-Really-Happened-Steve-Jobs-@-Xerox-PARC-79.aspx
 
 Multicians. (n.d.). *Multics history*. Retrieved October 6, 2026, from https://multicians.org/history.html
 
 Necasek, M. (n.d.). *DOS 1.0 and 1.1*. OS/2 Museum. Retrieved October 6, 2026, from https://www.os2museum.com/wp/dos/dos-1-0-and-1-1/
+
+Patterson, D. A., & Ditzel, D. R. (1980). The case for the reduced instruction set computer. *ACM SIGARCH Computer Architecture News, 8*(6), 25–33. https://doi.org/10.1145/641914.641917
+
+Popek, G. J., & Goldberg, R. P. (1974). Formal requirements for virtualizable third generation architectures. *Communications of the ACM, 17*(7), 412–421. https://doi.org/10.1145/361011.361073
 
 Ritchie, D. M., & Thompson, K. (1974). The UNIX time-sharing system. *Communications of the ACM, 17*(7), 365–375. https://doi.org/10.1145/361011.361061
 

@@ -26,10 +26,11 @@ def marker(mid):
             f'</marker></defs>')
 
 
-def path(d, mid, start=False, end=True):
+def path(d, mid, start=False, end=True, dash=None, width=1.25):
     a = f' marker-end="url(#{mid})"' if end else ""
     b = f' marker-start="url(#{mid})"' if start else ""
-    return f'<path d="{d}" fill="none" class="edge" stroke-width="1.25"{a}{b}/>'
+    da = f' stroke-dasharray="{dash}"' if dash else ""
+    return f'<path d="{d}" fill="none" class="edge" stroke-width="{width}"{a}{b}{da}/>'
 
 
 def rect(x, y, w, h, main=False):
@@ -152,7 +153,146 @@ def arch():
     return svg(760, 508, title, "\n".join(p))
 
 
+# ---------------- System bus with separate memory and I/O control lines ----------------
+def system_bus():
+    m = "sb"
+    title = "Egy egyszerű rendszersín cím-, adat- és vezérlővonalai"
+    p = [marker(m), text(24, 30, title, 15, 600)]
+    top, bot = 190, 254
+    boxes = [(40, 160, "CPU", "hajtja a címsínt"),
+             (300, 160, "Memória", "válaszol: MR, MW"),
+             (560, 160, "I/O-eszköz", "válaszol: IOR, IOW")]
+    # control lines (dashed), nested so that they never cross
+    ctrl = [  # x on CPU, x on target, height, label, from CPU?
+        (140, 340, 166, "MR  memóriaolvasás", True),
+        (120, 380, 142, "MW  memóriaírás", True),
+        (100, 590, 118, "IOR  I/O-olvasás", True),
+        (80, 630, 94, "IOW  I/O-írás", True),
+        (60, 670, 70, "IRQ  megszakításkérés", False),
+    ]
+    for xc, xt, y, label, out in ctrl:
+        if out:
+            p.append(path(f"M{xc} {top}V{y}H{xt}V{top}", m, dash="5 4"))
+        else:
+            p.append(path(f"M{xt} {top}V{y}H{xc}V{top}", m, dash="5 4"))
+        p.append(text(232, y - 5, label, 11.5, 600 if not out else 400))
+    p.append(text(684, 110, "vezérlő-", 11.5, cls="quiet"))
+    p.append(text(684, 126, "vonalak", 11.5, cls="quiet"))
+    for x, w, name, sub in boxes:
+        p.append(rect(x, top, w, bot - top, main=(name == "CPU")))
+        p.append(text(x + w / 2, top + 26, name, 13, 600, anchor="middle"))
+        p.append(text(x + w / 2, top + 46, sub, 11.5, cls="quiet", anchor="middle"))
+    # address bus: CPU -> memory, I/O
+    ya, yd = 292, 326
+    p.append(path(f"M90 {bot}V{ya}H630", m, end=False, width=2.5))
+    p.append(path(f"M350 {ya}V{bot}", m))
+    p.append(path(f"M610 {ya}V{bot}", m))
+    # data bus: both directions
+    p.append(path(f"M150 {yd}H680", m, end=False, width=2.5))
+    for x in (150, 410, 670):
+        p.append(path(f"M{x} {yd}V{bot}", m, start=True, end=True))
+    p.append(text(36, ya + 4, "cím", 11.5, 600))
+    p.append(text(36, yd + 4, "adat", 11.5, 600))
+    p.append(text(638, ya + 4, "CPU → memória, I/O", 11.5, cls="quiet"))
+    p.append(text(688, yd + 4, "kétirányú", 11.5, cls="quiet"))
+    p.append(text(24, 370, "Portleképezett I/O: az IOR/IOW jelzi az eszköznek, hogy a cím portszám, nem memóriarekesz.", 11.5, cls="quiet"))
+    p.append(text(24, 388, "Memórialeképezett I/O: az eszköz a saját címtartományában válaszol az MR/MW jelre, mint a memória.", 11.5, cls="quiet"))
+    return svg(760, 404, title, "\n".join(p))
+
+
+# ---------------- Bus hierarchy: then and now ----------------
+def hierarchy():
+    m = "bh"
+    title = "Egy közös síntől a sínek és kapcsolatok hierarchiájáig"
+    p = [marker(m), text(24, 30, title, 15, 600)]
+
+    def box(x, y, w, h, name, sub=None, main=False):
+        p.append(rect(x, y, w, h, main))
+        if sub:
+            p.append(text(x + w / 2, y + h / 2 - 3, name, 13, 600, anchor="middle"))
+            p.append(text(x + w / 2, y + h / 2 + 14, sub, 11.5, cls="quiet", anchor="middle"))
+        else:
+            p.append(text(x + w / 2, y + h / 2 + 5, name, 13, 600, anchor="middle"))
+
+    def line(d, w=1.25):
+        p.append(path(d, m, end=False, width=w))
+
+    # ---- Panel A: late 1990s ----
+    p.append(text(24, 64, "A   Az 1990-es évek vége: hidakkal összekötött sínek", 13, 600, cls="quiet"))
+    y1 = 84
+    box(40, y1, 110, 44, "L2", "gyorsítótár")
+    box(230, y1, 110, 44, "CPU", main=True)
+    box(420, y1, 120, 44, "PCI-híd")
+    box(620, y1, 110, 44, "Központi", "memória")
+    line(f"M150 {y1+22}H230", 2.5)
+    line(f"M340 {y1+22}H420", 2.5)
+    line(f"M540 {y1+22}H620", 2.5)
+    p.append(text(190, y1 + 14, "cache-sín", 11, cls="quiet", anchor="middle"))
+    p.append(text(380, y1 + 14, "helyi sín", 11, cls="quiet", anchor="middle"))
+    p.append(text(580, y1 + 14, "memóriasín", 11, cls="quiet", anchor="middle"))
+    ypci = 170
+    line(f"M480 {y1+44}V{ypci}")
+    line(f"M40 {ypci}H730", 2.5)
+    p.append(text(730, ypci - 8, "PCI sín (33 MHz, közös)", 11.5, 600, anchor="end"))
+    yd = 196
+    for x, w, name in [(40, 90, "SCSI"), (145, 90, "USB"), (250, 100, "Hálózat"), (365, 100, "Grafika")]:
+        line(f"M{x + w/2} {ypci}V{yd}")
+        box(x, yd, w, 40, name)
+    box(480, yd, 110, 40, "ISA-híd")
+    line(f"M535 {ypci}V{yd}")
+    box(630, yd, 100, 40, "IDE-lemezek")
+    line(f"M590 {yd+20}H630")
+    yisa = 284
+    line(f"M535 {yd+40}V{yisa}")
+    line(f"M40 {yisa}H730", 2.5)
+    p.append(text(730, yisa - 8, "ISA sín (8 MHz, közös)", 11.5, 600, anchor="end"))
+    for x, w, name in [(40, 100, "Modem"), (155, 110, "Hangkártya"), (280, 100, "Nyomtató")]:
+        line(f"M{x + w/2} {yisa}V{yisa+26}")
+        box(x, yisa + 26, w, 40, name)
+    p.append(text(730, yisa + 44, "gyors a CPU közelében, lassú távolabb", 11.5, cls="quiet", anchor="end"))
+    p.append(f'<line x1="24" y1="378" x2="736" y2="378" class="grid"/>')
+
+    # ---- Panel B: today ----
+    p.append(text(24, 408, "B   Ma (egyszerűsítve): pont–pont kapcsolatok, vezérlők a CPU-ban", 13, 600, cls="quiet"))
+    py0, py1 = 424, 524
+    p.append(rect(40, py0, 480, py1 - py0))
+    p.append(text(52, py0 + 20, "CPU-tok", 11.5, 600, cls="quiet"))
+    iy = 456
+    box(56, iy, 140, 52, "PCIe", "root complex")
+    box(212, iy, 140, 52, "Magok", "gyorsítótárakkal", main=True)
+    box(368, iy, 140, 52, "Memória-", "vezérlő")
+    box(600, iy, 130, 52, "DRAM", "DDR-csatornák")
+    line(f"M508 {iy+26}H600", 2.5)
+    line(f"M196 {iy+26}H212")
+    line(f"M352 {iy+26}H368")
+    ydev = 572
+    line(f"M100 {iy+52}V{ydev}", 2.5)
+    box(30, ydev, 140, 44, "Grafikus kártya")
+    line(f"M160 {iy+52}V548H260V{ydev}", 2.5)
+    box(190, ydev, 140, 44, "NVMe SSD")
+    p.append(text(208, 544, "PCIe-sávok", 11, cls="quiet"))
+    # chipset
+    line(f"M470 {py1}V{ydev}", 2.5)
+    p.append(text(480, 552, "DMI-kapcsolat", 11, cls="quiet"))
+    box(400, ydev, 140, 44, "Chipset (PCH)", main=False)
+    yb = 660
+    line(f"M470 {ydev+44}V640")
+    devs = [(250, "USB"), (350, "SATA"), (450, "Hálózat"), (550, "Hang"), (650, "PCIe-foglalatok")]
+    line(f"M{devs[0][0]+40} 640H{devs[-1][0]+40}")
+    for x, name in devs:
+        line(f"M{x+40} 640V{yb}")
+        if name == "PCIe-foglalatok":
+            box(x, yb, 90, 40, "PCIe-", "foglalatok")
+        else:
+            box(x, yb, 80, 40, name)
+    p.append(text(24, 742, "Minden PCIe-kapcsolat pont–pont: az eszközök már nem osztoznak egy sínen, és nem várnak egymásra.", 11.5, cls="quiet"))
+    p.append(text(24, 760, "A lassú eszközök a chipset egyetlen CPU-kapcsolatán osztoznak; a gyorsak saját sávokat kapnak.", 11.5, cls="quiet"))
+    return svg(760, 776, title, "\n".join(p))
+
+
 if __name__ == "__main__":
     open("instruction-cycle.svg", "w", encoding="utf-8").write(cycle())
     open("cpu-architecture.svg", "w", encoding="utf-8").write(arch())
+    open("system-bus.svg", "w", encoding="utf-8").write(system_bus())
+    open("bus-hierarchy.svg", "w", encoding="utf-8").write(hierarchy())
     print("ok")

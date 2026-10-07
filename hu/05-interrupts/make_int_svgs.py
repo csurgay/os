@@ -84,15 +84,15 @@ def cycle():
         p.append(text(cx, rowA + 14, sub, 11.5, cls="quiet", anchor="middle"))
     pts = f"{cd - 64},{rowA} {cd},{rowA - 40} {cd + 64},{rowA} {cd},{rowA + 40}"
     p.append(f'<polygon points="{pts}" class="accf"/><polygon points="{pts}" fill="none" class="acc" stroke-width="2"/>')
-    p.append(text(cd, rowA - 2, "Van függő", 13, 600, anchor="middle"))
-    p.append(text(cd, rowA + 14, "megszakítás?", 13, 600, anchor="middle"))
+    p.append(text(cd, rowA - 2, "Engedélyezve", 12.5, 600, anchor="middle"))
+    p.append(text(cd, rowA + 14, "és függő?", 12.5, 600, anchor="middle"))
     p.append(rect(cd - hw / 2, rowB - 28, hw, 56))
     p.append(text(cd, rowB - 4, "Megszakításkezelő", 13, 600, anchor="middle"))
     p.append(text(cd, rowB + 14, "a PC már a következő utasításra mutat", 11.5, cls="quiet", anchor="middle"))
     p.append(text(cd + 10, rowA + 64, "igen", 11.5, cls="quiet"))
     p.append(text(728, rowA - 8, "nem", 11.5, cls="quiet", anchor="end"))
     p.append(text((c1 + cd - hw / 2) / 2, rowB - 8, "a kezelő ugyanúgy lehívódik, mint bármely más kód", 11.5, cls="quiet", anchor="middle"))
-    p.append(text(400, rowB + 70, "nincs megszakítás: azonnal jön a következő utasítás", 11.5, cls="quiet", anchor="middle"))
+    p.append(text(400, rowB + 70, "nincs függő megszakítás (vagy le vannak tiltva): azonnal jön a következő utasítás", 11.5, cls="quiet", anchor="middle"))
     return svg(760, 360, title, "\n".join(p))
 
 
@@ -348,10 +348,109 @@ def controller():
     return svg(760, 384, title, "\n".join(p))
 
 
+# ---------------- 8. Vector table lookup ----------------
+def vector_table():
+    m = "vt"
+    title = "17-es megszakítás: a vektortábla 17-es bejegyzése tárolja a kezelő címét"
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600)]
+    rh, ry = 30, 104
+    # source
+    p.append(rect(24, ry + 2 * rh - 14, 150, 58, tint=True))
+    p.append(text(99, ry + 2 * rh + 8, "Megszakításforrás", 13, 600, anchor="middle"))
+    p.append(text(99, ry + 2 * rh + 26, "a 17-es számút kéri", 11.5, cls="quiet", anchor="middle"))
+    yc = ry + 2 * rh + rh / 2
+    p.append(path(f"M174 {yc}H258", m))
+    p.append(text(216, yc - 8, "17", 11.5, 600, anchor="middle"))
+    # vector table
+    tx, iw, aw = 260, 44, 120
+    p.append(text(tx, 72, "Vektortábla", 13, 600))
+    p.append(text(tx, 90, "a memóriában, az OS tölti ki", 11.5, cls="quiet"))
+    rows = [("0", "…"), ("…", ""), ("17", "FBCAh"), ("18", "…"), ("…", "")]
+    for i, (a, b) in enumerate(rows):
+        y = ry + i * rh
+        if a == "17":
+            p.append(f'<rect x="{tx}" y="{y}" width="{iw + aw}" height="{rh}" class="accf"/>')
+        p.append(f'<rect x="{tx}" y="{y}" width="{iw}" height="{rh}" fill="none" class="edge" stroke-width="1"/>')
+        p.append(f'<rect x="{tx + iw}" y="{y}" width="{aw}" height="{rh}" fill="none" class="edge" stroke-width="1"/>')
+        p.append(text(tx + iw / 2, y + 20, a, 12, cls="quiet", anchor="middle"))
+        p.append(text(tx + iw + 12, y + 20, b, 13, 600 if a == "17" else 400, mono=True))
+    # memory with the handler
+    mx, maw, mcw = 540, 70, 150
+    p.append(text(mx, 72, "Memória", 13, 600))
+    p.append(text(mx, 90, "a kezelő kódja", 11.5, cls="quiet"))
+    mrows = [("…", ""), ("…", ""), ("FBCAh", "regiszterek mentése"), ("…", "az eszköz kezelése"), ("…", "visszatérés (iret)")]
+    for i, (a, b) in enumerate(mrows):
+        y = ry + i * rh
+        if a == "FBCAh":
+            p.append(f'<rect x="{mx}" y="{y}" width="{maw + mcw}" height="{rh}" class="accf"/>')
+        p.append(f'<rect x="{mx}" y="{y}" width="{maw}" height="{rh}" fill="none" class="edge" stroke-width="1"/>')
+        p.append(f'<rect x="{mx + maw}" y="{y}" width="{mcw}" height="{rh}" fill="none" class="edge" stroke-width="1"/>')
+        p.append(text(mx + 10, y + 20, a, 12, 600 if a == "FBCAh" else 400, cls="ink" if a == "FBCAh" else "quiet", mono=True))
+        p.append(text(mx + maw + 10, y + 20, b, 11.5, cls="ink" if a == "FBCAh" else "quiet"))
+    p.append(path(f"M{tx + iw + aw} {yc}H{mx - 2}", m))
+    p.append(text((tx + iw + aw + mx) / 2, yc - 8, "PC ← FBCAh", 11.5, 600, anchor="middle"))
+    p.append(text(24, 282, "A tábla egy közvetett szintet ad: az OS egyetlen bejegyzés átírásával áthelyezhet vagy lecserélhet egy kezelőt.", 11.5, cls="quiet"))
+    p.append(text(24, 300, "x86-64-en minden bejegyzés (kapuleíró) 16 bájtos, és a kódszegmenst meg a jogosultsági beállításokat is tárolja.", 11.5, cls="quiet"))
+    return svg(760, 318, title, "\n".join(p))
+
+
+# ---------------- 9. Page fault that needs the disk ----------------
+def fault_chain():
+    m = "fc"
+    title = "Egy laphiba, amelyhez a lemez kell: kivétel, DMA, másik folyamat, megszakítás"
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600)]
+    lanes = [("A folyamat", 80), ("Kernel", 140), ("B folyamat", 200), ("Lemez (DMA)", 260)]
+    bh = 32
+    for name, y in lanes:
+        p.append(text(24, y + 21, name, 13, 600))
+        p.append(f'<line x1="140" y1="{y + bh / 2}" x2="740" y2="{y + bh / 2}" class="grid"/>')
+
+    def bar(x0, x1, y, label, kind):
+        if kind == "run":
+            p.append(rect(x0, y, x1 - x0, bh, main=True))
+        else:
+            p.append(rect(x0, y, x1 - x0, bh, tint=True))
+        p.append(text((x0 + x1) / 2, y + 21, label, 11.5, 600 if kind == "run" else 400, anchor="middle"))
+
+    yA, yK, yB, yD = 80, 140, 200, 260
+    bar(140, 226, yA, "A fut", "run")
+    p.append(path(f"M226 {yA + bh / 2}H676", m, end=False, dash="4 4"))
+    p.append(f'<rect x="380" y="{yA + 6}" width="176" height="20" class="tint"/>')
+    p.append(text(468, yA + 21, "A blokkolt: a lapra vár", 11.5, cls="quiet", anchor="middle"))
+    bar(680, 740, yA, "A újra", "run")
+    bar(230, 342, yK, "laphibakezelő", "k")
+    bar(600, 672, yK, "IRQ-kezelő", "k")
+    bar(344, 594, yB, "B fut: a CPU nem tétlen", "run")
+    bar(312, 596, yD, "átvitel: lemez → szabad keret", "k")
+
+    def num(x, y, n):
+        p.append(f'<circle cx="{x}" cy="{y}" r="9" class="accf"/><circle cx="{x}" cy="{y}" r="9" fill="none" class="acc" stroke-width="1.25"/>')
+        p.append(text(x, y + 4, str(n), 11, 600, anchor="middle"))
+
+    p.append(path(f"M228 {yA + bh}V{yK}", m)); num(244, 126, 1)
+    p.append(path(f"M318 {yK + bh}V{yD}", m)); num(302, 246, 2)
+    p.append(path(f"M338 {yK + bh}V{yB}", m)); num(356, 186, 3)
+    p.append(path(f"M598 {yD}V{yK + bh}", m)); num(614, 246, 4)
+    p.append(path(f"M664 {yK}V124H704V{yA + bh}", m)); num(648, 126, 5)
+    p.append(path(f"M140 312H740", m))
+    p.append(text(740, 330, "idő", 11.5, cls="quiet", anchor="end"))
+    notes = [
+        "1  A olyan laphoz nyúl, amely nincs a memóriában: laphiba, azaz kivétel (szinkron, az utasítás okozza).",
+        "2  A kezelő szabad lapkeretet keres, és utasítja a lemezvezérlőt, hogy DMA-val olvassa be oda a lapot. A blokkolódik.",
+        "3  Az ütemező egy másik folyamatot, B-t futtatja: a CPU hasznos munkát végez, amíg a lemez átviszi a lapot.",
+        "4  Amikor az átvitel kész, a lemez megszakítást kér (aszinkron, kívülről jön).",
+        "5  A kezelő frissíti a laptáblát, és A futásra kész lesz; A újra végrehajtja a hibát okozó utasítást, ami most sikerül.",
+    ]
+    for i, s in enumerate(notes):
+        p.append(text(24, 356 + 20 * i, s, 11.5, cls="quiet"))
+    return svg(760, 450, title, "\n".join(p))
+
+
 if __name__ == "__main__":
     for name, f in [("interrupt-cycle", cycle), ("interrupt-processing", processing),
                     ("nested-interrupts", nested), ("race-condition", race),
                     ("io-cpu-time", io_timeline), ("interrupt-latency", latency),
-                    ("interrupt-controller", controller)]:
+                    ("interrupt-controller", controller),
+                    ("vector-table", vector_table), ("page-fault-chain", fault_chain)]:
         open(f"{name}.svg", "w", encoding="utf-8").write(f())
     print("ok")

@@ -5,6 +5,9 @@ Usage:
   python3 cachesim.py split ADDR            split a 32-bit address for the toy direct-mapped
                                             cache (1024 lines of 16 KiB: 8-bit tag, 10-bit index,
                                             14-bit offset), in the usual tag|index|offset order
+  python3 cachesim.py small ADDR...        split 32-bit addresses for a small direct-mapped cache
+                                            (1024 lines of 4 bytes = 4 KiB: 20-bit tag, 10-bit
+                                            index, 2-bit offset), in binary and hexadecimal
   python3 cachesim.py traverse [N]          row-by-row vs column-by-column sum of an N x N int
                                             matrix through a 32 KiB, 8-way, 64-byte-line cache
   python3 cachesim.py blocksize             miss rate against line size, cache size fixed
@@ -108,6 +111,14 @@ if __name__ == "__main__":
         idx, tag = c.split(a)
         print(f"address {a:#010x} = tag {tag:#04x} | index {idx} | offset {a & 0x3FFF:#06x} "
               f"(word {(a & 0x3FFF) // 4} of the 4096 in the line)")
+    elif cmd == "small":
+        c = Cache(1024 * 4, 4)
+        print("cache: 1024 lines x 4 bytes = 4 KiB, direct-mapped; tag 20 | index 10 | offset 2 bits")
+        for arg in sys.argv[2:]:
+            a = int(arg, 0)
+            idx, tag = c.split(a)
+            b = f"{a:032b}"
+            print(f"{a:#010x} = {b[:20]} | {b[20:30]} | {b[30:]}  -> tag {tag:#07x}, line {idx}, byte {a & 3}")
     elif cmd == "traverse":
         n = int(sys.argv[2]) if len(sys.argv) > 2 else 256
         for rows in (True, False):

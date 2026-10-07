@@ -17,6 +17,7 @@ Magyar változat: [../hu/](../hu/)
 | 7 | [Two-Level Memories and Caches](07-two-level-memory-and-cache/) | the memory hierarchy, the two-level memory and its average access time, locality of reference, direct-mapped, fully associative and set-associative caches, valid and dirty bits, write-through and write-back, replacement (LRU, FIFO, aging, Bélády's OPT), line size, prefetching, coherence and false sharing, the page cache, cache-friendly loops |
 | 8 | [Virtual Memory](08-virtual-memory/) | separation and relocation, internal and external fragmentation, paging, page tables and the page-table base register, valid and access-rights bits, x86-64 multi-level page tables, the TLB and huge pages, page faults, demand paging and copy-on-write, page replacement (FIFO, OPT, LRU, clock), Bélády's anomaly, working sets and thrashing, caches vs virtual memory |
 | 9 | [File Systems](09-file-systems/) | hard disks and SSDs (geometry, access time, NAND flash, FTL, garbage collection, write amplification, TRIM), the storage stack and the VFS, inodes, block pointers and extents, directories (lists, htree, B+ trees), hard and symbolic links, allocation and fragmentation, journaling and copy-on-write, FAT16, ext4, XFS and NTFS taken apart |
+| 10 | [Access Control: Permissions, ACLs and SELinux](10-access-control/) | subjects, objects and the reference monitor, defence in depth, Unix owner/group/others permissions and the first-match rule, r/w/x on directories, chmod, umask, setuid/setgid/sticky, root and capabilities, POSIX ACLs (mask, default ACLs), DAC vs MAC, SELinux contexts, type enforcement, booleans and labelling, AppArmor |
 
 ## Running the labs
 
@@ -26,7 +27,7 @@ The lab programs need a Linux machine (or WSL) with `gcc`, `binutils` (`as`, `ld
 $ sudo apt install build-essential gdb
 ```
 
-Lecture 6 also uses `strace`, Python 3 and (optionally) a Java JDK, and lecture 7 `valgrind` (`sudo apt install strace default-jdk valgrind`). Lecture 9 uses `e2fsprogs` (`debugfs`, `dumpe2fs`, `filefrag`), `dosfstools`, `xfsprogs` and `ntfs-3g` (`sudo apt install e2fsprogs dosfstools xfsprogs ntfs-3g`); its ext4 demos need root to mount image files. The container labs of lecture 2 need Podman (or Docker), ideally on Fedora, CentOS Stream, AlmaLinux or Rocky Linux (`sudo dnf install podman skopeo`).
+Lecture 6 also uses `strace`, Python 3 and (optionally) a Java JDK, and lecture 7 `valgrind` (`sudo apt install strace default-jdk valgrind`). Lecture 9 uses `e2fsprogs` (`debugfs`, `dumpe2fs`, `filefrag`), `dosfstools`, `xfsprogs` and `ntfs-3g` (`sudo apt install e2fsprogs dosfstools xfsprogs ntfs-3g`); its ext4 demos need root to mount image files. The container labs of lecture 2 need Podman (or Docker), ideally on Fedora, CentOS Stream, AlmaLinux or Rocky Linux (`sudo dnf install podman skopeo`). Lecture 10 needs root (it creates demo users) and the `libcap2-bin` and `acl` packages (`sudo apt install libcap2-bin acl`); its SELinux lab needs a Fedora, RHEL or AlmaLinux virtual machine.
 
 ## Figures
 

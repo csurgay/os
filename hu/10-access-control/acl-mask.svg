@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 494" width="880" height="494" role="img" aria-label="Egy POSIX ACL: tulajdonosi, csoport- és egyéb osztály, és a csoportosztályt korlátozó maszk">
+<title>Egy POSIX ACL: tulajdonosi, csoport- és egyéb osztály, és a csoportosztályt korlátozó maszk</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Egy POSIX ACL: tulajdonosi, csoport- és egyéb osztály, és a csoportosztályt korlátozó maszk</text>
+<marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker>
+<text x="90" y="62" font-size="12.5" font-weight="600" class="quiet" text-anchor="start">a plan.txt a setfacl -m u:cons3:--- és a chmod g-w után</text>
+<rect x="90" y="78" width="200" height="34" rx="4" class="tint"/><rect x="90" y="78" width="200" height="34" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="104" y="100" font-size="13" font-weight="600" class="ink" text-anchor="start">user::rw-</text>
+<text x="306" y="100" font-size="11" font-weight="400" class="quiet" text-anchor="start">tényleges:</text>
+<text x="380" y="100" font-size="13" font-weight="600" class="ink" text-anchor="start">rw-</text>
+<path d="M410 95H436" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a4)"/>
+<text x="444" y="100" font-size="11.5" font-weight="400" class="ink" text-anchor="start">az ls -l tulajdonosi hármasa</text>
+<rect x="90" y="120" width="200" height="34" rx="4" class="accf"/><rect x="90" y="120" width="200" height="34" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="104" y="142" font-size="13" font-weight="600" class="ink" text-anchor="start">user:cons3:---</text>
+<text x="306" y="142" font-size="11" font-weight="400" class="quiet" text-anchor="start">tényleges:</text>
+<text x="380" y="142" font-size="13" font-weight="600" class="ink" text-anchor="start">---</text>
+<rect x="90" y="162" width="200" height="34" rx="4" class="accf"/><rect x="90" y="162" width="200" height="34" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="104" y="184" font-size="13" font-weight="600" class="ink" text-anchor="start">group::rw-</text>
+<text x="306" y="184" font-size="11" font-weight="400" class="quiet" text-anchor="start">tényleges:</text>
+<text x="380" y="184" font-size="13" font-weight="600" class="bad" text-anchor="start">r--</text>
+<rect x="90" y="204" width="200" height="34" rx="4" class="accf"/><rect x="90" y="204" width="200" height="34" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="104" y="226" font-size="13" font-weight="600" class="ink" text-anchor="start">mask::r--</text>
+<text x="306" y="220" font-size="11" font-weight="400" class="quiet" text-anchor="start">korlátozza a</text>
+<text x="306" y="234" font-size="11" font-weight="400" class="quiet" text-anchor="start">fenti három sort</text>
+<path d="M410 221H436" fill="none" class="acc" stroke-width="1.25" marker-end="url(#a4)"/>
+<text x="444" y="226" font-size="11.5" font-weight="600" class="acct" text-anchor="start">az ls -l csoporthármasa</text>
+<rect x="90" y="246" width="200" height="34" rx="4" class="tint"/><rect x="90" y="246" width="200" height="34" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="104" y="268" font-size="13" font-weight="600" class="ink" text-anchor="start">other::r--</text>
+<text x="306" y="268" font-size="11" font-weight="400" class="quiet" text-anchor="start">tényleges:</text>
+<text x="380" y="268" font-size="13" font-weight="600" class="ink" text-anchor="start">r--</text>
+<path d="M410 263H436" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a4)"/>
+<text x="444" y="268" font-size="11.5" font-weight="400" class="ink" text-anchor="start">az ls -l mindenki más hármasa</text>
+<path d="M82 80H76V110H82" fill="none" class="edge" stroke-width="1"/>
+<text x="70" y="99.0" font-size="11" font-weight="400" class="quiet" text-anchor="end">tulajdonosi</text>
+<text x="70" y="113.0" font-size="11" font-weight="400" class="quiet" text-anchor="end">osztály</text>
+<path d="M82 122H76V236H82" fill="none" class="edge" stroke-width="1"/>
+<text x="70" y="183.0" font-size="11" font-weight="400" class="quiet" text-anchor="end">csoport-</text>
+<text x="70" y="197.0" font-size="11" font-weight="400" class="quiet" text-anchor="end">osztály</text>
+<path d="M82 248H76V278H82" fill="none" class="edge" stroke-width="1"/>
+<text x="70" y="267.0" font-size="11" font-weight="400" class="quiet" text-anchor="end">egyéb</text>
+<text x="70" y="281.0" font-size="11" font-weight="400" class="quiet" text-anchor="end">osztály</text>
+<text x="640" y="114" font-size="12" font-weight="600" class="quiet" text-anchor="start">ls -l plan.txt</text>
+<rect x="640" y="124" width="18" height="30" rx="3" class="tint"/><rect x="640" y="124" width="18" height="30" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<text x="649.0" y="145" font-size="13.5" font-weight="600" class="ink" text-anchor="middle">-</text>
+<rect x="662" y="124" width="46" height="30" rx="3" class="tint"/><rect x="662" y="124" width="46" height="30" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<text x="685.0" y="145" font-size="13.5" font-weight="600" class="ink" text-anchor="middle">rw-</text>
+<rect x="712" y="124" width="46" height="30" rx="3" class="accf"/><rect x="712" y="124" width="46" height="30" rx="3" fill="none" class="acc" stroke-width="2"/>
+<text x="735.0" y="145" font-size="13.5" font-weight="600" class="ink" text-anchor="middle">r--</text>
+<rect x="762" y="124" width="46" height="30" rx="3" class="tint"/><rect x="762" y="124" width="46" height="30" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<text x="785.0" y="145" font-size="13.5" font-weight="600" class="ink" text-anchor="middle">r--</text>
+<rect x="812" y="124" width="18" height="30" rx="3" class="tint"/><rect x="812" y="124" width="18" height="30" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<text x="821.0" y="145" font-size="13.5" font-weight="600" class="ink" text-anchor="middle">+</text>
+<text x="640" y="184" font-size="12" font-weight="600" class="acct" text-anchor="start">tényleges = bejegyzés ÉS maszk:</text>
+<text x="640" y="202" font-size="11.5" font-weight="400" class="ink" text-anchor="start">group::rw- ÉS mask::r-- = r--</text>
+<rect x="40" y="300" width="800" height="74" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="56" y="324" font-size="12.5" font-weight="600" class="ink" text-anchor="start">Ha van ACL, a csoporthármas maga a maszk</text>
+<text x="56" y="344" font-size="11.5" font-weight="400" class="ink" text-anchor="start">Az ls -l és a chmod g=… a maszkot mutatja és állítja, nem a tulajdonos csoport bejegyzését, így egy csak a kilenc bitet</text>
+<text x="56" y="362" font-size="11.5" font-weight="400" class="ink" text-anchor="start">ismerő program (chmod go-rwx) is egyszerre korlátoz minden névvel megadott bejegyzést. A bitek utáni „+”: van ACL.</text>
+<rect x="40" y="388" width="800" height="92" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="56" y="412" font-size="12.5" font-weight="600" class="ink" text-anchor="start">Alapértelmezett ACL (csak könyvtárakon): sablon, nem ellenőrzés</text>
+<text x="56" y="434" font-size="11.5" font-weight="400" class="ink" text-anchor="start">A default:user:cons3:---, default:group::rwx, … bejegyzések minden új fájl vagy alkönyvtár hozzáférési</text>
+<text x="56" y="452" font-size="11.5" font-weight="400" class="ink" text-anchor="start">ACL-jébe bemásolódnak (az alkönyvtárak magát az alapértelmezett ACL-t is öröklik). Az umask ilyenkor nem számít;</text>
+<text x="56" y="470" font-size="11.5" font-weight="400" class="ink" text-anchor="start">a program által kért mód (fájloknál 0666) viszont korlátozza az eredményt: az új fájl mask::rw- maszkot kap.</text>
+</svg>

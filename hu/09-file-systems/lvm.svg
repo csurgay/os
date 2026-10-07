@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 496" width="880" height="496" role="img" aria-label="LVM: a blokkeszközökből fizikai kötetek lesznek, extentjeik egy kötetcsoportba kerülnek">
+<title>LVM: a blokkeszközökből fizikai kötetek lesznek, extentjeik egy kötetcsoportba kerülnek</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">LVM: a blokkeszközökből fizikai kötetek lesznek, extentjeik egy kötetcsoportba kerülnek</text>
+<marker id="a13" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker>
+<marker id="a13r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="c2"/></marker>
+<text x="24" y="62" font-size="12" font-weight="600" class="quiet" text-anchor="start">blokkeszközök</text>
+<text x="190" y="62" font-size="12" font-weight="600" class="quiet" text-anchor="start">fizikai kötetek (PV)</text>
+<text x="400" y="62" font-size="12" font-weight="600" class="quiet" text-anchor="start">kötetcsoport (VG)</text>
+<text x="580" y="62" font-size="12" font-weight="600" class="quiet" text-anchor="start">logikai kötetek (LV)</text>
+<text x="760" y="62" font-size="12" font-weight="600" class="quiet" text-anchor="start">fájlrendszerek</text>
+<text x="190" y="78" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">4 MiB-os extentekre vágva</text>
+<rect x="24" y="90" width="140" height="50" rx="10" class="tint"/><rect x="24" y="90" width="140" height="50" rx="10" fill="none" class="edge" stroke-width="1.25"/>
+<text x="36" y="112" font-size="12" font-weight="600" class="ink" text-anchor="start">/dev/sda2</text>
+<text x="36" y="130" font-size="11" font-weight="400" class="quiet" text-anchor="start">egy partíció</text>
+<path d="M164 115H186" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a13)"/>
+<rect x="190" y="102" width="22" height="26" rx="2" class="accf"/><rect x="190" y="102" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="216" y="102" width="22" height="26" rx="2" class="accf"/><rect x="216" y="102" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="242" y="102" width="22" height="26" rx="2" class="accf"/><rect x="242" y="102" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="268" y="102" width="22" height="26" rx="2" class="accf"/><rect x="268" y="102" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="294" y="102" width="22" height="26" rx="2" class="accf"/><rect x="294" y="102" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<path d="M320 115L396 130" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a13)"/>
+<rect x="24" y="160" width="140" height="50" rx="10" class="tint"/><rect x="24" y="160" width="140" height="50" rx="10" fill="none" class="edge" stroke-width="1.25"/>
+<text x="36" y="182" font-size="12" font-weight="600" class="ink" text-anchor="start">/dev/md0</text>
+<text x="36" y="200" font-size="11" font-weight="400" class="quiet" text-anchor="start">egy RAID-tömb</text>
+<path d="M164 185H186" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a13)"/>
+<rect x="190" y="172" width="22" height="26" rx="2" class="accf"/><rect x="190" y="172" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="216" y="172" width="22" height="26" rx="2" class="accf"/><rect x="216" y="172" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="242" y="172" width="22" height="26" rx="2" class="accf"/><rect x="242" y="172" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="268" y="172" width="22" height="26" rx="2" class="accf"/><rect x="268" y="172" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<path d="M294 185L396 180" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a13)"/>
+<rect x="24" y="230" width="140" height="50" rx="10" class="tint"/><rect x="24" y="230" width="140" height="50" rx="10" fill="none" class="edge" stroke-width="1.25"/>
+<text x="36" y="252" font-size="12" font-weight="600" class="ink" text-anchor="start">/dev/sdb</text>
+<text x="36" y="270" font-size="11" font-weight="400" class="quiet" text-anchor="start">egy SAN-lemez (LUN)</text>
+<path d="M164 255H186" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a13)"/>
+<rect x="190" y="242" width="22" height="26" rx="2" class="accf"/><rect x="190" y="242" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="216" y="242" width="22" height="26" rx="2" class="accf"/><rect x="216" y="242" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="242" y="242" width="22" height="26" rx="2" class="accf"/><rect x="242" y="242" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="268" y="242" width="22" height="26" rx="2" class="accf"/><rect x="268" y="242" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="294" y="242" width="22" height="26" rx="2" class="accf"/><rect x="294" y="242" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="320" y="242" width="22" height="26" rx="2" class="accf"/><rect x="320" y="242" width="22" height="26" rx="2" fill="none" class="acc" stroke-width="2"/>
+<path d="M346 255L396 230" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a13)"/>
+<rect x="24" y="310" width="140" height="50" rx="10" class="c2f"/><rect x="24" y="310" width="140" height="50" rx="10" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="36" y="332" font-size="12" font-weight="600" class="ink" text-anchor="start">/dev/sdc</text>
+<text x="36" y="350" font-size="11" font-weight="400" class="c2" text-anchor="start">később hozzáadva</text>
+<path d="M164 335H186" fill="none" class="c2s" stroke-width="1.25" marker-end="url(#a13r)"/>
+<rect x="190" y="322" width="22" height="26" rx="2" class="c2f"/><rect x="190" y="322" width="22" height="26" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="216" y="322" width="22" height="26" rx="2" class="c2f"/><rect x="216" y="322" width="22" height="26" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="242" y="322" width="22" height="26" rx="2" class="c2f"/><rect x="242" y="322" width="22" height="26" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="268" y="322" width="22" height="26" rx="2" class="c2f"/><rect x="268" y="322" width="22" height="26" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="294" y="322" width="22" height="26" rx="2" class="c2f"/><rect x="294" y="322" width="22" height="26" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<path d="M320 335L396 300" fill="none" class="c2s" stroke-width="1.25" marker-end="url(#a13r)"/>
+<rect x="400" y="90" width="150" height="270" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="475" y="110" font-size="13" font-weight="600" class="ink" text-anchor="middle">vg1</text>
+<rect x="414" y="122" width="26" height="22" rx="2" class="accf"/><rect x="414" y="122" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="446" y="122" width="26" height="22" rx="2" class="accf"/><rect x="446" y="122" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="478" y="122" width="26" height="22" rx="2" class="accf"/><rect x="478" y="122" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="510" y="122" width="26" height="22" rx="2" class="accf"/><rect x="510" y="122" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="414" y="150" width="26" height="22" rx="2" class="accf"/><rect x="414" y="150" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="446" y="150" width="26" height="22" rx="2" class="accf"/><rect x="446" y="150" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="478" y="150" width="26" height="22" rx="2" class="accf"/><rect x="478" y="150" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="510" y="150" width="26" height="22" rx="2" class="accf"/><rect x="510" y="150" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="414" y="178" width="26" height="22" rx="2" class="accf"/><rect x="414" y="178" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="446" y="178" width="26" height="22" rx="2" class="accf"/><rect x="446" y="178" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="478" y="178" width="26" height="22" rx="2" class="accf"/><rect x="478" y="178" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="510" y="178" width="26" height="22" rx="2" class="accf"/><rect x="510" y="178" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="414" y="206" width="26" height="22" rx="2" class="accf"/><rect x="414" y="206" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="446" y="206" width="26" height="22" rx="2" class="accf"/><rect x="446" y="206" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="478" y="206" width="26" height="22" rx="2" class="accf"/><rect x="478" y="206" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="510" y="206" width="26" height="22" rx="2" class="accf"/><rect x="510" y="206" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="414" y="234" width="26" height="22" rx="2" class="accf"/><rect x="414" y="234" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="446" y="234" width="26" height="22" rx="2" class="accf"/><rect x="446" y="234" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="478" y="234" width="26" height="22" rx="2" class="accf"/><rect x="478" y="234" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="510" y="234" width="26" height="22" rx="2" class="accf"/><rect x="510" y="234" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="414" y="262" width="26" height="22" rx="2" class="accf"/><rect x="414" y="262" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="446" y="262" width="26" height="22" rx="2" class="accf"/><rect x="446" y="262" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="478" y="262" width="26" height="22" rx="2" class="accf"/><rect x="478" y="262" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="510" y="262" width="26" height="22" rx="2" class="accf"/><rect x="510" y="262" width="26" height="22" rx="2" fill="none" class="acc" stroke-width="2"/>
+<rect x="414" y="290" width="26" height="22" rx="2" class="c2f"/><rect x="414" y="290" width="26" height="22" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="446" y="290" width="26" height="22" rx="2" class="c2f"/><rect x="446" y="290" width="26" height="22" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="478" y="290" width="26" height="22" rx="2" class="c2f"/><rect x="478" y="290" width="26" height="22" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="510" y="290" width="26" height="22" rx="2" class="c2f"/><rect x="510" y="290" width="26" height="22" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="414" y="318" width="26" height="22" rx="2" class="c2f"/><rect x="414" y="318" width="26" height="22" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="446" y="318" width="26" height="22" rx="2" class="c2f"/><rect x="446" y="318" width="26" height="22" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="478" y="318" width="26" height="22" rx="2" class="c2f"/><rect x="478" y="318" width="26" height="22" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="510" y="318" width="26" height="22" rx="2" class="c2f"/><rect x="510" y="318" width="26" height="22" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="475" y="378" font-size="11" font-weight="400" class="quiet" text-anchor="middle">egy közös extentkészlet</text>
+<rect x="580" y="96" width="150" height="56" rx="6" class="accf"/><rect x="580" y="96" width="150" height="56" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="592" y="118" font-size="12" font-weight="600" class="ink" text-anchor="start">lv_home</text>
+<text x="592" y="138" font-size="11" font-weight="400" class="quiet" text-anchor="start">lineáris</text>
+<path d="M552 124H578" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a13)"/>
+<rect x="580" y="190" width="150" height="56" rx="6" class="accf"/><rect x="580" y="190" width="150" height="56" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="592" y="212" font-size="12" font-weight="600" class="ink" text-anchor="start">lv_db</text>
+<text x="592" y="232" font-size="11" font-weight="400" class="quiet" text-anchor="start">raid1: két példány</text>
+<path d="M552 218H578" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a13)"/>
+<rect x="580" y="246" width="150" height="30" rx="6" class="c2f"/><rect x="580" y="246" width="150" height="30" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="592" y="266" font-size="11" font-weight="600" class="c2" text-anchor="start">+ extentek (bővítve)</text>
+<path d="M552 300C566 300 566 262 578 262" fill="none" class="c2s" stroke-width="1.25" marker-end="url(#a13r)"/>
+<path d="M730 124H758" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a13)"/>
+<rect x="760" y="104" width="100" height="40" rx="6" class="tint"/><rect x="760" y="104" width="100" height="40" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="770" y="121" font-size="12" font-weight="600" class="ink" text-anchor="start">XFS</text>
+<text x="770" y="137" font-size="11" font-weight="400" class="quiet" text-anchor="start">/home</text>
+<path d="M730 230H758" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a13)"/>
+<rect x="760" y="210" width="100" height="40" rx="6" class="tint"/><rect x="760" y="210" width="100" height="40" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="770" y="227" font-size="12" font-weight="600" class="ink" text-anchor="start">XFS</text>
+<text x="770" y="243" font-size="11" font-weight="400" class="quiet" text-anchor="start">/var/lib/db</text>
+<text x="580" y="300" font-size="11" font-weight="400" class="c2" text-anchor="start">az lvextend -r csatolt állapotban</text>
+<text x="580" y="316" font-size="11" font-weight="400" class="c2" text-anchor="start">bővíti az LV-t és a fájlrendszerét</text>
+<path d="M24 394H860" fill="none" class="grid" stroke-width="1"/>
+<text x="24" y="412" font-size="11.5" font-weight="600" class="quiet" text-anchor="start">létrehozás</text>
+<text x="190" y="412" font-size="11.5" font-weight="400" class="ink" text-anchor="start">pvcreate</text>
+<text x="400" y="412" font-size="11.5" font-weight="400" class="ink" text-anchor="start">vgcreate</text>
+<text x="580" y="412" font-size="11.5" font-weight="400" class="ink" text-anchor="start">lvcreate -L vagy -l</text>
+<text x="760" y="412" font-size="11.5" font-weight="400" class="ink" text-anchor="start">mkfs.xfs, mount</text>
+<text x="24" y="432" font-size="11.5" font-weight="600" class="quiet" text-anchor="start">bővítés</text>
+<text x="190" y="432" font-size="11.5" font-weight="400" class="c2" text-anchor="start">pvcreate (új lemez)</text>
+<text x="400" y="432" font-size="11.5" font-weight="400" class="c2" text-anchor="start">vgextend</text>
+<text x="580" y="432" font-size="11.5" font-weight="400" class="c2" text-anchor="start">lvextend -r</text>
+<text x="760" y="432" font-size="11.5" font-weight="400" class="c2" text-anchor="start">xfs_growfs, resize2fs</text>
+<text x="24" y="452" font-size="11.5" font-weight="600" class="quiet" text-anchor="start">lemez kivonása</text>
+<text x="190" y="452" font-size="11.5" font-weight="400" class="ink" text-anchor="start">pvmove, majd pvremove</text>
+<text x="400" y="452" font-size="11.5" font-weight="400" class="ink" text-anchor="start">vgreduce</text>
+<text x="580" y="452" font-size="11.5" font-weight="400" class="ink" text-anchor="start"></text>
+<text x="760" y="452" font-size="11.5" font-weight="400" class="ink" text-anchor="start"></text>
+<text x="24" y="472" font-size="11.5" font-weight="600" class="quiet" text-anchor="start">vizsgálat</text>
+<text x="190" y="472" font-size="11.5" font-weight="400" class="ink" text-anchor="start">pvs, pvdisplay</text>
+<text x="400" y="472" font-size="11.5" font-weight="400" class="ink" text-anchor="start">vgs, vgdisplay</text>
+<text x="580" y="472" font-size="11.5" font-weight="400" class="ink" text-anchor="start">lvs, lvdisplay</text>
+<text x="760" y="472" font-size="11.5" font-weight="400" class="ink" text-anchor="start">df, lsblk</text>
+</svg>

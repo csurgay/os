@@ -27,8 +27,10 @@ Az előadás végére a hallgatók képesek lesznek:
 
 - kimondani a Neumann-elvet, és megmagyarázni, miért hatékony és miért nem biztonságos;
 - megnevezni a CPU fő regisztereit (PC, MAR, MBR, CIR, ACC, SR) és szerepüket;
+- megmagyarázni egy sín cím-, adat- és vezérlővonalait, a memórialeképezett és a portleképezett I/O közötti különbséget, valamint azt, hogy egy PC miért használja sínek és kapcsolatok hierarchiáját egyetlen közös sín helyett;
 - leírni a lehívási fázist regiszterátviteli jelöléssel;
-- lépésről lépésre végigkövetni egy rövid gépi kódú program végrehajtását papíron és `gdb`-ben;
+- lépésről lépésre végigkövetni egy rövid gépi kódú program végrehajtását papíron és `gdb`-ben, közvetlen operandussal és direkt címzéssel is;
+- besorolni az utasításokat a négy kategóriába (processzor–memória, processzor–I/O, adatfeldolgozás, vezérlés), és elolvasni egyszerű, valódi 8 bites gépi kódot;
 - megmagyarázni, hogyan változtatják meg az ugrások és a megszakítások a végrehajtás sorrendjét, és miért van szüksége az operációs rendszernek az időzítő-megszakításra;
 - megtalálni ezeket a mechanizmusokat egy futó Linux rendszeren (`/proc/<pid>/maps`, `/proc/interrupts`, `vmstat`).
 
@@ -153,6 +155,64 @@ Az I/O-eszközök ugyanerre a sínrendszerre csatlakoznak. A CS jel dönti el, h
 
 </details>
 
+### Vezérlővonalak: memória vagy I/O?
+
+Egy valódi rendszer vezérlősíne többet szállít a CS-nél és az R/W-nél. Az Intel 8080-alapú rendszerekben és Stallings (2018) modelljében használt klasszikus elrendezésben külön olvasó- és íróvonal van a memória és az I/O számára, valamint egy ellenkező irányú megszakításkérő vonal:
+
+![A CPU, a memória és egy I/O-eszköz közös cím- és adatsínen, az MR, MW, IOR, IOW és IRQ vezérlővonalakkal](system-bus.svg)
+
+| Vonal | Ki hajtja | Jelentés |
+| --- | --- | --- |
+| MR (memory read, memóriaolvasás) | CPU | a sínen lévő cím memóriacím; memória, tedd az adott rekesz tartalmát az adatsínre |
+| MW (memory write, memóriaírás) | CPU | memória, tárold el az adatsínen lévő értéket ezen a címen |
+| IOR (I/O read, I/O-olvasás) | CPU | a sínen lévő cím egy I/O-portszám; az az eszköz, amelyé ez a port, tegye az adatát az adatsínre |
+| IOW (I/O write, I/O-írás) | CPU | az az eszköz, amelyé ez a port, vegye át az értéket az adatsínről |
+| IRQ (interrupt request, megszakításkérés) | I/O-eszköz | „foglalkozz velem”: ezt nézi az utasításciklus megszakítás-ellenőrzési lépése |
+
+Külön I/O-vonalak esetén az eszközöknek saját címtartományuk van, ezek az **I/O-portok**, és a CPU-nak külön utasítások kellenek az elérésükhöz: x86-on az `in` és az `out`, amelyhez 65 536 port tartozik (16 bites portszámok). Ez a **portleképezett** (elkülönített, port-mapped vagy isolated) I/O. A másik lehetőség a fent leírt memórialeképezett I/O: egy eszköz közönséges címek egy tartományán válaszol az MR és MW jelekre, így a szokásos betöltő és tároló utasítások is elérik. A legtöbb modern eszköz memórialeképezett, és a legtöbb RISC processzornak (ARM, RISC-V) egyáltalán nincs portutasítása. Az x86 a kompatibilitás kedvéért megtartotta a portjait, és a Linux a `/proc/ioports` fájlban listázza ki őket ([lásd lent](#sínek-és-io-portok-egy-futó-rendszeren)). A felhasználói programok egyik esetben sem nyúlhatnak közvetlenül az eszközökhöz: ezt az operációs rendszer végzi el helyettük (lásd a [Megszakítások](../05-interrupts/) előadást).
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> vezérlővonal, MR, MW, IOR, IOW, IRQ, I/O-port, portleképezett I/O, címtartomány, in/out, RISC</summary>
+
+- **Vezérlővonal:** a vezérlősín egyetlen vezetéke, amely egyetlen igen/nem parancsot visz, például: „memória, most olvass!”.
+- **MR, MW** (Memory Read, Memory Write): a „memória, add ide ezt a rekeszt” és a „memória, tárold el ezt az értéket” parancs.
+- **IOR, IOW** (I/O Read, I/O Write): ugyanez a két parancs, csak a memória helyett az eszközöknek szól.
+- **IRQ** (Interrupt Request, megszakításkérés): az a vezeték, amelyen egy eszköz azt üzeni a CPU-nak: „foglalkozz velem!” – mint amikor jelentkezel az órán.
+- **I/O-port:** egy eszköz számozott „postaládája”. A billentyűzetvezérlőé például a 60h portszám. Ha egy portra írsz, az érték az eszközhöz jut; ha olvasol belőle, az eszköz küld vissza egy értéket.
+- **Portleképezett I/O:** az eszközöknek egy külön utcában van saját házszámuk; a CPU különleges utasításokkal (x86-on `in`, `out`) látogatja meg őket. **Memórialeképezett I/O:** az eszközök ugyanabban az utcában laknak, mint a memória, így a közönséges utasítások is elérik őket.
+- **Címtartomány:** a használható címek teljes köre, például mind a 65 536 portszám.
+- **RISC** (Reduced Instruction Set Computer, csökkentett utasításkészletű számítógép): kevesebb és egyszerűbb utasítással dolgozó processzorfelépítés, ilyen az ARM (szinte minden telefonban ez van) és a RISC-V.
+
+</details>
+
+## Egy sínről a sínek hierarchiájáig
+
+Egyetlen közös sín elég egy kis gépnek, de gondot okoz, amikor nagyon eltérő sebességű eszközök osztoznak rajta. Egyszerre csak egy átvitel használhatja a sínt, így egy gyors memória-hozzáférésnek várnia kell, amíg egy lassú eszköz foglalja, és minél több eszköz csatlakozik rá, annál lassabban kell működnie (hosszabb vezetékek, nagyobb elektromos terhelés). A megoldás az, hogy minden sebességosztály saját sínt kap, a síneket pedig **hidak** (bridge) kötik össze (Stallings, 2018; Tanenbaum & Bos, 2015).
+
+![A rész: egy 1990-es évek végi PC sínhierarchiája, a PCI és az ISA sínt hidak kötik össze. B rész: egy mai PC, a memóriavezérlő és a PCIe root complex a CPU-ban, a lassú eszközök a chipset mögött](bus-hierarchy.svg)
+
+**A rész: egy 1990-es évek végi PC.** A CPU a második szintű (L2) gyorsítótárát egy külön gyorsítótársínen, minden mást a helyi sínen (local bus) ér el. A PCI-híd (az „északi híd”, north bridge) a memóriasínen keresztül a központi memóriához, valamint a PCI sínhez (32 bit, 33 MHz, legfeljebb 133 MB/s) köti a helyi sínt. A gyorsabb eszközök a PCI sínen ülnek: a SCSI- és USB-vezérlők, a hálózati kártya és a grafikus kártya. Egy második híd, az ISA-híd (a „déli híd”, south bridge) a PCI sínt a régi ISA sínhez (16 bit, kb. 8 MHz, néhány MB/s) köti a lassú, örökölt eszközök, például a modem, a hangkártya és a nyomtatóport számára; az IDE-lemezvezérlő is ennek a chipnek a része volt. Egy híd csak akkor adja át az átvitelt a másik oldalra, ha a cél ott van, így a sínek párhuzamosan dolgoznak: egy lassú ISA-átvitel nem akadályozza a CPU memória-hozzáféréseit.
+
+**B rész: egy mai PC.** A memóriavezérlő és a PCI Express root complex beköltözött a CPU tokjába. A PCI Express (PCIe) már egyáltalán nem közös sín, hanem **pont–pont** (point-to-point) soros kapcsolatok összessége, amelyek **sávokból** (lane) állnak: egy grafikus kártya jellemzően 16 sávot kap, egy NVMe SSD 4-et, és minden kapcsolat a többitől függetlenül visz át adatot. A lassabb eszközök (USB, SATA-lemezek, hálózat, hang, további PCIe-foglalatok) a **chipsetre** csatlakoznak, amelyet Intel rendszereken PCH-nak (Platform Controller Hub) hívnak, és amely egyetlen kapcsolaton éri el a CPU-t (Intelen DMI, AMD-n egy PCIe-kapcsolat). A szoftver még mindig a régi szerkezetet látja: a PCIe-eszközöket pontosan úgy kell felderíteni és konfigurálni, mint a PCI-eszközöket, ezért írnak a Linux eszközei még mindig „PCI”-t.
+
+Ez ugyanaz a gondolat, mint a [7. előadás](../07-two-level-memory-and-cache/) memóriahierarchiája: ami gyors és gyakran használt, az a CPU közelében van, ami lassú, az távolabb, ahol nem lassíthatja a többit.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> híd, északi/déli híd, PCI, ISA, MHz, MB/s, SCSI, USB, IDE, örökölt (legacy), PCI Express, sáv, pont–pont, NVMe SSD, root complex, chipset, PCH, DMI, SATA</summary>
+
+- **Híd (bridge):** chip, amely két sínt köt össze, és csak akkor ad át üzeneteket közöttük, ha szükséges – mint egy sorompó két parkoló között. Az **északi híd** volt a CPU-hoz közelebbi (a rajz tetején), a **déli híd** a lejjebb lévő.
+- **PCI** (Peripheral Component Interconnect) és **ISA** (Industry Standard Architecture): a PC-k két szabványos bővítősíne. Az ISA az IBM PC-ből (1981) származik, a PC/AT-ben (1984) bővítették 16 bitesre; a PCI az 1990-es években váltotta fel.
+- **MHz** (megahertz): másodpercenként egymillió ütem. **MB/s:** megabájt másodpercenként, vagyis mennyi adatot tud egy sín átvinni.
+- **SCSI, IDE, SATA:** lemezek csatlakoztatásának módjai. A SCSI-t szervereken, az IDE-t átlagos PC-kben használták; a SATA az IDE mai változata.
+- **USB** (Universal Serial Bus, univerzális soros sín): a billentyűzetek, egerek, pendrive-ok és szinte minden más eszköz csatlakozója.
+- **Örökölt (legacy):** régi technika, amelyet csak azért tartanak meg, hogy a régi eszközök és programok továbbra is működjenek.
+- **PCI Express (PCIe):** a PCI modern utódja. Egyetlen közös út helyett minden eszköz saját magánutat (**pont–pont kapcsolatot**) kap a CPU-hoz vagy a chipsethez. Egy **sáv** (lane) két vezetékpár, irányonként egy; több sáv szélesebb utat jelent.
+- **NVMe SSD:** gyors, mozgó alkatrész nélküli (félvezetős) lemez, amely közvetlenül PCIe-sávokra csatlakozik.
+- **Root complex:** a CPU-nak az a része, ahonnan a PCIe-kapcsolatok indulnak, a PCIe-kapcsolatok fájának gyökere.
+- **Chipset, PCH** (Platform Controller Hub): az alaplapon lévő segédchip, amely a lassabb eszközöket csatlakoztatja. **DMI** (Direct Media Interface): az Intel kapcsolata a CPU és a PCH között.
+
+</details>
+
 ## Az utasításciklus
 
 A CPU egyetlen ciklust ismétel: utasításlehívás, dekódolás, végrehajtás, majd a megszakítás ellenőrzése.
@@ -240,7 +300,7 @@ A memória csak számokat tárol. A 0-s címen lévő 19 azért LD 3, mert a CPU
 
 Az ADD végrehajtásakor az ALU egyik bemenete az ACC, a másik a CIR operandusmezője. Az eredmény visszakerül az ACC-be, a dekóder pedig összeadásra utasítja az ALU-t.
 
-**Címzési módok.** Itt az LD 3 operandusa maga az érték (*közvetlen operandus*), így ACC ← 3. Ha az LD direkt (abszolút) címzést használna, a 3 egy memóriacím volna, és ACC ← Mem[3] = 7. Ugyanaz a bitminta tehát a címzési módtól függően mást jelent, a címzési módot pedig a műveleti kód határozza meg.
+**Címzési módok.** Itt az LD 3 operandusa maga az érték (*közvetlen operandus*), így ACC ← 3: az LD 3 a 3-as számot tölti be, nem a 3-as cím tartalmát. Ha az LD direkt (abszolút) címzést használna, a 3 egy memóriacím volna, és ACC ← Mem[3] = 7. Ugyanaz a bitminta tehát a címzési módtól függően mást jelent, a címzési módot pedig a műveleti kód határozza meg.
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> mnemonik, bináris, decimális, akkumulátor, nyomkövetés, közvetlen operandus, direkt címzés, címzési mód</summary>
@@ -251,6 +311,50 @@ Az ADD végrehajtásakor az ALU egyik bemenete az ACC, a másik a CIR operandusm
 - **Közvetlen operandus:** az utasításban szereplő szám maga az érték. Az „LD 3” jelentése: „töltsd be a 3-as számot”.
 - **Direkt címzés:** az utasításban szereplő szám egy cím. Ekkor az „LD 3” azt jelentené: „töltsd be azt, ami a 3-as memóriarekeszben van”.
 - **Címzési mód:** az a szabály, amely megmondja, hogyan kell értelmezni az operandust: értékként, címként vagy valamilyen más módon.
+
+</details>
+
+## Második példa: direkt címzés
+
+A valódi programok többnyire memóriában tárolt változókkal dolgoznak, ezért a legtöbb utasítás operandusa egy cím. Stallings (2018) ezt egy képzeletbeli gépen mutatja be:
+
+- egy memóriaszó és egy utasítás egyaránt 16 bit széles;
+- egy utasítás 4 bites műveleti kódból és 12 bites címből áll;
+- három műveleti kódot használunk: 0001 = az AC betöltése a memóriából, 0101 = egy memóriaszó hozzáadása az AC-hez, 0010 = az AC tárolása a memóriába.
+
+Minden szám hexadecimálisan szerepel. Egy hexadecimális számjegy pontosan 4 bit, így egy utasítás első számjegye a műveleti kódja, a másik három a címe: az 1940 bitmintája 0001 1001 0100 0000, azaz 1-es műveleti kód (betöltés) és 940-es cím.
+
+| Cím | Tartalom | Jelentés |
+| --- | --- | --- |
+| 300 | 1940 | LOAD 940: AC ← Mem[940] |
+| 301 | 5941 | ADD 941: AC ← [AC] + Mem[941] |
+| 302 | 2941 | STORE 941: Mem[941] ← [AC] |
+| … | | |
+| 940 | 0003 | adat |
+| 941 | 0002 | adat |
+
+**A futás nyomon követése** (az állapot minden teljes utasítás után):
+
+| Után | PC | IR | AC | Mem[941] |
+| --- | --- | --- | --- | --- |
+| kezdet | 300 | – | – | 0002 |
+| LOAD 940 | 301 | 1940 | 0003 | 0002 |
+| ADD 941 | 302 | 5941 | 0005 | 0002 |
+| STORE 941 | 303 | 2941 | 0005 | 0005 |
+
+A program ismét 3 + 2 = 5-öt számol, de most az operandusok a memóriából érkeznek, és az eredmény visszaíródik oda. Ezért mindegyik utasítás kétszer használja a sínt: egyszer az utasítás lehívásához, egyszer pedig az operandus olvasásához vagy írásához. Egy közvetlen operandushoz nem kell második hozzáférés, mert az az utasítással együtt érkezik.
+
+**A címszélesség határozza meg a memória méretét.** Egy 12 bites címmező $2^{12} = 4096$ különböző rekeszt nevezhet meg, így ez a gép 4K szót tud megcímezni (egyenként 16 bitest, összesen 8 KiB-ot). A szószélesség és a címszélesség egymástól független tervezési döntés. Oktatási CPU-nk 4 bites operandusa címként használva csak $2^4 = 16$ rekeszt érne el; egy 32 bites cím 4 GiB bájtcímzésű memóriát ér el.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> hexadecimális, AC, LOAD, STORE, szó, címszélesség, 4K, KiB, GiB</summary>
+
+- **Hexadecimális** (hex): számok felírása tizenhatos számrendszerben, a 0–9 és az A–F számjegyekkel. Egy hexadecimális számjegy pontosan 4 bitet jelent, így a hex tömör módja a bitminták leírásának.
+- **AC:** Stallingsnál az akkumulátor neve, ugyanaz, mint a mi ACC-nk.
+- **LOAD, STORE:** a betöltés (load) egy értéket másol a memóriából egy regiszterbe; a tárolás (store) egy regiszter értékét másolja a memóriába.
+- **Szó:** az az adategység, amelyet a gép természetes módon egy lépésben kezel, itt 16 bit.
+- **Címszélesség:** hány bitből áll egy cím. Minden további bit megduplázza a megnevezhető rekeszek számát, mint amikor a házszámokhoz még egy számjegyet adunk.
+- **4K, KiB, GiB:** 4K = 4 × 1024 = 4096. Egy KiB (kibibájt) 1024 bájt; egy GiB (gibibájt) 1024 × 1024 × 1024 bájt, nagyjából egymilliárd.
 
 </details>
 
@@ -268,7 +372,7 @@ Egy ugróutasítás a PC felülírásával változtatja meg a végrehajtás sorr
 
 A „nem nulla” feltétel a Z = 0; ennek nincs saját jelzőbitje, egy külön ugróutasítás vizsgálja (x86-64-en: `jz` és `jnz`). A processzorok további jelzőbiteket is tárolnak, például az átvitelt (carry, CF), amely a túlcsordulásjelző előjel nélküli megfelelője.
 
-**Feltétel nélküli ugrás: JMP 1000.** A végrehajtás során PC ← 1000. A következő lehívás az 1000-es címről veszi az utasítást.
+**Feltétel nélküli ugrás: JMP 1000.** A végrehajtás során PC ← 1000. A következő lehívás az 1000-es címről veszi az utasítást. Egy ugrás tehát nem más, mint egy betöltés a PC-be: a JMP 1000 pontosan azt teszi, amit egy képzeletbeli „LD PC, 1000” tenne, a feltételes ugrás pedig olyan betöltés a PC-be, amely csak akkor történik meg, ha a feltétel teljesül.
 
 **Feltételes ugrás: JZ 900** (ugrás, ha nulla). A végrehajtási fázis megvizsgálja a Z jelzőbitet:
 
@@ -287,6 +391,62 @@ A ciklusokat és az elágazásokat (`if`, `while`, `for`) gépi szinten mind ily
 - **Ugrás:** olyan utasítás, amely megváltoztatja a PC-t, így a program nem a következő utasítással, hanem máshol folytatódik.
 - **Feltételes ugrás:** csak akkor ugrik, ha egy feltétel teljesül (például „ha az eredmény nulla volt”). Így hoznak döntéseket a számítógépek.
 - **Ciklus, elágazás:** a ciklus lépéseket ismétel (`while`, `for`); az elágazás két út közül választ (`if`). C-ben és a legtöbb nyelvben ezek a kulcsszavak feltételes ugrásokká alakulnak.
+
+</details>
+
+## Az utasítások négy kategóriája
+
+Minden utasításkészlet, bármilyen nagy is, négyféle utasításból áll (Stallings, 2018):
+
+| Kategória | Mit csinál | Példák ebben az előadásban | x86-64 példák |
+| --- | --- | --- | --- |
+| Processzor–memória | adatot mozgat a CPU és a memória között | LOAD 940, STORE 941 | `mov 8(%rsp), %eax`, `mov %eax, 8(%rsp)` |
+| Processzor–I/O | adatot mozgat a CPU és egy I/O-eszköz között | (portleképezett I/O) | `in`, `out` |
+| Adatfeldolgozás | aritmetikai vagy logikai művelet az adatokon | ADD 2 | `add`, `and`, `cmp` |
+| Vezérlés | megváltoztatja a végrehajtás sorrendjét | JMP 1000, JZ 900 | `jmp`, `jz`, `call`, `ret` |
+
+A valódi utasítások gyakran több kategóriába is tartoznak: az előző szakasz ADD 941 utasítása egyszerre olvas a memóriából és összead. Memórialeképezett I/O esetén a gyakorlatban nincs külön processzor–I/O kategória: a processzor–memória utasítások végzik el a feladatot, mert az eszköz egy memóriacímen válaszol.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> utasításkészlet, call, ret, cmp</summary>
+
+- **Utasításkészlet:** azoknak az utasításoknak a teljes listája, amelyeket egy processzor megért – a „szókincse”.
+- **`call`, `ret`:** ugrás egy függvénybe úgy, hogy a CPU megjegyzi, hová kell visszatérnie; a függvény végén visszaugrás erre a megjegyzett helyre.
+- **`cmp`** (compare, összehasonlítás): kivonja egymásból a két számot, de csak a jelzőbitek beállításához, az eredményt nem tartja meg, hogy utána egy feltételes ugrás következhessen.
+
+</details>
+
+## Valódi 8 bites gépi kód: a Z80
+
+Oktatási CPU-nk kitalált, de a valódi 8 bites processzorok ugyanígy működnek. A Zilog Z80 (1976), az Intel 8080 kompatibilis továbbfejlesztése, az 1980-as évek számos otthoni számítógépében dolgozott (ZX Spectrum, Amstrad CPC, MSX), leszármazottait pedig ma is használják beágyazott eszközökben. Van egy 8 bites A akkumulátora, egy F jelzőbitregisztere, további hat 8 bites regisztere (B, C, D, E, H és L, amelyek párban a 16 bites BC, DE és HL regiszterként is használhatók), valamint egy 16 bites PC-je, így $2^{16} =$ 64 KiB memóriát tud megcímezni (Zilog, 2016). Egy utasítás 1–4 bájt hosszú, és az első bájtja (néha az első kettő) a műveleti kód.
+
+Egy háromutasításos program az 59h címen (a `h` utótag azt jelenti, hogy a szám hexadecimális):
+
+| Cím | Bájtok | Assembly | Hatás | PC a lehívás után |
+| --- | --- | --- | --- | --- |
+| 59h | `3C` | `INC A` | A ← [A] + 1 | 5Ah |
+| 5Ah | `0E FF` | `LD C,FFh` | C ← FFh (255) | 5Ch |
+| 5Ch | `C3 59 00` | `JP 0059h` | PC ← 0059h | 5Fh, majd felülíródik 59h-ra |
+
+- **Az `INC A` egy bájt**, 3Ch = 0011 1100. A memóriában semmi sem jelöli utasításként: csak azért hívódik le utasításként, mert a PC értéke 59h. A lehívás 1-gyel lépteti a PC-t.
+- **Az `LD C,FFh` két bájt**: a 0Eh műveleti kód, utána az FFh közvetlen operandus. A lehívás mindkét bájtot beolvassa, így a PC 2-vel lép előre. Ez a mi „LD 3”-unk valódi formája: az operandus az utasítással együtt utazik.
+- **A `JP 0059h` három bájt**: a C3h műveleti kód és egy 16 bites cím, alsó bájttal kezdve (előbb 59h, aztán 00h; a Z80 *little-endian*). A végrehajtása csupán egy betöltés a PC-be, így a program a végtelenségig ismétlődik, és közben növeli az A-t.
+
+A memória csak biteket tárol, és a PC dönti el, mely bájtok utasítások. Az 5Bh címen lévő FFh bájt az `LD C` adata, de ha egy ugrás valaha az 5Bh címre érkezne, a CPU utasításként hajtaná végre: a Z80-on az FFh az `RST 38h`, egy egybájtos hívás a 0038h címre. Ez ugyanaz a tanulság, mint a „19 a 0-s címen” esetében, csak valódi CPU-n.
+
+Az x86 ugyanebből a családból nőtt ki. Az Intel 8086-ot (1978) úgy tervezték, hogy a 8080-as programok gépiesen átfordíthatók legyenek rá: az A-ból AL lett (az AX akkumulátor alsó bájtja), a BC párból CX, a DE-ből DX, a HL-ből pedig BX. A 32 és 64 bites kiterjesztések megtartották ezeket a neveket (EAX, RAX és így tovább), így egy 1974-es 8 bites processzor akkumulátora ma a RAX alsó bájtjaként él tovább. Még a kódolás mintája is megmaradt: a `mov $0xff, %cl` a `b1 ff` két bájtra fordul, egy műveleti kódra és utána egy közvetlen bájtra, pontosan úgy, mint az `LD C,FFh`.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> Z80, 8080, 8086, otthoni számítógép, beágyazott eszköz, regiszterpár, 59h, little-endian, RST, AL, AX</summary>
+
+- **Z80, 8080, 8086:** híres processzorchipek. Az Intel 8080 (1974) és a Zilog Z80 (1976) 8 bites processzor; az Intel 8086 (1978) a mai PC-processzorok 16 bites őse.
+- **Otthoni számítógép:** az 1980-as évek kis számítógépei, amelyeket otthon a tévére kötöttek, például a ZX Spectrum.
+- **Beágyazott eszköz:** egy másik termékbe rejtett számítógép, például egy mosógépben vagy egy számológépben.
+- **Regiszterpár:** két 8 bites regiszter, amelyet együtt, egyetlen 16 bites regiszterként használunk – mint két számjegy, amelyek együtt egy kétjegyű számot adnak.
+- **59h:** a végén álló `h` azt jelenti, hogy a szám hexadecimálisan van felírva; az 59h tízes számrendszerben 89.
+- **Little-endian:** a többbájtos számot a legkisebb helyi értékű bájttal kezdve tárolják, mint amikor a dátumot nap–hónap–év sorrendben írjuk (a magyar év–hónap–nap sorrend épp ennek a fordítottja).
+- **`RST`** (restart): egybájtos utasítás, amely egy rögzített címet hív meg. Gyors hívásokra tervezték, például megszakításkezelőkbe.
+- **AL, AX:** az AX a 8086 16 bites akkumulátora; az AL az alsó („Low”), az AH a felső („High”) fele.
 
 </details>
 
@@ -555,6 +715,82 @@ A bájtok mindkét esetben azonosak. A veremben adatok, és az NX bit megakadál
 
 </details>
 
+### Sínek és I/O-portok egy futó rendszeren
+
+A `/proc/ioports` egy x86-os gép portleképezett I/O-címtartományát listázza ki, vagyis azt a 65 536 portszámot, amelyet az `in` és az `out` utasítással lehet elérni:
+
+```console
+$ cat /proc/ioports
+0000-0cf7 : PCI Bus 0000:00
+  0000-001f : dma1
+  0020-0021 : pic1
+  0040-0043 : timer0
+  0050-0053 : timer1
+  0060-0060 : keyboard
+  0064-0064 : keyboard
+  0070-0071 : rtc_cmos
+  0080-008f : dma page reg
+  00a0-00a1 : pic2
+  00c0-00df : dma2
+  00f0-00ff : fpu
+  03f8-03ff : serial
+0cf8-0cff : PCI conf1
+0d00-ffff : PCI Bus 0000:00
+```
+
+Ezek az 1984-es IBM PC/AT rögzített portcímei, az A ábrarész ISA-korszakából: a DMA-vezérlők, a két megszakításvezérlő (`pic1`, `pic2`, lásd a [Megszakítások](../05-interrupts/) előadást), az időzítő, a billentyűzetvezérlő, a valós idejű óra és az első soros port a 3F8h címen. Még ez a virtuális gép is biztosítja őket. A CF8h–CFFh portok a PCI-konfigurációs tér elérésének klasszikus módját szolgálják: a CPU egy eszköz sín/eszköz/funkció számát a CF8h portra írja, majd a CFCh porton keresztül olvassa vagy írja az eszköz konfigurációs regisztereit.
+
+A memórialeképezett oldalt a `/proc/iomem` mutatja. A legfelső szintű sorai megmutatják, hol ér véget a RAM, és hol kezdődnek az eszközök:
+
+```console
+$ grep -v '^ ' /proc/iomem
+00000000-00000fff : Reserved
+00001000-0009fbff : System RAM
+0009fc00-000fffff : Reserved
+00100000-bfffffff : System RAM
+c0001000-eebfffff : PCI Bus 0000:00
+eec00000-febfffff : Reserved
+fec00000-fec003ff : IOAPIC 0
+100000000-23fffffff : System RAM
+4000000000-7fffffffff : PCI Bus 0000:00
+```
+
+A RAM 3 GiB-nál (BFFFFFFFh) véget ér, és 4 GiB fölött folytatódik: a köztes címeket memórialeképezett eszközök foglalják el, köztük az I/O APIC megszakításvezérlő a FEC00000h címen. A memórialeképezett I/O tehát elhasznál a címtartományból; ez az egyik oka annak, hogy a 32 bites PC-k ritkán tudták kihasználni a teljes 4 GiB RAM-ot.
+
+Maguk a PCI-eszközök a `/sys/bus/pci/devices` alatt jelennek meg, tartomány:sín:eszköz.funkció alakú névvel, és egy osztálykóddal, amely megmondja, milyen fajta eszközről van szó:
+
+```console
+$ grep . /sys/bus/pci/devices/*/class
+/sys/bus/pci/devices/0000:00:00.0/class:0x060000
+/sys/bus/pci/devices/0000:00:01.0/class:0xffff00
+/sys/bus/pci/devices/0000:00:02.0/class:0x018000
+/sys/bus/pci/devices/0000:00:03.0/class:0x018000
+/sys/bus/pci/devices/0000:00:04.0/class:0x018000
+/sys/bus/pci/devices/0000:00:05.0/class:0x018000
+/sys/bus/pci/devices/0000:00:06.0/class:0x018000
+/sys/bus/pci/devices/0000:00:07.0/class:0x018000
+/sys/bus/pci/devices/0000:00:08.0/class:0x020000
+/sys/bus/pci/devices/0000:00:09.0/class:0xffff00
+/sys/bus/pci/devices/0000:00:0a.0/class:0xffff00
+```
+
+A 06 00 osztály egy host bridge (a CPU kapcsolata a PCI világához), a 01 80 egy háttértár-vezérlő (itt hat virtuális lemez), a 02 00 egy Ethernet-hálózati vezérlő, az FF pedig szabványos osztály nélküli eszköz. Mindegyik a 00-s sínen van: egy virtuális gépnek nincs fizikai hierarchiája, amelyet utánoznia kellene. Egy fizikai PC-n az `lspci -tv` kirajzolja a root portok, hidak és eszközök valódi fáját (7. laborfeladat; a mért rendszeren az `lspci` nem volt telepítve, ezért itt nincs kimenet).
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> /proc/ioports, /proc/iomem, DMA-vezérlő, valós idejű óra, soros port, konfigurációs tér, /sys, osztálykód, host bridge, lspci</summary>
+
+- **`/proc/ioports`, `/proc/iomem`:** a Linux két „ablakfájlja”: az első azt sorolja fel, melyik I/O-portszám melyik eszközé, a második azt, hogy mely fizikai memóriacímek tartoznak a RAM-hoz és melyek az eszközökhöz.
+- **DMA-vezérlő:** segédchip, amely a CPU nélkül másol adatot az eszközök és a memória között (a következő előadás elmagyarázza).
+- **Valós idejű óra (RTC, real-time clock):** kis, elemről működő óra, amely akkor is számolja a dátumot és az időt, amikor a számítógép ki van kapcsolva.
+- **Soros port:** régi, egyszerű csatlakozó, amely az adatot bitenként, egymás után küldi; a 3F8h címen lévő `serial` az első ilyen, Windowson COM1 a neve.
+- **Konfigurációs tér:** néhány regiszter minden PCI-eszközön, amely elárulja, milyen eszközről van szó, és amelyen keresztül az operációs rendszer megmondhatja neki, milyen címeket használjon.
+- **`/sys`:** a Linux egy másik „ablakmappája”, amely az eszközöket és a meghajtóprogramokat faszerkezetben mutatja.
+- **Osztálykód:** minden PCI-eszközön lévő szám, amely megmondja, milyen fajta eszköz: háttértár, hálózat, híd, grafika és így tovább.
+- **Host bridge:** a CPU és a PCI-eszközök közötti kapcsolat, a PCI-fa „bejárati ajtaja”.
+- **`lspci`:** parancs, amely kilistázza a PCI-eszközöket; a `-tv` kapcsolóval fába rendezve, a nevükkel együtt rajzolja ki őket.
+
+</details>
+
 ### Megszakítások egy futó rendszeren
 
 A `/proc/interrupts` CPU-magonként számlálja a megszakításokat a rendszerindítás óta:
@@ -602,6 +838,7 @@ Minden környezetváltás a kernelen belül történik, ahová egy megszakítás
 4. **Címzési módok.** Töröld a `$` jelet a `mov $3, %eax` utasításból, fordítsd le és futtasd. Magyarázd meg az eredményt a *direkt címzés*, a *laphiba* és a *SIGSEGV* fogalmak segítségével.
 5. **NX.** Fordítsd le és futtasd az `nx.c` programot mindkét módon. Ezután nézd meg egy futó példány `/proc/<pid>/maps` fájlját (a hívás elé tegyél egy `sleep(60)`-at), és keresd meg a verem jogosultságait.
 6. **Az időzítő.** Futtasd a `grep LOC /proc/interrupts` parancsot kétszer, 10 másodperc különbséggel. Körülbelül hány időzítő-megszakítás érkezett másodpercenként az egyes magokon? Vesd össze ezt a `CONFIG_HZ` értékével (`grep CONFIG_HZ= /boot/config-$(uname -r)`). Ezután indíts egy foglalt ciklust (`yes > /dev/null`), és mérj újra.
+7. **Sínek és portok.** Futtasd a `cat /proc/ioports` és a `grep -v '^ ' /proc/iomem` parancsot. Mely eszközök használnak portleképezett I/O-t, és hol ér véget a RAM, hol kezdődik az eszközök tartománya? Egy fizikai PC-n (nem virtuális gépen) futtasd az `lspci -tv` parancsot, és rajzold le a fát: mely eszközök csatlakoznak közvetlenül a CPU root portjaira, és melyek vannak a chipset mögött? Vesd össze a rajzodat a sínhierarchia-ábra B részével.
 
 ## Ellenőrző kérdések
 
@@ -617,6 +854,10 @@ Minden környezetváltás a kernelen belül történik, ahová egy megszakítás
 10. A `mov $3, %eax` és a `mov 3, %eax` egyetlen karakterben tér el. Miért csak a második omlik össze?
 11. A `/proc/self/maps`-ben a heap `rw-p`. Mi történne, ha egy program a heapjére ugrana? Melyik Linux-mechanizmus jelzi a hibát a programnak?
 12. Mi a közös CPU-szinten egy időzítő-megszakításban, egy laphibában és egy `syscall` utasításban, és miben különböznek?
+13. Egy CPU a 60h számot teszi a címsínre. Honnan tudja a rendszer, hogy a 60h memóriarekeszről vagy a 60h I/O-portról van szó? Hogyan dől ez el egy olyan gépen, ahol csak memórialeképezett I/O van?
+14. Miért tértek át a PC-k egyetlen közös sínről hidakkal összekötött sínek hierarchiájára, és mi váltotta fel a közös PCI sínt a mai gépekben?
+15. Stallings képzeletbeli gépén egy utasítás 16 bites, 4 bites műveleti kóddal. Hány különböző műveleti kód és hány memóriaszó lehetséges? Összesen hány sínhozzáférést igényel az `ADD 941`, és hányat igényelne egy közvetlen operandusú „add 2”?
+16. Egy Z80-on az `LD C,FFh` (bájtjai: `0E FF`) az 5Ah címen áll. Mennyi a PC a lehívása után? Mi történne, ha egy ugrás az 5Bh címre vezetne?
 
 <details>
 <summary><strong>Megoldókulcs (oktatóknak)</strong></summary>
@@ -633,6 +874,10 @@ Minden környezetváltás a kernelen belül történik, ahová egy megszakítás
 10. A `$` jellel a 3 közvetlen érték, amely a regiszterbe kerül. Nélküle a 3 memóriacím; a 3-as cím nincs leképezve a folyamatban, ezért a hozzáférés laphibát okoz, és a kernel SIGSEGV szignált küld.
 11. A heapnek nincs `x` jogosultsága, ezért a belőle történő utasításlehívás laphibát (NX-sértést) okoz. A kernel ezt SIGSEGV szignállá alakítja, amely alapértelmezés szerint leállítja a programot („Segmentation fault”).
 12. A CPU mindhárom esetben elmenti az állapotát, kernelmódba vált, és egy kernelbeli kezelőnél folytatja a végrehajtást. A forrásukban különböznek: az időzítő-megszakítás kívülről jön és aszinkron, a laphiba az aktuális utasítás által okozott kivétel, a `syscall` pedig a program szándékos kérése.
+13. A vezérlővonalak alapján: ha az MR/MW aktív, a cím memóriacím, ha az IOR/IOW, akkor portszám. A CPU az IOR/IOW vonalat csak a speciális I/O-utasításoknál aktiválja (x86-on `in`/`out`). Ha csak memórialeképezett I/O van, egyetlen címtartomány létezik: a címdekóder minden címtartományt vagy a RAM-hoz, vagy egy eszközhöz rendel, így maga a cím dönt (az eszköz tartománya egyszerűen nem RAM).
+14. Az egymástól nagyon eltérő sebességű eszközök egyetlen sínen osztoztak, és egyszerre csak egy átvitel használhatta, így a lassú eszközök feltartották a gyorsakat, a sok eszközt kiszolgáló sínnek pedig lassan kellett működnie. A sebességosztályonként külön, hidakkal összekötött sínek párhuzamosan működhetnek, és a gyorsak (gyorsítótár, memória) vannak a CPU-hoz legközelebb. Ma a közös PCI sín helyét a PCI Express pont–pont kapcsolatai vették át: a memóriavezérlő és a PCIe root complex a CPU-ban van, a lassabb eszközök pedig a chipset mögött.
+15. 4 bit $2^4 = 16$ műveleti kódot ad; 12 címbit $2^{12} = 4096$ (4K) szót. Az `ADD 941` két hozzáférést igényel: egyet az utasítás lehívásához, egyet a Mem[941] olvasásához. Egy közvetlen operandusú összeadáshoz csak az utasításlehívás kell, mert az operandus az utasítás része.
+16. 5Ch, mert az utasítás két bájt hosszú (műveleti kód és operandus). Az 5Bh címen az FFh operandus áll; ha a PC oda mutatna, a CPU az FFh-t műveleti kódként hívná le és hajtaná végre (`RST 38h`, hívás a 0038h címre). A memória nem tesz különbséget utasítás és adat között; csak a PC.
 
 </details>
 
@@ -642,8 +887,10 @@ Silberschatz, A., Galvin, P. B., & Gagne, G. (2018). *Operating system concepts*
 
 Stallings, W. (2018). *Operating systems: Internals and design principles* (9th ed.). Pearson.
 
+Tanenbaum, A. S., & Bos, H. (2015). *Modern operating systems* (4th ed.). Pearson.
+
+Zilog. (2016). *Z80 CPU user manual* (UM0080, Rev. 11). Zilog.
+
 ## További olvasnivaló
 
 Kóczy, A., & Kondorosi, K. (Eds.). (2000). *Operációs rendszerek mérnöki megközelítésben* [Operating systems: An engineering approach]. Panem.
-
-Tanenbaum, A. S., & Bos, H. (2015). *Modern operating systems* (4th ed.). Pearson.

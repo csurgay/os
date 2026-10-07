@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 300" width="880" height="300" role="img" aria-label="A fej 1–2 nm-rel a lemez fölött repül: minden részecske szikla az útjában">
+<title>A fej 1–2 nm-rel a lemez fölött repül: minden részecske szikla az útjában</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">A fej 1–2 nm-rel a lemez fölött repül: minden részecske szikla az útjában</text>
+<marker id="a11" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker>
+<marker id="a11b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="bad"/></marker>
+<text x="24" y="62" font-size="12" font-weight="600" class="quiet" text-anchor="start">oldalnézet (vázlatos, nem méretarányos)</text>
+<rect x="24" y="200" width="400" height="16" class="accf"/>
+<path d="M24 200H424" fill="none" class="acc" stroke-width="2"/>
+<text x="24" y="236" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">a lemez felülete, amely a fej alatt halad</text>
+<path d="M300 232H340" fill="none" class="acc" stroke-width="1.6" marker-end="url(#a11)"/>
+<path d="M200 96L290 150" fill="none" class="c2s" stroke-width="4"/>
+<rect x="250" y="150" width="120" height="44" rx="4" class="c2f"/>
+<rect x="250" y="150" width="120" height="44" rx="4" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="310" y="176" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">csúszka + fej</text>
+<path d="M380 194H396" fill="none" class="edge" stroke-width="1"/>
+<path d="M380 200H396" fill="none" class="edge" stroke-width="1"/>
+<text x="400" y="172" font-size="11.5" font-weight="600" class="ink" text-anchor="start">1–2 nm</text>
+<text x="400" y="188" font-size="11" font-weight="400" class="quiet" text-anchor="start">rés</text>
+<circle cx="150" cy="184" r="16" class="badf"/><circle cx="150" cy="184" r="16" fill="none" class="bads" stroke-width="1.5"/>
+<text x="150" y="146" font-size="11.5" font-weight="600" class="bad" text-anchor="middle">porszem</text>
+<text x="150" y="160" font-size="11" font-weight="400" class="bad" text-anchor="middle">vagy ujjlenyomatréteg</text>
+<path d="M246 178H172" fill="none" class="bads" stroke-width="1.4" marker-end="url(#a11b)" stroke-dasharray="4 3"/>
+<text x="24" y="266" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Ha nekiütközik, megkarcolja a felületet és a fejet: fejütközés.</text>
+<text x="24" y="284" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Ezért van zárt ház, szűrő és parkolórámpa.</text>
+<text x="480" y="62" font-size="12" font-weight="600" class="quiet" text-anchor="start">ugyanezek a méretek logaritmikus skálán</text>
+<path d="M480 170H860" fill="none" class="edge" stroke-width="1.5"/>
+<path d="M495.0 165V175" fill="none" class="edge" stroke-width="1.2"/>
+<text x="495.0" y="192" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">1 nm</text>
+<path d="M565.0 165V175" fill="none" class="edge" stroke-width="1.2"/>
+<text x="565.0" y="192" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">10 nm</text>
+<path d="M635.0 165V175" fill="none" class="edge" stroke-width="1.2"/>
+<text x="635.0" y="192" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">100 nm</text>
+<path d="M705.0 165V175" fill="none" class="edge" stroke-width="1.2"/>
+<text x="705.0" y="192" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">1 µm</text>
+<path d="M775.0 165V175" fill="none" class="edge" stroke-width="1.2"/>
+<text x="775.0" y="192" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">10 µm</text>
+<path d="M845.0 165V175" fill="none" class="edge" stroke-width="1.2"/>
+<text x="845.0" y="192" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">100 µm</text>
+<circle cx="507.3" cy="170" r="5" class="acct"/>
+<path d="M507.3 164V145" fill="none" class="edge" stroke-width="1"/>
+<text x="511.3263881338977" y="140" font-size="11.5" font-weight="600" class="acct" text-anchor="start">repülési magasság 1–2 nm</text>
+<circle cx="732.9" cy="170" r="5" class="bad"/>
+<path d="M732.9 164V121" fill="none" class="edge" stroke-width="1"/>
+<text x="728.8558006070426" y="116" font-size="11.5" font-weight="600" class="bad" text-anchor="end">finom porszem ≤ 2,5 µm</text>
+<circle cx="834.2" cy="170" r="5" class="c2"/>
+<path d="M834.2 164V97" fill="none" class="edge" stroke-width="1"/>
+<text x="830.1568628009979" y="92" font-size="11.5" font-weight="600" class="c2" text-anchor="end">emberi hajszál ≈ 70 µm</text>
+<text x="480" y="226" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Egy 2,5 µm-es részecske több mint ezerszer</text>
+<text x="480" y="244" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">magasabb a résnél, egy hajszál több tízezerszer.</text>
+</svg>

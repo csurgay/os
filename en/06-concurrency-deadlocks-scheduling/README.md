@@ -12,13 +12,13 @@ The [interrupts lecture](../05-interrupts/) showed the mechanism that lets an op
 
 By the end, students will be able to:
 
-- state the critical-section problem and its three requirements, and explain why the test and the set of a lock must be one atomic step;
+- state the critical-section problem and its three requirements, trace a lost-update race (two withdrawals from one bank account) step by step, and explain why the test and the set of a lock must be one atomic step and why re-checking after the set does not help;
 - explain Peterson's algorithm and why it fails on a modern multi-core CPU without memory fences;
 - describe the three layers of synchronisation (hardware instruction, OS mutex and semaphore, language construct) and the futex fast path, and compare the cost of atomics, spinlocks and mutexes;
-- use semaphores for mutual exclusion and for counting, and solve the producer–consumer problem;
-- define deadlock, state the four Coffman conditions, draw a resource-allocation graph, and explain prevention, avoidance (banker's algorithm), detection and recovery; distinguish deadlock from livelock, starvation and priority inversion;
-- draw the process state diagram, explain the long-, medium- and short-term schedulers, zombies and orphans, and map the states to Linux's `ps` codes;
-- compute waiting, turnaround and response times for FIFO, SJF, SRTF and Round Robin, and the efficiency cost of the time slice;
+- use semaphores for mutual exclusion and for counting, and solve the producer–consumer and sleeping-barber problems;
+- define deadlock, state the four Coffman conditions, draw a resource-allocation graph (including resources with several instances), and explain prevention, avoidance (banker's algorithm), detection and recovery; distinguish deadlock from livelock, starvation and priority inversion;
+- draw the process state diagram, explain the long-, medium- and short-term schedulers, zombies and orphans, and map the states to Linux's `ps` codes, tracing interruptible and uninterruptible sleep back to the classic Unix sleep priorities;
+- compute waiting, turnaround and response times for FIFO, SJF, SRTF, HRRN and Round Robin, and the efficiency cost of the time slice;
 - explain Linux's scheduling classes, nice values and weights, and the EEVDF scheduler, and measure them.
 
 <details>
@@ -56,6 +56,27 @@ On a multi-core CPU the problem is even sharper: two threads really run at the s
 
 ## The critical-section problem
 
+A race condition is easiest to see with money. Two cards belong to the same bank account, which holds 150. At the same moment, one card holder withdraws 100 from an ATM in Budapest and the other withdraws 100 from an ATM in Hong Kong. Both ATMs run the same code on the bank's server, as two concurrent processes sharing one variable, `balance`:
+
+```text
+withdraw(amount):
+    b = balance                  // read the balance
+    if b >= amount:              // check: is there enough money?
+        balance = b - amount     // act: write the new balance
+        dispense(amount)
+```
+
+Each request is correct on its own. Interleaved, they can go wrong:
+
+| Step | ATM 1 (Budapest) | ATM 2 (Hong Kong) | `balance` |
+|---|---|---|---|
+| ① | reads `b = 150`; 150 ≥ 100, the check passes | | 150 |
+| ② | | reads `b = 150`; 150 ≥ 100, the check passes | 150 |
+| ③ | writes `balance = 150 − 100 = 50`; dispenses 100 | | 50 |
+| ④ | | writes `balance = 150 − 100 = 50`; dispenses 100 | 50 |
+
+The machines have paid out 200, and the account still shows 50: ATM 1's update has been overwritten and is lost. This is the classic **lost update**, and the pattern behind it is **check-then-act**: the decision (step ①) is based on a value that is no longer true when the action (step ③ or ④) happens. If the code re-read `balance` just before writing, the account would end at −50 instead, overdrawn although the check was meant to prevent exactly that. Either way, the read, the check and the write must form one indivisible unit. Banks get this from their database: the withdrawal runs as a **transaction** that locks the account row (or as a single atomic statement such as `UPDATE account SET balance = balance - 100 WHERE id = 42 AND balance >= 100`), so concurrent withdrawals from one account are **serialised**, executed one after the other.
+
 The part of a program that works on shared data is its **critical section**. A correct solution to the critical-section problem must guarantee three things (Silberschatz et al., 2018):
 
 1. **Mutual exclusion:** at most one process is in its critical section at a time.
@@ -65,6 +86,55 @@ The part of a program that works on shared data is its **critical section**. A c
 It must also work whatever the relative speeds of the processes, and wherever an interrupt strikes.
 
 The naive lock `while (S == 0); S = 0;` fails the first requirement because the **test** (`while (S == 0)`) and the **set** (`S = 0`) are two separate steps; an interrupt between them lets both processes in. The solution is a **test-and-set** instruction: a hardware instruction that tests and sets in one indivisible (atomic) step, `xchg` on x86, which the interrupts lecture used to build a spinlock.
+
+### Two locks that do not work
+
+Written as a semaphore, the naive lock is `while (s == 0); s--;` to enter and `s++;` to leave, with `s = 1` at the start. Let P1's critical section be `X = 1` and P2's be `X = 0; X = X + 1`. Run one after the other, in either order, both sections leave `X = 1`. The numbers give one interleaving:
+
+| Step | P1 | P2 | `s` | `X` |
+|---|---|---|---|---|
+| ① | tests `s == 0`: false, leaves the loop | | 1 | |
+| ② | | tests `s == 0`: false, leaves the loop | 1 | |
+| ③ | `s--` | | 0 | |
+| ④ | | `s--` | −1 | |
+| ⑤ | | `X = 0` | −1 | 0 |
+| ⑥ | `X = 1` | | −1 | 1 |
+| ⑦ | | `X = X + 1` | −1 | 2 |
+
+Both processes are inside, and `X` ends as 2, a value that no sequential order can produce. After both `s++` operations `s` is 1 again, so the lock even hides the evidence.
+
+A tempting repair is to check afterwards whether the lock is really ours: each process writes its own ID into `S` and enters only if the ID is still there.
+
+```c
+retry:
+    while (S != 0) ;              /* wait until the lock is free      */
+    S = me;                       /* claim it with my ID (1 or 2)     */
+    if (S != me) goto retry;      /* overwritten by the other? retry  */
+    /* critical section */
+    S = 0;
+```
+
+| Step | P1 | P2 | `S` |
+|---|---|---|---|
+| ① | sees `S == 0`, leaves the loop | | 0 |
+| ② | | sees `S == 0`, leaves the loop | 0 |
+| ③ | writes `S = 1` | | 1 |
+| ④ | checks `S == 1`: still mine, enters | | 1 |
+| ⑤ | | writes `S = 2` | 2 |
+| ⑥ | | checks `S == 2`: still mine, enters | 2 |
+
+The check catches the other process only if its write falls between my write and my check; it cannot see a write that comes later. A second check only moves the window. Two ways out remain: a hardware instruction that reads and writes in one atomic step (test-and-set), or an algorithm in which each process first announces its intention and then defers to the other, which is what Peterson's algorithm does.
+
+<details>
+<summary><b>Explained simply:</b> lost update, check-then-act, transaction, serialise, interleaving</summary>
+
+- **Lost update:** two programs change the same value at the same time, and one change silently overwrites the other, as if it had never happened.
+- **Check-then-act:** first look ("is there enough money?"), then do something based on what you saw. If someone else changes things between the look and the action, the action is based on old information.
+- **Transaction:** a group of database operations that happens completely or not at all, and as if nobody else were using the database meanwhile.
+- **Serialise:** make things happen one after the other instead of at the same time, like a single queue in front of one counter.
+- **Interleaving:** the order in which the steps of two programs actually follow each other when they take turns on the CPU or run on two cores.
+
+</details>
 
 ### Peterson's algorithm: a lock in plain software
 
@@ -136,6 +206,10 @@ Dijkstra (1965) introduced the **semaphore**: a non-negative integer counter wit
 - `P(S)`: if S > 0, decrement it and continue; otherwise sleep until it is greater than 0 (this is Dijkstra's non-negative form; the interrupts lecture showed the equivalent variant in which S may go negative and then counts the waiting processes);
 - `V(S)`: increment S, and wake one sleeper if there is any.
 
+The name comes from the railway (Dijkstra's first note on the subject is titled *Over seinpalen*, "On semaphores"; Dijkstra, n.d.). On a single-track line, trains in both directions share one stretch of track, the critical section, and a **semaphore signal** at each end guards the entry. Its arm horizontal means stop, raised means go. A train that reaches the signal performs P: if the section is free, it enters and the signals behind it return to stop (S becomes 0); if not, it waits at the signal. A train that leaves the section performs V: the section is free again (S = 1), and one waiting train may go.
+
+![A single-track railway section between two double-track stretches; train A is inside, both signals show stop, train B waits at the east signal; a legend shows the horizontal arm (stop, S = 0) and the raised arm (go, S = 1)](railway-semaphore.svg)
+
 The interrupts lecture used a semaphore initialised to 1 as a lock (a **binary semaphore**). Initialised to *n*, it lets *n* processes in at once (a **counting semaphore**): *n* free printers, *n* database connections, *n* parking spaces. And because one process can call V while another calls P, a semaphore can also **signal** an event between processes, which a mutex cannot.
 
 The classic example is the **producer–consumer** (bounded-buffer) problem: producers put items into a buffer of *N* slots, consumers take them out. Three semaphores solve it:
@@ -150,6 +224,22 @@ consumer:  P(full);  P(mutex); item = take(); V(mutex); V(empty)
 ```
 
 A producer sleeps when the buffer is full, a consumer when it is empty, and nobody busy-waits. The order of the two P operations matters: a producer that took `mutex` first and then slept on `empty` would hold the buffer locked, and no consumer could ever free a slot, which is a deadlock.
+
+**The sleeping barber.** Another classic from Dijkstra (1965): a barber's shop has one barber, one barber's chair and *n* chairs for waiting customers. With no customers, the barber sleeps in his chair. An arriving customer wakes the barber if he is asleep, sits down to wait if a chair is free, and leaves if all chairs are taken. The difficulty is a missed wake-up: a customer who sees the barber busy and is about to sit down, and a barber who finishes, sees no one waiting and is about to fall asleep, can each wait for the other for ever. Two semaphores used as signals and one as a lock solve it:
+
+```text
+semaphore customers = 0   // waiting customers; the barber sleeps on it
+semaphore barber    = 0   // the barber is ready; a customer sleeps on it
+semaphore mutex     = 1   // protects waiting
+int waiting = 0           // customers on the waiting chairs (at most n)
+
+barber:    loop { P(customers); P(mutex); waiting--; V(barber); V(mutex); cut_hair() }
+customer:  P(mutex)
+           if waiting < n:  waiting++; V(customers); V(mutex); P(barber); get_haircut()
+           else:            V(mutex); leave()
+```
+
+Because a V is remembered by the counter even when nobody is waiting yet, no wake-up can be lost. The same structure appears in every server with a pool of worker threads and a bounded queue of requests: the barber is a worker, the chairs are the queue, and a customer who finds the queue full is a rejected request.
 
 Semaphores are powerful but easy to misuse: one forgotten V, or a P and V swapped, and the program hangs or breaks mutual exclusion. **Monitors** (Hoare, 1974) package the shared data, the lock and **condition variables** (on which a thread can wait for a condition inside the lock) into one construct; Java objects with `synchronized`, `wait()` and `notify()`, and C++'s `std::condition_variable`, are monitors in practice. With POSIX threads, the bounded buffer looks like this:
 
@@ -167,13 +257,17 @@ Two details matter. `pthread_cond_wait` releases the mutex while sleeping and ta
 **Readers and writers.** Many shared structures are read far more often than written. A **readers–writer lock** (`pthread_rwlock_t`) lets any number of readers in together but a writer only alone; it must take care not to starve writers. The Linux kernel goes further for read-mostly data with **RCU** (read-copy-update): readers take no lock at all, and a writer publishes a new copy and frees the old one only when all readers that might still see it have finished (McKenney, 2023).
 
 <details>
-<summary><b>Explained simply:</b> semaphore, P and V, binary and counting semaphore, producer–consumer, buffer, monitor, condition variable, Mesa semantics, spurious wake-up, readers–writer lock, RCU</summary>
+<summary><b>Explained simply:</b> semaphore, railway semaphore signal, P and V, binary and counting semaphore, producer–consumer, buffer, sleeping barber, missed wake-up, worker pool, monitor, condition variable, Mesa semantics, spurious wake-up, readers–writer lock, RCU</summary>
 
 - **Semaphore:** a counter that controls entry, like a car park display: it counts down as cars enter, stops cars at 0, and counts up as cars leave.
 - **P and V:** Dijkstra's Dutch names for "wait until you can take one" and "give one back".
 - **Binary semaphore:** can only be 0 or 1, so it works as a lock. **Counting semaphore:** can be any number, for several identical resources.
 - **Producer–consumer:** one part of a program makes items, another uses them, with a waiting area of limited size in between, like a bakery shelf between the baker and the customers.
 - **Buffer:** that waiting area in memory.
+- **Railway semaphore signal:** a post with a movable arm beside the track; arm horizontal means "stop", arm raised means "go". It lets only one train at a time onto a stretch of single track, the track that trains in both directions must share.
+- **Sleeping barber:** a puzzle about a barber who sleeps when nobody is waiting and must be woken by the next customer, without anyone being forgotten.
+- **Missed wake-up:** one side goes to sleep just after the other side's "wake up!" call, so the call is lost and both wait for ever. A semaphore counts the calls, so none are lost.
+- **Worker pool:** a fixed number of threads in a server that take requests from a queue, like barbers taking customers from the waiting chairs.
 - **Monitor:** a programming-language construct that bundles shared data with the lock that protects it, so you cannot forget to lock.
 - **Condition variable:** a place inside a monitor where a thread can sleep until another thread tells it that something has changed ("the shelf is no longer empty").
 - **Mesa semantics, spurious wake-up:** being woken up only means "something may have changed", not "your condition is true"; sometimes a thread is even woken for no reason at all. So it must look again.
@@ -197,13 +291,19 @@ A set of processes is **deadlocked** when each of them waits for an event that o
 
 A **resource-allocation graph** (Holt, 1972) makes this visible: an arrow from a process to a resource means "wants", from a resource to a process "held by". With one instance of each resource, a cycle in the graph means deadlock.
 
+A gridlocked crossroads is the same situation with four parties. Every car going straight across needs two quarters of the crossing, the one it is in and the next one; when four cars have each entered one quarter, each waits for the quarter held by the next car, and the queues behind them make backing out impossible:
+
+![Left: a crossroads with four cars, each in one quarter and wanting the next, with queues behind them. Right: the resource-allocation graph with cars as circles and quarters as boxes with one dot each, forming the cycle car 1, NE, car 2, NW, car 3, SW, car 4, SE](gridlock.svg)
+
+The graph uses Holt's standard notation: a **process** is a circle, a **resource** is a box with one dot for each **instance** (identical unit) of it, a **request edge** goes from a process to the box it waits for, and an **assignment edge** goes from one dot (the instance held) to its holder. With one instance per resource, a cycle is both necessary and sufficient for deadlock. With several instances, a cycle is necessary but not sufficient. Suppose resource R1 has two instances, one held by P1 and one by P3; P1 waits for R2, which P2 holds; P2 waits for R1. There is a cycle P1 → R2 → P2 → R1 → P1, yet P3 waits for nothing: it finishes, releases its instance of R1, P2 gets it and finishes, and then P1 (Silberschatz et al., 2018). Deciding deadlock in that case needs the reduction algorithm used by the banker's safety check: repeatedly let a process finish if its requests can be met, and see whether everyone can.
+
 ### Handling deadlocks
 
 There are four strategies (Silberschatz et al., 2018; Stallings, 2018):
 
 - **Prevention:** make one of the four conditions impossible. The most practical is to break **circular wait** with a global **lock order**: every program takes the west half before the east half, so no cycle can form. Breaking **hold and wait** means taking all resources at once (a semaphore acting as a "traffic light" lets one car onto the *whole* bridge); breaking **no preemption** means taking resources away (possible for the CPU or memory, not for a half-written file); breaking **mutual exclusion** means making a resource shareable (spooling a printer).
 - **Avoidance:** the system knows in advance how much of each resource each process may need, and grants a request only if the resulting state is **safe**, that is, there is still an order in which every process can obtain its maximum and finish. **Dijkstra's banker's algorithm** (Dijkstra, 1965) checks this, like a bank that lends only if it can still satisfy all its customers' credit lines ([Linux section](#avoidance-the-bankers-algorithm)). It needs the maximum claims in advance, so general-purpose operating systems rarely use it.
-- **Detection and recovery:** let deadlocks happen, find cycles in the wait-for graph, and break them by aborting a victim or rolling back its work. Database systems do exactly this with transactions.
+- **Detection and recovery:** let deadlocks happen, find cycles in the wait-for graph, and break them by aborting a victim or rolling back its work. Database systems do exactly this with transactions. Detection needs global knowledge: the whole graph, at one moment. On one machine the kernel or the database has it; in a distributed system each node sees only its own locks, messages take time, and an assembled graph may contain edges that no longer exist (a "phantom" deadlock), so distributed systems often fall back on time-outs.
 - **Ignoring the problem** (the "ostrich algorithm"): general-purpose operating systems, Linux and Windows included, do not detect deadlocks between user processes; it is the programmer's job to avoid them, and the user's job to kill a hung program. Inside the Linux kernel, the **lockdep** validator records the order in which every class of lock is taken and warns as soon as two code paths take two locks in opposite orders, even if the deadlock has never actually happened (Linux kernel documentation, n.d.-a).
 
 The classic teaching example is Dijkstra's **dining philosophers** (Dijkstra, 1971): five philosophers around a table, one fork between each pair, each needs both neighbouring forks to eat. If all pick up their left fork at once, all wait for ever. Numbering the forks and always taking the lower-numbered first (a lock order) solves it.
@@ -215,12 +315,17 @@ The classic teaching example is Dijkstra's **dining philosophers** (Dijkstra, 19
 - **Priority inversion:** a high-priority task waits for a lock held by a low-priority task, which in turn cannot run because medium-priority tasks keep preempting it. In July 1997 this repeatedly reset the computer of NASA's Mars Pathfinder lander on Mars: a low-priority meteorological task held a mutex (inside the inter-task communication mechanism) that the high-priority bus-distribution task needed; when the bus scheduler found that the bus task had not finished its cycle, it reset the whole system. The engineers reproduced the problem on Earth and fixed it by uploading a patch that changed a global setting to turn on **priority inheritance** for that mutex: while a low-priority task holds a lock that a high-priority task needs, it temporarily runs at the high priority (Reeves, 1997). Linux offers the same with priority-inheritance futexes (`PTHREAD_PRIO_INHERIT`).
 
 <details>
-<summary><b>Explained simply:</b> resource, preemption of a resource, resource-allocation graph, cycle, lock order, safe state, transaction, rollback, livelock, priority inversion, priority inheritance, watchdog, spooling, lockdep</summary>
+<summary><b>Explained simply:</b> resource, preemption of a resource, resource-allocation graph, gridlock, instance, request and assignment edge, cycle, distributed system, phantom deadlock, lock order, safe state, transaction, rollback, livelock, priority inversion, priority inheritance, watchdog, spooling, lockdep</summary>
 
 - **Resource:** anything a process needs and may have to wait for: a lock, a printer, memory, a file.
 - **Preemption of a resource:** taking it away from its holder by force.
 - **Resource-allocation graph:** a drawing of who holds what and who wants what, with arrows.
+- **Gridlock:** a traffic jam at a crossroads in which every car blocks the next one around the square, so nobody can move.
+- **Instance:** one of several identical units of a resource, such as one of three identical printers. In the graph each instance is a dot.
+- **Request edge, assignment edge:** the two kinds of arrows: "this process is waiting for that resource" and "this unit of the resource belongs to that process".
 - **Cycle:** a path of arrows that comes back to where it started.
+- **Distributed system:** many computers that work together over a network, none of which sees everything at once.
+- **Phantom deadlock:** a deadlock that a detector reports from outdated information, although it has already gone away.
 - **Lock order:** a fixed rule that everybody takes locks in the same order (always the west half first).
 - **Safe state:** a situation from which the system can still give everyone what they may ask for, in some order.
 - **Transaction, rollback:** a database transaction is a group of changes that happens completely or not at all; rolling back means undoing it.
@@ -234,7 +339,7 @@ The classic teaching example is Dijkstra's **dining philosophers** (Dijkstra, 19
 
 ## The process state space
 
-A **process** is a program in execution: *process = running program + context*. The **context** is everything needed to stop the process and continue it later as if nothing had happened: the CPU registers (including the program counter), the memory map, open files, the scheduling state. The OS keeps it in a **process control block**; in Linux, a `struct task_struct`. Linux creates a process with `fork()`, which duplicates the calling process, and usually loads a new program into the copy with `exec()`.
+A **process** is a program in execution: *process = running program + context*. The **context** is everything needed to stop the process and continue it later as if nothing had happened: the CPU registers (including the program counter), the memory map, open files, the scheduling state. The OS keeps it in a **process control block** (PCB); in Linux, a `struct task_struct`. A PCB holds at least the process ID and the parent's ID, the state, the priority and other scheduling data, the saved registers (program counter, status word, stack pointer), pointers to the memory-management data (page tables), the open files, and accounting data such as the CPU time used. Linux creates a process with `fork()`, which duplicates the calling process, and usually loads a new program into the copy with `exec()`.
 
 ![Process state diagram: ready, running, waiting in the short-term region; suspended ready and suspended waiting in the medium-term region; program and zombie at the long-term level](process-states.svg)
 
@@ -243,7 +348,7 @@ The diagram shows the seven-state model:
 - **Ready** (many processes): able to run, waiting only for a CPU. **Running** (one process per CPU core): executing. The **dispatcher** moves a process from ready to running; the timer interrupt (time slice over) or the process itself (yield) moves it back.
 - **Waiting** (often also called *blocked*): the process waits for an event, the end of an I/O operation, data in a buffer, a semaphore. When the event happens (an interrupt, a V operation), it becomes ready again, not running: it has to wait for the CPU like everyone else.
 - **Suspended ready** and **suspended waiting** (Stallings calls them Ready/Suspend and Blocked/Suspend): the process has been moved out of memory (swapped out) to make room for others. A suspended waiting process whose event happens becomes suspended ready; it must be swapped in before it can run.
-- **Zombie**: the process has ended (by `exit()` or because it was killed), but its exit status is kept until its parent collects it with `wait()`. Then the last trace is removed: the parent **reaps** the zombie.
+- **Zombie**: the process has ended (by `exit()` or because it was killed), but its exit status is kept until its parent collects it with `wait()`. Then the last trace is removed: the parent **reaps** the zombie. Every process that ends, normally or by a signal, from any state, passes through this state; the only exception is a child whose parent has declared that it does not want exit statuses (by ignoring `SIGCHLD` or setting `SA_NOCLDWAIT`), which the kernel removes at once.
 
 The diagram is divided into three regions by **how often** decisions are made (Stallings, 2018):
 
@@ -266,12 +371,19 @@ The diagram is divided into three regions by **how often** decisions are made (S
 
 Linux does not distinguish ready from running in `ps`, because the difference changes thousands of times per second. Nor does it have separate suspended states: it swaps out individual memory pages rather than whole processes, so a process can be partly in memory. If a parent ends before its children, the **orphans** are adopted by `init` (PID 1, or a designated "subreaper"), which reaps them.
 
+**Where S and D come from.** The two kinds of sleep go back to the classic Unix kernel, which gave every sleeping process a priority according to *what* it was waiting for (Bach, 1986):
+
+![Classic Unix priority ladder: swapper, waiting for disk I/O, waiting for a buffer, waiting for an inode above the signal threshold PZERO; waiting for tty input, tty output and child exit below it; user-mode priority levels below PUSER](unix-sleep-priorities.svg)
+
+A process that goes to sleep inside a system call keeps a **kernel-mode sleep priority** set by the event it waits for: the swapper highest, then waiting for disk I/O, for a buffer, for an inode, then waiting for terminal input or output, and lowest waiting for a child to exit. All of these are above every **user-mode priority**, so a woken process finishes its kernel work quickly and releases the buffers and inodes it may hold, which other processes need. A threshold divides the kernel priorities. A process sleeping above it (disk I/O, buffers, inodes) cannot be woken by a signal: the event is sure to come soon, and abandoning the operation halfway could leave kernel data structures inconsistent. A process sleeping below it (terminal, child exit) may wait indefinitely, so a signal wakes it and the system call returns early with an error (`EINTR`). Linux keeps exactly this distinction as the `D` (uninterruptible, `TASK_UNINTERRUPTIBLE`) and `S` (interruptible, `TASK_INTERRUPTIBLE`) states, and adds a "killable" variant of `D` that only fatal signals can interrupt. It no longer gives a woken process a priority according to the event; instead, the fair scheduler usually lets a task that wakes up after a sleep run soon, because it has used less than its share of the CPU.
+
 <details>
-<summary><b>Explained simply:</b> context, register, program counter, process control block, fork, exec, dispatcher, yield, swap, zombie, reap, signal, orphan, init, cgroup, subreaper, admission</summary>
+<summary><b>Explained simply:</b> context, register, program counter, process control block, status word, accounting, fork, exec, dispatcher, yield, swap, zombie, reap, signal, SIGCHLD, orphan, init, cgroup, subreaper, admission, sleep priority, swapper, inode, tty, EINTR</summary>
 
 - **Context:** everything the CPU and the OS need to remember about a process to continue it later, like a bookmark plus notes on the desk.
 - **Register:** a tiny, very fast storage place inside the CPU. The **program counter** is the register that holds the address of the next instruction.
 - **Process control block (PCB):** the OS's record card about one process.
+- **Status word** (PSW, program status word): a register with the CPU's flags, such as the result of the last comparison and whether interrupts are allowed. **Accounting:** bookkeeping, such as how much CPU time a process has used.
 - **`fork()`:** makes a copy of the running process. **`exec()`:** replaces the program in a process with another program.
 - **Dispatcher:** the part of the OS that actually hands the CPU to the chosen process.
 - **Yield:** a process voluntarily gives up the CPU.
@@ -282,6 +394,11 @@ Linux does not distinguish ready from running in `ps`, because the difference ch
 - **cgroup** (control group): a Linux feature that groups processes and limits their CPU, memory or number of processes.
 - **Subreaper:** a process that has asked to adopt orphaned descendants instead of PID 1.
 - **Admission:** deciding whether a new job may start at all, or must wait.
+- **SIGCHLD:** the signal a parent receives when one of its children ends.
+- **Sleep priority:** in classic Unix, how urgently a sleeping process should run once its event arrives, depending on what it was waiting for.
+- **Swapper:** the classic Unix process that moves whole processes between memory and disk.
+- **Inode:** the record on disk (and its copy in memory) that describes one file. **tty:** a terminal, the keyboard-and-screen line of a user (from "teletypewriter").
+- **EINTR:** the error code a system call returns when a signal interrupted its waiting ("interrupted system call"); the program may simply try again.
 
 </details>
 
@@ -294,15 +411,27 @@ The short-term scheduler chooses, from the ready queue, the process to run next.
 - **response time** (from arrival to the first time the job runs) matters for interactive users;
 - **fairness** and the absence of starvation matter for everyone.
 
-Three classic algorithms:
+Four classic algorithms:
 
 - **FIFO** (first in, first out; also FCFS, first come, first served): run each job to completion in arrival order. Simple and fair in a sense, but one long job makes everybody behind it wait (the *convoy effect*).
 - **SJF** (shortest job first): run the shortest ready job next. For a set of jobs that are all available at the start, it gives the minimum average waiting time of all non-preemptive algorithms. Its preemptive form, **SRTF** (shortest remaining time first), switches to a newly arrived job if it is shorter than what remains of the current one. Two catches: job lengths are not known in advance, so they are predicted, usually by an exponential average of the earlier CPU bursts, $\tau_{n+1} = \alpha t_n + (1-\alpha) \tau_n$; and long jobs can starve. There is also a cost: choosing the shortest of $n$ ready jobs by scanning the list takes $O(n)$ time at every decision; keeping the queue sorted in a heap or tree makes it $O(\log n)$.
+- **HRRN** (highest response ratio next): a non-preemptive compromise between SJF and FIFO (Stallings, 2018). Whenever the CPU becomes free, it computes for every ready job the **response ratio** $R = (W + S) / S$, where $W$ is the time the job has waited so far and $S$ its (predicted) service time, and runs the job with the largest $R$. A newly arrived job has $R = 1$; short jobs gain quickly, because $W$ is divided by a small $S$, but every waiting job's ratio keeps growing, so even a long job eventually beats any newcomer: no starvation, without an explicit aging rule.
 - **RR** (Round Robin): FIFO with a time limit. Each job runs for at most one **time slice** (quantum) $q$, then goes to the back of the ready queue. No job waits more than $(n-1) q$ for its turn, which gives good response times.
 
 ![Gantt charts of the five example jobs under FIFO, SJF, SRTF and Round Robin with quantum 2](gantt.svg)
 
 The examples follow two conventions, which hand calculations must also use: a job that arrives at the moment another is preempted enters the ready queue *before* the preempted job, and ties go to the job that has been waiting longer.
+
+**HRRN by hand.** For the same five jobs, A runs first (alone at time 0) until 6. Then the ratios decide at every completion:
+
+| Time | B (arr. 1, S = 3) | C (arr. 2, S = 8) | D (arr. 3, S = 5) | E (arr. 4, S = 2) | Runs |
+|---|---|---|---|---|---|
+| 6 | (5 + 3) / 3 = 2.67 | (4 + 8) / 8 = 1.50 | (3 + 5) / 5 = 1.60 | (2 + 2) / 2 = 2.00 | B, 6–9 |
+| 9 | | (7 + 8) / 8 = 1.88 | (6 + 5) / 5 = 2.20 | (5 + 2) / 2 = 3.50 | E, 9–11 |
+| 11 | | (9 + 8) / 8 = 2.13 | (8 + 5) / 5 = 2.60 | | D, 11–16 |
+| 16 | | only C is left | | | C, 16–24 |
+
+The waiting times are A 0, B 5, C 14, D 8, E 5, on average 6.4: between SJF (6.2) and FIFO (8.8). Unlike SJF, HRRN ran B before the shorter E, because B had waited longer. Its real advantage shows when short jobs keep arriving: SJF postpones a long job as long as there is any shorter one, while under HRRN the long job's ratio grows until it wins ([Linux section](#scheduling-algorithms-side-by-side)).
 
 **The cost of the time slice.** Every switch costs time $s$ for the OS: saving and restoring registers, running the scheduler, and refilling caches. With quantum $q$, the share of CPU time left for the applications is the **efficiency**:
 
@@ -311,7 +440,7 @@ $$\eta = \frac{\text{application time}}{\text{application time} + \text{OS time}
 A small $q$ gives quick responses but low efficiency; a large $q$ gives high efficiency but turns Round Robin into FIFO. With the switch cost measured below ($s \approx 1.5\ \mu s$, without cache effects) and $q = 4$ ms, $\eta \approx 0.9996$ (99.96%); the real limit on small slices is the cache refill and the loss of response-time benefit, not the switch itself. Real systems combine the ideas: **priority scheduling** (with **aging**, slowly raising the priority of jobs that wait long, against starvation), and **multilevel feedback queues**, which give short slices and high priority to jobs that often block (interactive ones) and longer slices to CPU-bound ones.
 
 <details>
-<summary><b>Explained simply:</b> throughput, turnaround, waiting and response time, FIFO/FCFS, convoy effect, SJF, SRTF, burst, exponential average, O(n), Round Robin, quantum, Gantt chart, aging</summary>
+<summary><b>Explained simply:</b> throughput, turnaround, waiting and response time, FIFO/FCFS, convoy effect, SJF, SRTF, burst, exponential average, O(n), HRRN, response ratio, Round Robin, quantum, Gantt chart, aging</summary>
 
 - **Throughput:** how many jobs are finished per unit of time.
 - **Turnaround time:** from when a job arrives until it is finished. **Waiting time:** the part of that spent waiting in the queue. **Response time:** from arrival until the job first gets the CPU.
@@ -321,6 +450,7 @@ A small $q$ gives quick responses but low efficiency; a large $q$ gives high eff
 - **CPU burst:** a stretch of time in which a process computes without waiting.
 - **Exponential average:** a running average in which recent values count more than older ones.
 - **O(n), O(log n):** "big-O" notation for how the work grows with the number of items: O(n) doubles when n doubles; O(log n) grows by only one step when n doubles.
+- **HRRN, response ratio:** a score for each waiting job: (time waited + time needed) divided by time needed. Short jobs score high quickly, but a long job's score also keeps rising while it waits, so its turn surely comes.
 - **Round Robin, quantum:** everybody gets a short turn (the quantum) in a circle, like passing a ball around.
 - **Gantt chart:** a bar chart that shows who used the CPU when.
 - **Aging:** the longer a job has waited, the higher its priority becomes, so it cannot wait for ever.
@@ -572,6 +702,34 @@ parent: reaped child 2181, exit status 42
 
 The `WCHAN` column names the kernel function in which a sleeping process waits: a high-resolution timer for `sleep`, the signal-stop code for the stopped one. The zombie has no memory and no code any more, only its process-table entry and exit status (42), which the parent collects with `waitpid()`; after that, the PID is gone.
 
+### Stopping and continuing a process
+
+`SIGSTOP` takes a process off the CPU until a `SIGCONT` arrives; unlike most signals, it cannot be caught or ignored. `stopcont.sh` starts a CPU-bound loop on core 0, stops it, waits, and continues it, printing each time the state letter (field 3) and the user-mode CPU time in clock ticks (field 14, `utime`, 100 ticks per second here) from `/proc/PID/stat`, and the `ps` view:
+
+```console
+$ ./stopcont.sh
+running for 1 s:       state R  utime   98 ticks   ps: R    -
+after SIGSTOP:         state T  utime   99 ticks   ps: T    do_signal_stop
+2 s later, stopped:    state T  utime   99 ticks   ps: T    do_signal_stop
+1 s after SIGCONT:     state R  utime  195 ticks   ps: R    -
+19
+18
+```
+
+While the process is stopped, its CPU time does not grow at all (99 ticks before and after the 2 seconds), and it waits in the kernel's `do_signal_stop`; after `SIGCONT` it is runnable again and collects almost a full second of CPU time per second. The last two lines are `kill -l STOP CONT`: on x86 Linux these signals have the numbers 19 and 18, so `kill -19 PID` is the same as `kill -STOP PID`, but the numbers differ on some other architectures, so scripts should use the names. (`kill 19 PID`, without the minus sign, would send the default `SIGTERM` to the processes 19 and PID.) In a terminal, Ctrl-Z sends the similar `SIGTSTP` (which a program may catch), and the shell's `fg` and `bg` send `SIGCONT`. A stopped process keeps all its memory; it is the nearest Linux equivalent of the diagram's *suspended* states, chosen by a user or a debugger rather than by a medium-term scheduler.
+
+<details>
+<summary><b>Explained simply:</b> SIGSTOP, SIGCONT, SIGTSTP, /proc/PID/stat, utime, clock tick, fg, bg</summary>
+
+- **SIGSTOP, SIGCONT:** the "pause" and "play" buttons for a process. A paused process keeps everything but gets no CPU time.
+- **SIGTSTP:** the polite pause request sent by Ctrl-Z; unlike SIGSTOP, a program may react to it or refuse it.
+- **/proc/PID/stat:** a file that is not on any disk: the kernel writes the current facts about process PID into it each time it is read.
+- **utime:** how much CPU time the process has used in user mode, counted in clock ticks.
+- **Clock tick** (here): the unit of these counters, 1/100 of a second on Linux.
+- **fg, bg:** shell commands that continue a stopped job in the foreground (it gets the keyboard) or in the background.
+
+</details>
+
 ### Voluntary and involuntary switches
 
 Linux counts, for every process, how often it left the CPU on its own (to wait: a **voluntary** switch, the running → waiting arrow) and how often it was preempted (the running → ready arrow, **involuntary**). `switches.sh` runs two CPU-bound loops and one loop that sleeps 10 ms at a time, all on core 0, for 5 seconds:
@@ -612,6 +770,7 @@ algorithm    wait turnaround response    end   timeline (2 chars = 1 unit)
 FIFO         8.80      13.60     8.80   24.0   AAAAAAAAAAAABBBBBBCCCCCCCCCCCCCCCCDDDDDDDDDDEEEE
 SJF          6.20      11.00     6.20   24.0   AAAAAAAAAAAAEEEEBBBBBBDDDDDDDDDDCCCCCCCCCCCCCCCC
 SRTF         5.40      10.20     4.40   24.0   AABBBBBBEEEEAAAAAAAAAADDDDDDDDDDCCCCCCCCCCCCCCCC
+HRRN         6.40      11.20     6.40   24.0   AAAAAAAAAAAABBBBBBEEEEDDDDDDDDDDCCCCCCCCCCCCCCCC
 RR q=1      10.60      15.40     1.20   24.0   AABBAACCBBDDAAEECCBBDDAAEECCDDAACCDDAACCDDCCCCCC
 RR q=2      10.80      15.60     2.80   24.0   AAAABBBBCCCCAAAADDDDEEEEBBCCCCAAAADDDDCCCCDDCCCC
 RR q=4      11.20      16.00     5.40   24.0   AAAAAAAABBBBBBCCCCCCCCDDDDDDDDEEEEAAAACCCCCCCCDD
@@ -628,6 +787,20 @@ RR q=4      13.50      18.30     6.40   27.5   AAAAAAAA|BBBBBB|CCCCCCCC|DDDDDDDD
 ```
 
 With $q = 1$, 21 switches cost 10.5 units: the 24 units of work take 34.5, an efficiency of 24 / 34.5 ≈ 70%.
+
+HRRN reproduces the hand calculation (6.4). Its point appears with a stream of short jobs: one long job L (10 units) arrives at time 0 together with a short one, and a new 2-unit job arrives every 2 units (the round-robin rows are omitted):
+
+```console
+$ python3 sched_sim.py S1:0:2 L:0:10 S2:1:2 S3:3:2 S4:5:2 S5:7:2 S6:9:2 S7:11:2
+jobs: S1(arrives 0, needs 2), L(arrives 0, needs 10), S2(arrives 1, needs 2), S3(arrives 3, needs 2), S4(arrives 5, needs 2), S5(arrives 7, needs 2), S6(arrives 9, needs 2), S7(arrives 11, needs 2)
+algorithm    wait turnaround response    end   timeline (2 chars = 1 unit)
+FIFO         8.50      11.50     8.50   24.0   S1S1S1S1LLLLLLLLLLLLLLLLLLLLS2S2S2S2S3S3S3S3S4S4S4S4S5S5S5S5S6S6S6S6S7S7S7S7
+SJF          2.50       5.50     2.50   24.0   S1S1S1S1S2S2S2S2S3S3S3S3S4S4S4S4S5S5S5S5S6S6S6S6S7S7S7S7LLLLLLLLLLLLLLLLLLLL
+SRTF         2.50       5.50     2.50   24.0   S1S1S1S1S2S2S2S2S3S3S3S3S4S4S4S4S5S5S5S5S6S6S6S6S7S7S7S7LLLLLLLLLLLLLLLLLLLL
+HRRN         6.50       9.50     6.50   24.0   S1S1S1S1S2S2S2S2S3S3S3S3LLLLLLLLLLLLLLLLLLLLS4S4S4S4S5S5S5S5S6S6S6S6S7S7S7S7
+```
+
+SJF has the best average, but L waits until the stream of short jobs dries up (14 units here; for ever if it never does). Under HRRN, L's ratio is (6 + 10) / 10 = 1.6 at time 6, higher than the 1.5 of the short job that has waited 1 unit, so L runs after waiting 6 units, and the short jobs after it wait somewhat longer.
 
 ### Fair shares: nice and weights
 
@@ -672,6 +845,9 @@ Round-robin real-time tasks get 100 ms slices (Linux man-pages project, 2024), a
 6. **Process states.** Using `ps -eo pid,ppid,stat,wchan:20,cmd`, find on your own machine processes in states `S`, `R` and `I`. Write a program that produces an **orphan**: a child that keeps running after its parent exits. What is its new parent (`ps -o ppid`)? Produce a `D` state: in C, call `vfork()` and let the child `sleep(30)`; the parent waits in `D` until the child execs or exits. Can you kill the parent with `kill -9`? Explain the difference between ordinary and "killable" uninterruptible sleeps.
 7. **Scheduling.** With `sched_sim.py`, find a job set for which SJF is much worse than RR in average response time, and one where RR with $q = 1$ and a switch cost of 0.1 has worse turnaround than FIFO. Add a priority scheduler with aging to the simulator.
 8. **Linux classes.** Run `shares.sh` with nice values 1, 3, 5 and 19, and compare with the weights 820, 526, 335 and 15. Then start the two loops from two *different* terminals: what changes, and why (autogroup)? Finally, with root rights, run one CPU-bound loop under `chrt -f 10` and one at nice −20 on the same core: who gets the CPU? (Do this on your own machine; the 5% reserve keeps the system usable.)
+9. **The ATM race.** Write the `withdraw()` function of the lecture in C: two threads withdraw 100 from a shared balance of 150, with a `usleep(1000)` between the check and the write to widen the window. Count over 1,000 runs how often both withdrawals succeed. Then protect the read, the check and the write with one `pthread_mutex`, and, separately, implement the withdrawal as a compare-and-swap loop (`__atomic_compare_exchange_n`) that retries if the balance changed. Which version is correct, and which never blocks?
+10. **The sleeping barber.** Implement the barber with POSIX semaphores for one barber, 3 waiting chairs and 20 customers arriving at random intervals (0–30 ms) with a 10 ms haircut. Count served and turned-away customers. Then remove the counter `waiting` and the mutex, and replace `P(barber)` by a check of a flag: show a lost wake-up or a customer served twice.
+11. **Stop and continue.** Run `stopcont.sh`. Then stop a `sleep 100` instead of a loop: which state letter does `ps` show for it before and after `SIGSTOP`, and what happens to its timer while it is stopped (does it end later than 100 s after start)? Try Ctrl-Z, `jobs`, `bg` and `fg` on a loop in an interactive shell and follow the state with `ps -o pid,stat,cmd` from a second terminal.
 
 ## Review questions
 
@@ -691,6 +867,13 @@ Round-robin real-time tasks get 100 ms slices (Linux man-pages project, 2024), a
 14. Derive the efficiency formula $q / (q + s)$ and discuss the choice of the quantum.
 15. Explain how Linux shares the CPU between processes of different nice values, and compute the share of a nice 0 and a nice 5 process on one core. What did CFS and EEVDF change compared with the O(1) scheduler?
 16. Why must a thread re-check its condition in a `while` loop after `pthread_cond_wait()` returns?
+17. Two ATMs withdraw 100 each from one account holding 150, using "read the balance; if it is at least 100, write balance − 100 and pay out". Give a numbered interleaving in which both pay out, state the final balance, and name the type of race. How do banks prevent it?
+18. A lock writes the process's own ID into `S` after waiting for `S == 0`, and enters only if `S` still holds its ID. Show with a step-by-step trace that two processes can still be inside together. Why does a second check not help?
+19. In a resource-allocation graph, R1 has two instances held by P1 and P3, R2 has one instance held by P2; P1 requests R2 and P2 requests R1. Draw the graph. Is there a cycle? Is there a deadlock? Why is the answer different from the one-lane bridge?
+20. For the jobs A (0, 6), B (1, 3), C (2, 8), D (3, 5), E (4, 2), schedule them with HRRN, showing the response ratios at every decision, and compute the average waiting time. Why can HRRN not starve a long job, while SJF can?
+21. In classic Unix, why does a process sleeping for a disk buffer get a higher priority than any user-mode process, and why can a signal not wake it? Which Linux `ps` states correspond to the two kinds of kernel sleep?
+22. In three systems, out of every 25 time units, the useful work and the overhead (switching, waiting for the OS) are 21 + 4, 7 + 18 and 1 + 24. Compute the efficiency of each. If the overhead is a fixed switch cost $s$ per time slice $q$, what ratio $q / s$ does each correspond to, and how large must $q / s$ be for 99% efficiency?
+23. What do `SIGSTOP` and `SIGCONT` do to a process's state and to its CPU time? Which `ps` letter shows a stopped process, and how does stopping differ from the suspended states of the seven-state model?
 
 <details>
 <summary><strong>Answer key (for instructors)</strong></summary>
@@ -711,14 +894,25 @@ Round-robin real-time tasks get 100 ms slices (Linux man-pages project, 2024), a
 14. In each cycle the CPU spends q on the application and s on the switch: η = q / (q + s). Small q: good response, low efficiency, more cache misses; large q: high efficiency, poor response (approaches FIFO). Choose q much larger than s but small enough for interactive response (a few ms).
 15. By weight: each nice step about ×1.25 (nice 0 = 1024, nice 5 = 335); share = 1024 / (1024 + 335) ≈ 75%. O(1) used fixed time slices per priority and heuristics for interactivity; CFS shares CPU time in proportion to weights by always running the task with the smallest virtual runtime (red-black tree, O(log n)); EEVDF keeps the fair shares but picks among eligible tasks by earliest virtual deadline, so latency can be controlled through the slice length.
 16. Because pthreads (and Java) use Mesa semantics: the signalling thread continues, and by the time the woken thread runs, another thread may have changed the condition again; the standard also allows spurious wake-ups. Hoare's original monitors guaranteed the condition on wake-up, which `if` would have been enough for.
+17. ① ATM 1 reads 150, check passes; ② ATM 2 reads 150, check passes; ③ ATM 1 writes 50 and pays 100; ④ ATM 2 writes 50 (from its stale 150) and pays 100. Paid 200, balance 50: a lost update, caused by check-then-act on shared data. (If the balance is re-read before the write, the result is −50, an overdraft.) Banks make read–check–write one critical section: a database transaction that locks the row, or a single atomic conditional `UPDATE … WHERE balance >= 100`, so withdrawals on one account are serialised.
+18. ① P1 sees S = 0; ② P2 sees S = 0; ③ P1 writes S = 1; ④ P1 checks S = 1, enters; ⑤ P2 writes S = 2; ⑥ P2 checks S = 2, enters. The check detects only a foreign write between one's own write and one's own check, not one that comes after the check; any further check has the same window. An atomic read-modify-write (test-and-set, compare-and-swap) or Peterson-style intention flags are needed.
+19. Edges: R1 → P1, R1 → P3 (assignments), R2 → P2, P1 → R2, P2 → R1 (requests). Cycle P1 → R2 → P2 → R1 → P1 exists, but there is no deadlock: P3 needs nothing, finishes, releases its instance of R1; P2 gets it, finishes, releases R2; P1 finishes. With several instances per resource a cycle is necessary but not sufficient; on the bridge each half has a single instance, so the cycle is a deadlock.
+20. A 0–6. At 6: B 8/3 = 2.67, C 12/8 = 1.5, D 8/5 = 1.6, E 4/2 = 2 → B 6–9. At 9: C 15/8 = 1.88, D 11/5 = 2.2, E 7/2 = 3.5 → E 9–11. At 11: C 17/8 = 2.13, D 13/5 = 2.6 → D 11–16; C 16–24. Waits 0, 5, 14, 8, 5 → 6.4. A waiting job's ratio (W + S)/S grows without limit as W grows, while a new job starts at 1, so every job eventually has the highest ratio; SJF compares only S, which does not change while a job waits.
+21. A process holding or waiting for kernel resources (buffers, inodes) should finish its kernel work quickly after waking, so that it releases them; giving it a priority above all user priorities ensures this. Disk I/O, buffer and inode waits are short and certain to end, and abandoning them halfway could leave kernel data inconsistent, so they sleep above the signal threshold (PZERO) and are not interruptible. Terminal and child-exit waits can last for ever, so they are interruptible. Linux: `D` (uninterruptible, including the killable variant) and `S` (interruptible).
+22. η = 21/25 = 84%, 7/25 = 28%, 1/25 = 4%. With η = q / (q + s), q / s = η / (1 − η): 21/4 = 5.25, 7/18 ≈ 0.39, 1/24 ≈ 0.042, i.e. the slice is 5 times, 0.4 times and 1/24 of the switch cost. For 99%: q / s ≥ 0.99 / 0.01 = 99, the slice must be about 100 times the switch cost (with s ≈ 1.5 µs, q ≥ 0.15 ms; Linux's 0.7–4 ms is well above this).
+23. `SIGSTOP` moves the process to the stopped state (`T`; `t` when stopped by a debugger); it gets no CPU time, so its `utime` stays constant (99 ticks before and after 2 s in `stopcont.sh`). `SIGCONT` makes it runnable (`R`) again, or returns it to the sleep it was in. A stopped process keeps its memory and is stopped by a user's or debugger's decision; the suspended states of the model are entered when the medium-term scheduler swaps a process out of memory to free RAM.
 
-**Lab answers.** Lab 1: sequentially consistent atomic stores compile to `xchg` on x86, which acts as a full barrier, so it works; on one core there are no violations (both threads run on the same core, which always sees its own stores in program order), but it is extremely slow, because a waiting thread spins until the end of its time slice. Lab 2: the spinlock is fastest at 1–2 threads, the mutex wins once threads exceed cores. Lab 3: with the swapped order, producers sleep on `empty` while holding the mutex; all threads end up in `S` with `futex` wait channels. Lab 4: with four quarters, a global order (for example by quarter number) prevents deadlock; with straight-through traffic, a semaphore of 3 also prevents it, because four cars are needed to close the cycle (turning cars could form shorter cycles). Lab 5: lock ordering, or at most four seated philosophers, both break circular wait. Lab 6: orphans are adopted by PID 1 or by a subreaper such as the user's `systemd --user`; the `vfork()` parent waits in a killable uninterruptible sleep, so `kill -9` works; a classic `D` sleep cannot be interrupted because the kernel is in the middle of an operation that cannot be safely abandoned. Lab 7: e.g. one long job arriving first and many short ones (SJF is non-preemptive, so they wait behind it), and many equal long jobs for RR versus FIFO. Lab 8: shares about 55/45, 66/34, 75/25 and 98.5/1.5; from two terminals (separate autogroups) about 50/50; the SCHED_FIFO task takes the core regardless of nice values, apart from the 5% reserve (RT throttling or the fair server).
+**Lab answers.** Lab 1: sequentially consistent atomic stores compile to `xchg` on x86, which acts as a full barrier, so it works; on one core there are no violations (both threads run on the same core, which always sees its own stores in program order), but it is extremely slow, because a waiting thread spins until the end of its time slice. Lab 2: the spinlock is fastest at 1–2 threads, the mutex wins once threads exceed cores. Lab 3: with the swapped order, producers sleep on `empty` while holding the mutex; all threads end up in `S` with `futex` wait channels. Lab 4: with four quarters, a global order (for example by quarter number) prevents deadlock; with straight-through traffic, a semaphore of 3 also prevents it, because four cars are needed to close the cycle (turning cars could form shorter cycles). Lab 5: lock ordering, or at most four seated philosophers, both break circular wait. Lab 6: orphans are adopted by PID 1 or by a subreaper such as the user's `systemd --user`; the `vfork()` parent waits in a killable uninterruptible sleep, so `kill -9` works; a classic `D` sleep cannot be interrupted because the kernel is in the middle of an operation that cannot be safely abandoned. Lab 7: e.g. one long job arriving first and many short ones (SJF is non-preemptive, so they wait behind it), and many equal long jobs for RR versus FIFO. Lab 8: shares about 55/45, 66/34, 75/25 and 98.5/1.5; from two terminals (separate autogroups) about 50/50; the SCHED_FIFO task takes the core regardless of nice values, apart from the 5% reserve (RT throttling or the fair server). Lab 9: with the 1 ms window nearly every run pays out twice; the mutex version and the CAS loop are both correct; the CAS loop never blocks (a failed CAS re-reads the balance and repeats the check, so the second withdrawal is refused). Lab 10: with the semaphores no customer is lost or served twice, and served + turned away = 20; with a flag instead of `P(barber)` a customer can test the flag just before the barber sets it, and wait for ever or proceed without a barber. Lab 11: `sleep` is in `S`, then `T`; its timer keeps running in absolute time, so after `SIGCONT` it ends at the originally planned moment, or at once if that moment has already passed (measured: stopped for 1 s, a `sleep 3` still ended after 3.0 s; stopped for 4 s, it ended right after the `SIGCONT`, at 4.5 s); Ctrl-Z gives `T`, `bg` gives `R` in the background.
 
 </details>
 
 ## References
 
+Bach, M. J. (1986). *The design of the UNIX operating system*. Prentice Hall.
+
 Coffman, E. G., Elphick, M., & Shoshani, A. (1971). System deadlocks. *ACM Computing Surveys, 3*(2), 67–78. https://doi.org/10.1145/356586.356588
+
+Dijkstra, E. W. (n.d.). *Over seinpalen* [On semaphores] (EWD-74). E. W. Dijkstra Archive, University of Texas at Austin. https://www.cs.utexas.edu/~EWD/ewd00xx/EWD74.PDF
 
 Dijkstra, E. W. (1965). *Cooperating sequential processes* (EWD-123). Technological University, Eindhoven. https://www.cs.utexas.edu/~EWD/transcriptions/EWD01xx/EWD123.html
 

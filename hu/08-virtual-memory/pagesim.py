@@ -6,6 +6,8 @@ Usage:
   python3 pagesim.py table [PAGES...]       faults of FIFO, LRU, OPT, clock and random for 1..7 frames
   python3 pagesim.py trace ALG N PAGES...   step-by-step table for one algorithm and N frames
   python3 pagesim.py thrash                 fault rate against frames for a program with phases
+  python3 pagesim.py random                 uniformly random references to 16 pages: fault rate
+                                            against frames, compared with 1 - frames/pages
 """
 import random, sys
 
@@ -86,5 +88,14 @@ if __name__ == "__main__":
         for n in (4, 6, 8, 10, 11, 12, 13, 14, 16, 20, 24):
             f = simulate(refs, n, "lru")[0]
             print(f"{n:>6} {f:>11} {100 * f / len(refs):>10.1f}%  " + "#" * round(50 * f / len(refs)))
+    elif a[:1] == ["random"]:
+        # no locality at all: every reference picks one of P pages with equal probability
+        P, r = 16, random.Random(3)
+        refs = [r.randrange(P) for _ in range(20000)]
+        print(f"{len(refs)} uniformly random references to {P} pages")
+        print(f"{'frames':>6} {'fifo':>8} {'lru':>8} {'clock':>8} {'1 - F/P':>9}")
+        for n in (1, 2, 4, 6, 8, 12, 16):
+            rates = [100 * simulate(refs, n, alg)[0] / len(refs) for alg in ("fifo", "lru", "clock")]
+            print(f"{n:>6}" + "".join(f"{x:>7.1f}%" for x in rates) + f"{100 * (1 - n / P):>8.1f}%")
     else:
         print(__doc__)

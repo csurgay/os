@@ -2,7 +2,7 @@
 
 *Operating Systems lecture: how hard disks and SSDs store data, and how a file system turns numbered blocks into named files and directories: inodes, directories, hard and symbolic links, allocation, journaling, and four real file systems, FAT16, ext4, XFS and NTFS, taken apart on Linux*
 
-Previous: [Virtual Memory](../08-virtual-memory/).
+Previous: [Virtual Memory](../08-virtual-memory/). Next: [Access Control: Permissions, ACLs and SELinux](../10-access-control/).
 
 > **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
 
@@ -16,9 +16,11 @@ By the end, students will be able to:
 - explain the file and directory abstractions, the layers of the storage stack and the role of the virtual file system;
 - describe an inode, explain why names are kept in directories and not in inodes, and compare block pointers with extents;
 - explain hard and symbolic links and their behaviour when the target is deleted, moved or on another file system;
+- name the seven Unix file types shown by `ls -l`, and find their way around the standard Linux directory tree (`/etc`, `/usr`, `/var`, `/run`, `/proc` …);
 - describe how directories are stored, as lists and as hashed or balanced trees;
 - explain free-space management, fragmentation, delayed allocation, crash consistency and journaling;
 - describe the on-disk structure of FAT16, ext4, XFS and NTFS, and compare them;
+- explain logical volume management (physical volumes, extents, volume groups, logical volumes) and plan the commands that grow a file system online or retire a disk;
 - inspect all of these on Linux with `stat`, `ls -i`, `debugfs`, `filefrag`, `dumpe2fs`, `xfs_db` and `ntfsinfo`.
 
 <details>
@@ -63,10 +65,16 @@ A hard disk stores bits as tiny magnetised regions on the surfaces of rotating *
 Reading a sector takes three steps:
 
 1. **Seek:** move the arm to the right track, on average a few milliseconds (8–9 ms on a desktop disk, about 4 ms on a fast server disk).
-2. **Rotational latency:** wait until the sector passes under the head. On average half a revolution: at 7,200 revolutions per minute one turn takes 8.33 ms, so the average wait is 4.17 ms.
+2. **Rotational latency:** wait until the sector passes under the head. On average half a revolution: 7,200 revolutions per minute are 120 per second, so one turn takes 1/120 s = 8.33 ms, and the average wait is 4.17 ms.
 3. **Transfer:** read the bits as they pass, at 200–280 MB/s on current disks; 4 KiB take about 0.02 ms.
 
 A random 4 KiB read therefore costs about 12–13 ms, and a disk performs about 80 such reads per second, while a sequential read, which pays for the seek and the rotation only once, runs at its full transfer rate. The ratio between the two, several hundred to one, shaped the design of every classic file system: **keep related data together** (Ruemmler & Wilkes, 1994; McKusick et al., 1984).
+
+The head does not touch the platter: it is mounted on a **slider** that rides on a thin cushion of air dragged along by the spinning surface. In current drives the gap, the **flying height**, is of the order of 1–2 nanometres while reading and writing (Matthes, 2016). A fine dust particle of 2.5 µm is over a thousand times larger than that gap, and a human hair, about 70 µm thick (U.S. Environmental Protection Agency, n.d.), tens of thousands of times:
+
+![Left: a slider flying 1–2 nm above the platter with a dust particle in its way; right: flying height, a fine dust particle and a human hair on a logarithmic scale](head-gap.svg)
+
+If the head hits a particle, a fingerprint film or the surface itself, it scratches the magnetic layer and itself: a **head crash**, which destroys the data under it and usually the drive. This is why hard disks are assembled in clean rooms and sealed, with a small filter that only lets air pressure equalise (or, in high-capacity drives, filled with helium and hermetically sealed), why a drive should never be opened outside a clean room, and why, in most current drives, the heads are parked on a ramp beside the platters before the spindle stops and when a laptop's drive detects a fall.
 
 Modern disks hide their geometry. The OS sees a linear array of **logical block addresses** (LBA 0, 1, 2, …); the disk maps them to cylinders, heads and sectors itself, puts more sectors on the longer outer tracks (zoned recording, which makes the outer, low-numbered LBAs faster), and silently replaces bad sectors. Capacities keep growing with techniques such as shingled recording (overlapping tracks) and heat-assisted recording (HAMR): Seagate has announced HAMR drives of up to 36 TB (Seagate, n.d.). Hard disks remain the cheapest storage per terabyte and dominate in data centres for bulk data, while SSDs have replaced them in laptops and for anything latency-sensitive.
 
@@ -84,6 +92,11 @@ Modern disks hide their geometry. The OS sees a linear array of **logical block 
 - **Zoned recording:** outer rings are longer, so they hold more sectors and pass under the head faster.
 - **Shingled recording (SMR), heat-assisted recording (HAMR):** tricks to pack the rings closer: overlapping them like roof tiles, or heating a tiny spot with a laser while writing.
 - **Bad-sector remapping:** the disk quietly uses a spare sector instead of a damaged one.
+- **Slider, flying height:** the head sits on a tiny "sledge" that floats on the air moving with the platter, like a water-skier on the water; the flying height is how far above the surface it floats.
+- **nm, µm:** a nanometre is a millionth of a millimetre, a micrometre a thousandth of a millimetre. A hair is about 70 µm thick.
+- **Head crash:** the head touching the spinning platter; it scratches the surface like a needle dragged across a record, and the data there is lost.
+- **Clean room:** a room with filtered air, almost free of dust, where disks are assembled.
+- **Parking ramp:** a small ramp beside the platters where the heads rest when the disk stops, so that they never lie on the surface.
 
 </details>
 
@@ -143,7 +156,7 @@ Between these calls and the device stand several layers:
 - The **file system** maps files and directories to blocks.
 - The **block layer** queues, merges and schedules requests for numbered blocks, and the **device driver** speaks the device's protocol (NVMe, SATA, SCSI, virtio). The **I/O scheduler** in the block layer matters mainly for hard disks: `mq-deadline` and `bfq` sort and merge requests to reduce seeking (the old "elevator" idea), while fast NVMe SSDs usually run with `none`.
 
-A disk is normally divided into **partitions**, described by a partition table (the old **MBR** or the current **GPT**), and each partition holds one file system. Between partitions and file systems, the **device mapper** can add layers: logical volumes (**LVM**) that can be resized and span disks, encryption (**dm-crypt**), and **RAID**, which combines disks so that data survives the failure of one (RAID 1 mirrors, RAID 5 and 6 add parity) or so that they work in parallel (RAID 0). RAID is not a backup: a deleted file is deleted on every disk at once.
+A disk is normally divided into **partitions**, described by a partition table (the old **MBR** or the current **GPT**), and each partition holds one file system. Between partitions and file systems, the **device mapper** can add layers: logical volumes (**LVM**) that can be resized and span disks ([section below](#logical-volume-management)), encryption (**dm-crypt**), and **RAID**, which combines disks so that data survives the failure of one (RAID 1 mirrors, RAID 5 and 6 add parity) or so that they work in parallel (RAID 0). RAID is not a backup: a deleted file is deleted on every disk at once.
 
 Finally, each file system is **mounted** on a directory of the single Linux directory tree: the root file system on `/`, others on `/boot/efi`, `/home`, `/mnt/usb` and so on. `/etc/fstab` lists what to mount at boot, and `df` or `findmnt` show the current mounts.
 
@@ -185,7 +198,7 @@ Two consequences that surprise many users:
 - **Sparse files:** a file can have **holes**, ranges that were never written and have no blocks. They read as zeros. The [Linux section](#sparse-files-extents-and-delayed-allocation) creates a 1 GiB file that occupies 4 KiB.
 - **The number of inodes is fixed** in ext2/3/4 when the file system is created (by default one inode per 16 KiB of space, one per 4 KiB on file systems below 512 MiB). A file system can be "full" with free space left if it holds very many small files ([Linux section](#running-out-of-inodes)). XFS and Btrfs allocate inodes dynamically, so they rarely run out of them: their limit is a share of the space, not a number fixed in advance.
 
-The permissions in the inode are the classic Unix **mode bits**: read, write and execute (`rwx`) for the owner, the group and everyone else, usually written in octal: `0644` = `rw-r--r--`, read and write for the owner, read only for the others. For a directory, "read" means listing its names, "write" creating and deleting entries, and "execute" passing through it on a path. Access control lists (ACLs) can add rules for further users and groups.
+The permissions in the inode are the classic Unix **mode bits**: read, write and execute (`rwx`) for the owner, the group and everyone else, usually written in octal: `0644` = `rw-r--r--`, read and write for the owner, read only for the others. The kernel checks them at `open` and at every step of path resolution. What exactly they mean for files and directories, the special bits (setuid, setgid, sticky), access control lists (ACLs, stored with the inode as extended attributes) and mandatory access control (SELinux) are the subject of the [next lecture](../10-access-control/).
 
 <details>
 <summary><b>Explained simply:</b> inode, inode number, block pointer, indirect block, extent, sparse file, hole</summary>
@@ -228,11 +241,11 @@ Because a directory contains `..`, and every subdirectory's `..` points back to 
 
 ## Hard and symbolic links
 
-Because names and inodes are separate, a file can have several names. A **hard link** is simply another directory entry pointing to the same inode: `ln notes.txt hard.txt`. Both names are equal; neither is "the original". The inode's **link count** records how many names it has, and the file's data is freed only when the count reaches zero and no process has the file open.
+Because names and inodes are separate, a file can have several names. A **hard link** is simply another directory entry pointing to the same inode: `ln notes.txt hard.txt`. Both names are equal; neither is "the original". In fact **every name is a hard link**: the name that `touch` or `open` created first is just the inode's first link. The inode's **link count** records how many names it has, and the file's data is freed only when the count reaches zero and no process has the file open. (The syntax of both commands is `ln [-s] TARGET LINK_NAME`: the existing file first, the new name second.)
 
-A **symbolic link** (symlink, soft link) is a separate small file of type "symlink" whose content is a **path**: `ln -s notes.txt soft.txt`. Opening it makes the kernel continue path resolution with the stored path.
+A **symbolic link** (symlink, soft link) is a separate small file of type "symlink" whose content is a **path**: `ln -s notes.txt soft.txt`. The name `soft.txt` is itself an ordinary hard link, but to this second inode, not to the target's. Opening it makes the kernel continue path resolution with the stored path, so a symbolic link leads back to a **name**, never directly to an inode; the dashed arrow in the figure closes this loop.
 
-![Two directory entries point to inode 12 with link count 2; a third points to inode 13, a symbolic link containing the path notes.txt; a table compares the two kinds of link](links.svg)
+![Two directory entries point to inode 12 with link count 2; a third points to inode 13, a symbolic link containing the path notes.txt, which leads back to the name notes.txt; a table compares the two kinds of link](links.svg)
 
 The differences follow from these definitions, and the [Linux section](#hard-and-symbolic-links-in-practice) shows each of them:
 
@@ -252,6 +265,70 @@ Windows offers the same two concepts on NTFS: hard links (up to 1,023 per file) 
 - **Dangling link:** a sign pointing to an address where nothing is anymore.
 - **Cross-device link:** a hard link to a file on another disk or partition; impossible, because file numbers mean something only inside one file system.
 - **Junction:** Windows' older form of a link to a folder.
+
+</details>
+
+## File types
+
+Regular files and directories are not the only things with an inode. Unix puts many kinds of objects into the one directory tree, so that the same calls (`open`, `read`, `write`, `close`) and the same permissions work for all of them (Ritchie & Thompson, 1974). The inode records which kind an object is, and `ls -l` shows it as the first character of each line ([Linux section](#seven-file-types-in-practice)):
+
+| `ls -l` | type | what it is | created by |
+|---|---|---|---|
+| `-` | regular file | a sequence of bytes on the disk | `touch`, `open(O_CREAT)` |
+| `d` | directory | a list of (name, inode) entries | `mkdir` |
+| `l` | symbolic link | a small file that contains a path | `ln -s` |
+| `p` | named pipe (FIFO) | a one-way channel between processes: what one writes, the other reads, first in, first out; nothing is stored on the disk | `mkfifo` |
+| `s` | socket | a two-way (full-duplex) channel between processes on the same machine (a Unix domain socket) | `bind()` of a program |
+| `b` | block device | a device accessed in blocks, at any position (random access): disks, partitions, loop devices | `mknod`, `udev` |
+| `c` | character device | a device accessed as a stream of bytes: terminals, `/dev/null`, `/dev/zero`, `/dev/random` | `mknod`, `udev` |
+
+A device file has no data blocks. Its inode holds two numbers, the **major number**, which selects the driver, and the **minor number**, which selects the device of that driver: `/dev/null` is character device 1,3, `/dev/loop0` block device 7,0. Opening the file connects the process to the driver, so writing to `/dev/null` discards the bytes and reading `/dev/zero` returns zeros forever. The `/dev` directory is normally a `devtmpfs` that the kernel fills, with the `udev` service adding names and permissions. Disk names show the history of the interfaces: `hda` for the old IDE (PATA) disks, `sda`, `sdb` for SCSI, SATA and USB disks, `nvme0n1` for NVMe SSDs and `vda` for virtio disks in virtual machines.
+
+Unix does not care about **file name extensions**: `report.txt` and `report` are just names, and the dot is an ordinary character (`notes.v2.anything.at.all` is a valid name). Only programs interpret extensions, by convention. The `file` command determines what a file contains by looking at its first bytes, the **magic number** of its format (`\x7fELF` for a Linux executable, `PK` for a ZIP archive, `%PDF` for a PDF), not at its name.
+
+<details>
+<summary><b>Explained simply:</b> file type, named pipe, FIFO, socket, block device, character device, /dev/null, /dev/zero, /dev/random, major and minor number, udev, devtmpfs, IDE, SATA, SCSI, NVMe, virtio, extension, magic number</summary>
+
+- **File type:** what kind of thing a name stands for: ordinary data, a folder, a link, a channel between programs, or a device.
+- **Named pipe, FIFO:** a "tube" with a name: one program pushes text in at one end, another takes it out at the other, in the same order (first in, first out).
+- **Socket:** a two-way "telephone line" between two programs.
+- **Block device:** a device read and written in pieces, at any position, like a disk. **Character device:** a device that gives or takes a stream of bytes one after the other, like a keyboard or a terminal.
+- **`/dev/null`, `/dev/zero`, `/dev/random`:** a "bin" that swallows everything, an endless source of zero bytes, and a source of random bytes.
+- **Major and minor number:** the two numbers in a device file: which driver, and which of its devices.
+- **udev, devtmpfs:** the kernel creates the device files in `/dev` itself (devtmpfs), and the udev service gives them friendly names and permissions.
+- **IDE, SATA, SCSI, NVMe, virtio:** kinds of disk connection, old and new; virtio is the one a virtual machine uses.
+- **Extension:** the end of a file name after the dot, such as `.txt`; for Unix it is just part of the name.
+- **Magic number:** the first few bytes of a file that reveal its format, like the cover of a book.
+
+</details>
+
+## The Linux directory tree
+
+All file systems of a Linux system are mounted into one tree, and the **Filesystem Hierarchy Standard** (FHS) says what belongs where, so that programs, administrators and packages find things in the same place on every distribution (Linux Foundation, 2015):
+
+![The top-level directories of a Linux system, grouped as static, variable, temporary and virtual](fhs.svg)
+
+- `/boot`: what the boot loader needs: the kernel (`vmlinuz`, a compressed image), the initial RAM file system (`initramfs`), GRUB's files, and on UEFI machines the EFI system partition mounted on `/boot/efi`.
+- `/etc`: the host-specific configuration, as text files: `fstab`, `passwd`, `hosts`, service settings. The name is the "et cetera" of early Unix, where it held everything that fitted nowhere else; "editable text configuration" is a later mnemonic.
+- `/usr`: the installed software, shareable between machines and read-only in normal operation: `bin`, `sbin`, `lib`, `share` (documentation, data), and `/usr/local` for software built locally. Today's distributions have **merged** `/bin`, `/sbin` and `/lib` into `/usr`: the old names are symbolic links to `/usr/bin`, `/usr/sbin` and `/usr/lib`.
+- `/opt`: add-on packages from third parties, each in its own `/opt/<package>`.
+- `/var`: variable data that must survive a reboot: logs (`/var/log`), mail and print queues (`/var/spool`), databases and package state (`/var/lib`), web content (`/var/www`), caches. This is the part that grows while the system runs, and the classic candidate for a file system of its own.
+- `/run`: runtime data since the last boot: process IDs, sockets, lock files; a tmpfs, empty after every boot. `/tmp`: temporary files of any user, cleaned at boot or after some days, and on some distributions, such as Fedora, also a tmpfs; `/var/tmp` is the temporary directory that survives reboots.
+- `/home` holds the users' home directories, `/root` is the administrator's home (kept on the root file system, so that it is available even if `/home` cannot be mounted). `/srv` holds data the machine serves, `/mnt` is for temporarily mounted file systems, `/media` for removable media.
+- `/dev`, `/proc` and `/sys` are **virtual**: the kernel generates their contents. `/proc` shows processes (`/proc/<PID>/`) and kernel information (`/proc/mounts`, `/proc/partitions`, `/proc/meminfo`), `/sys` shows devices and drivers and lets the administrator change kernel settings.
+
+This split is practical, not cosmetic: `/usr` can be mounted read-only or shared, `/var` and `/home` can live on separate (logical) volumes and grow independently, and a full `/var/log` does not stop users from saving their files. The [Linux section](#the-top-of-the-directory-tree) looks at a real system.
+
+<details>
+<summary><b>Explained simply:</b> FHS, vmlinuz, initramfs, GRUB, usr-merge, tmpfs, virtual file system, /proc, /sys</summary>
+
+- **FHS** (Filesystem Hierarchy Standard): the agreed "map" of a Linux system: which folder holds what.
+- **vmlinuz:** the compressed Linux kernel. **initramfs:** a small starter file system loaded with the kernel that holds what is needed to find and mount the real one. **GRUB:** the boot loader, the program that starts the kernel.
+- **usr-merge:** the old folders `/bin`, `/sbin`, `/lib` have become signposts (symbolic links) into `/usr`, so that all installed software lives in one place.
+- **Spool:** a queue of jobs waiting on disk, such as e-mails to send or pages to print.
+- **tmpfs:** a file system in RAM; it is empty again after every reboot.
+- **Virtual file system** (here): a folder whose "files" do not exist on any disk; the kernel makes them up when you read them, like a live display board.
+- **/proc, /sys:** windows into the running kernel: processes, memory, devices and settings.
 
 </details>
 
@@ -326,7 +403,7 @@ The **File Allocation Table** file system was written for Microsoft's floppy-dis
 - There is no inode: the directory entry *is* the file's metadata, so FAT cannot have hard links, and it has no owners or permissions.
 - **Deleting** a file marks its clusters free in the FAT and replaces the first byte of its name with `0xE5`. The data stays on the disk until it is reused, which is why undelete tools work on FAT and why deleted files can be recovered forensically (Carrier, 2005).
 
-FAT16 can address at most 65,524 clusters. With 32 KiB clusters (the largest that MS-DOS and Windows 9x accept) a volume holds 2 GB, or 4 GB with the 64 KiB clusters of Windows NT and later; the 32-bit size field caps any FAT file at 4 GiB − 1 byte, a limit that matters for FAT32 (Microsoft, 2009). Long file names arrived in Windows 95 (**VFAT**) as extra directory entries with the attribute `0x0F` that old systems ignore. FAT's weaknesses follow from its structure: random access within a file follows the chain cluster by cluster; allocation without look-ahead fragments files (the measured `C.DAT` reuses the clusters of a deleted file); and there is no journal, so a crash requires a full check.
+FAT16 can address at most 65,524 clusters: a 16-bit entry has 65,536 values, but 0 (free), 1 (reserved) and the values from `0xFFF7` up (bad cluster, end of chain) cannot be cluster numbers, and Microsoft's specification keeps the count one below the remaining 65,525. The volume size is therefore the number of clusters times the cluster size: with 4 KiB clusters about 256 MiB, with 32 KiB clusters (the largest that MS-DOS and Windows 9x accept) 2 GB, or 4 GB with the 64 KiB clusters of Windows NT and later. As disks grew in the 1990s, clusters had to grow with them, and since every file wastes on average half a cluster, a 2 GB FAT16 disk full of small files lost a large share of its space. FAT32 (28-bit cluster numbers) solved this with 4 KiB clusters on volumes up to 8 GB (Microsoft, 2009). The 32-bit size field caps any FAT file at 4 GiB − 1 byte, a limit that matters for FAT32 (Microsoft, 2009). Long file names arrived in Windows 95 (**VFAT**) as extra directory entries with the attribute `0x0F` that old systems ignore. FAT's weaknesses follow from its structure: random access within a file follows the chain cluster by cluster; allocation without look-ahead fragments files (the measured `C.DAT` reuses the clusters of a deleted file); and there is no journal, so a crash requires a full check.
 
 <details>
 <summary><b>Explained simply:</b> FAT, cluster, boot sector, BIOS parameter block, chain, 8.3 name, VFAT, EOC, exFAT, EFI system partition</summary>
@@ -353,7 +430,7 @@ The **ext** family is Linux's own: ext2 (1993) took its design from the Berkeley
 - The disk is divided into **block groups** of 32,768 blocks (128 MiB with 4 KiB blocks). Each group has a block bitmap, an inode bitmap and an inode table; the **superblock** (sizes, counts, features, state) and the **group descriptors** are at the start, with backup copies in some groups. With the `flex_bg` feature the bitmaps and inode tables of 16 groups are packed together ([Linux section](#the-ext4-on-disk-layout)).
 - **Inodes** are 256 bytes, numbered from 1; inode 2 is the root directory, inode 8 the journal, 11 `lost+found`. File data is described by **extents**, and symbolic links shorter than 60 bytes are stored inside the inode ("fast symlinks").
 - **Directories** are linear lists that become **htrees** when they grow. The **journal**, a hidden file (inode 8) that the 512 MiB example keeps in block group 2, runs in `data=ordered` mode by default.
-- Limits: volumes up to 1 EiB and files up to 16 TiB with 4 KiB blocks; Red Hat supports ext4 file systems up to 50 TiB (Red Hat, n.d.). An ext4 file system can be grown and, unmounted, also shrunk.
+- Limits: volumes up to 1 EiB and files up to 16 TiB with 4 KiB blocks; Red Hat supports ext4 file systems up to 50 TiB (Red Hat, n.d.-b). An ext4 file system can be grown and, unmounted, also shrunk.
 
 <details>
 <summary><b>Explained simply:</b> superblock, group descriptor, inode table, flex_bg, fast symlink, lost+found</summary>
@@ -380,7 +457,7 @@ The **ext** family is Linux's own: ext2 (1993) took its design from the Berkeley
 - **B+ trees** everywhere: free space (indexed twice, by block number and by size), inodes, large directories, and the extent lists of heavily fragmented files.
 - **Inodes are allocated dynamically**, in chunks of 64, up to a share of the space (`imaxpct`, 25% by default on small file systems), so XFS rarely runs out of inodes. Small directories and small extent lists live inside the 512-byte inode itself.
 - **Delayed allocation**, a metadata journal, and since Linux 4.9 **reflinks**: `cp --reflink` makes a copy that shares the data blocks until one side writes (copy-on-write for data).
-- Limits: 8 EiB for volumes and files; Red Hat supports up to 1 PiB (Red Hat, n.d.). An XFS file system can grow but, in practice, not shrink.
+- Limits: 8 EiB for volumes and files; Red Hat supports up to 1 PiB (Red Hat, n.d.-b). An XFS file system can grow but, in practice, not shrink.
 
 <details>
 <summary><b>Explained simply:</b> allocation group, B+ tree, dynamic inode allocation, reflink</summary>
@@ -447,6 +524,43 @@ The choice is rarely about raw speed, where ext4 and XFS are close for most work
 - **Btrfs, ZFS:** modern copy-on-write file systems that never overwrite data in place; they can take snapshots, check every block with a checksum, and spread data over several disks.
 - **RAID:** combining several disks so that data survives if one fails, or so that they work faster together.
 - **APFS:** Apple's file system on Macs and iPhones since 2017, also copy-on-write.
+
+</details>
+
+## Logical volume management
+
+A partition is fixed when the disk is partitioned: if `/var` fills up, it cannot simply borrow space from `/home` or from a new disk. The **Logical Volume Manager** (LVM), built on the kernel's device mapper, inserts a layer of indirection between disks and file systems, the same idea as paging between processes and RAM (Red Hat, n.d.-a):
+
+![Four block devices become physical volumes cut into 4 MiB extents, which form one volume group; logical volumes take extents from it, and a new disk extends the group and a full logical volume](lvm.svg)
+
+- A **physical volume (PV)** is any block device prepared for LVM: a whole disk, a partition (marked with the `lvm` flag, `parted /dev/sdb set 1 lvm on`), a RAID array, or a disk from a storage network (SAN). `pvcreate` writes an LVM label on it and divides it into **physical extents**, 4 MiB each by default.
+- A **volume group (VG)** pools the extents of one or more PVs: `vgcreate vg1 /dev/sda2 /dev/sdb`. It is a single reservoir of storage, whatever disks it came from.
+- A **logical volume (LV)** is a virtual block device made of extents from the group, wherever they are: `/dev/vg1/lv_home`. A **linear** LV simply concatenates extents, possibly from several disks; a **striped** LV spreads them over disks like RAID 0, and a **mirrored** LV (`--type raid1`) keeps two copies on different PVs. A table maps each logical extent to a physical one, just as a page table maps pages to frames.
+- A file system is created on the LV and mounted as usual: `mkfs.xfs /dev/vg1/lv_home`, `mount /dev/vg1/lv_home /home`.
+
+The size of a new LV is given either in bytes, `lvcreate -n lv_home -L 20G vg1`, or in extents, `-l 5120` (5,120 × 4 MiB = 20 GiB), which also accepts percentages: `-l 100%FREE` takes all the free space of the group, and `-l +50%FREE` in `lvextend` adds half of what is still free.
+
+The workflows are where LVM pays off; the first two can run while the file system is mounted and in use:
+
+1. **Growing a full file system.** Add a disk, `pvcreate /dev/sdc`, `vgextend vg1 /dev/sdc`, then `lvextend -r -l +100%FREE /dev/vg1/lv_db`. The `-r` (`--resizefs`) option grows the file system in the same step, calling `xfs_growfs` for XFS or `resize2fs` for ext4. Without it, the LV grows but the file system inside it does not.
+2. **Retiring a disk.** `pvmove /dev/sda2` moves all used extents of that PV to free extents on the other PVs of the group, while the LVs stay in use; then `vgreduce vg1 /dev/sda2` removes the empty PV from the group and `pvremove /dev/sda2` deletes its label. The group must have enough free extents to receive the data.
+3. **Shrinking.** XFS cannot be shrunk at all; ext4 can be shrunk only while unmounted (`lvreduce -r` shrinks the file system first, then the LV). Shrinking the LV without the file system first destroys data. For this reason, a common practice is to leave part of the group unallocated and grow LVs when needed.
+
+`pvs`, `vgs` and `lvs` print one line per object; `pvdisplay`, `vgdisplay -v` and `lvdisplay` the details; `lsblk` shows the whole stack from disks to mount points. LVM can also take **snapshots** (`lvcreate -s`: a copy-on-write image of an LV at one moment, useful for consistent backups) and build **thin pools**, from which LVs receive extents only when data is actually written, so that more space can be promised than exists. The commands are shown in the [Linux section](#lvm-on-a-virtual-machine), to be tried on a virtual machine.
+
+<details>
+<summary><b>Explained simply:</b> LVM, physical volume, extent, volume group, logical volume, linear, striped, mirrored, SAN, snapshot, thin pool</summary>
+
+- **LVM** (Logical Volume Manager): a Linux layer that lets you build flexible "virtual disks" out of real ones, and resize them later.
+- **Physical volume (PV):** a real disk or partition handed over to LVM.
+- **Extent:** a small, equal-sized piece (4 MiB) of a physical volume, the unit LVM hands out, like a brick.
+- **Volume group (VG):** all the bricks of several disks thrown into one pile.
+- **Logical volume (LV):** a "virtual disk" built from bricks of the pile, wherever they came from; it can get more bricks later.
+- **Linear, striped, mirrored:** bricks used one after the other; spread over several disks for speed; or kept in two copies for safety.
+- **SAN** (storage area network): a separate network of storage boxes that servers use as if they were local disks; a **LUN** is one such disk.
+- **pvmove:** moving the bricks off one disk onto the others, so that the disk can be removed while everything keeps running.
+- **Snapshot:** a frozen picture of a volume at one moment, made quickly because only later changes are copied.
+- **Thin pool:** handing out space only when it is really written to, like an airline selling more seats than it has, counting on not everyone showing up.
 
 </details>
 
@@ -555,6 +669,101 @@ Change: 2026-10-07 16:57:40.409662638 +0200
 - **ls -i:** list files with their inode numbers.
 - **stat:** show everything the inode says about a file.
 - **Access, modify, change, birth time:** when the file was last read, when its content last changed, when its inode (owner, permissions, links) last changed, and when it was created.
+
+</details>
+
+### Seven file types in practice
+
+`filetypes.sh` creates one object of each type in `/tmp/types` (as root, because of `mknod`; the socket is created by a one-line Python program that calls `bind`), then uses the pipe and the device files, and asks `file` about three misleadingly named files (machine A):
+
+```console
+# ./filetypes.sh
+total 8
+drwxr-xr-x 2 root root 4096 Oct  7 18:38 dir
+lrwxrwxrwx 1 root root    9 Oct  7 18:38 link -> notes.txt
+brw-r--r-- 1 root root 7, 0 Oct  7 18:38 myloop
+crw-r--r-- 1 root root 1, 3 Oct  7 18:38 mynull
+-rw-r--r-- 1 root root   19 Oct  7 18:38 notes.txt
+prw-r--r-- 1 root root    0 Oct  7 18:38 pipe
+srwxr-xr-x 1 root root    0 Oct  7 18:38 sock
+--- the type as stat names it:
+dir        directory
+link       symbolic link
+myloop     block special file
+mynull     character special file
+notes.txt  regular file
+pipe       fifo
+sock       socket
+--- a FIFO passes bytes in one direction, from a writer to a reader:
+through the pipe
+--- a device file is only a name and two numbers; the driver does the rest:
+crw-r--r-- 1 root root 1, 3 Oct  7 18:38 mynull
+ 00 00 00 00 00 00 00 00
+--- extensions are just part of the name; file(1) looks at the content:
+photo.jpg:  ASCII text
+report.txt: gzip compressed data, was "notes.txt", last modified: Wed Oct  7 16:
+notes.pdf:  ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically
+pipe:       fifo (named pipe)
+mynull:     character special (1/3)
+link:       symbolic link to notes.txt
+```
+
+The first letter of each line is the type. For the two device files `ls` prints the major and minor numbers where the size would be: `mynull` is a second name for the driver behind `/dev/null` (1,3), so the text written into it vanishes and `cat` prints nothing, while `od` shows the eight zero bytes read from `/dev/zero`; and `myloop` (7,0) would give access to the same disk as `/dev/loop0`. This is also why creating device files is reserved for root: whoever can make a block device file for a disk can read the whole disk, bypassing every file permission on it. The FIFO and the socket have size 0: their data passes through the kernel and never touches the disk. `file` ignores the names: `photo.jpg` is text, `report.txt` a gzip archive, and `notes.pdf` a copy of the `ls` program (output cut at 80 characters).
+
+<details>
+<summary><b>Explained simply:</b> mknod, mkfifo, stat -c %F, od, gzip</summary>
+
+- **mknod:** create a device file by giving its type (`b` or `c`) and its two numbers. **mkfifo:** create a named pipe.
+- **`stat -c %F`:** print only the type of a file, in words.
+- **od:** "octal dump": print the bytes of its input as numbers; `-tx1` in hexadecimal.
+- **gzip:** a program that compresses files; `file` recognises its output by its first two bytes.
+
+</details>
+
+### The top of the directory tree
+
+`fhs.sh` looks at the top of machine A's tree:
+
+```console
+$ ./fhs.sh
+--- the usr-merge: /bin, /sbin and /lib are symbolic links into /usr
+lrwxrwxrwx 1 root root 7 Apr 22  2024 /bin -> usr/bin
+lrwxrwxrwx 1 root root 7 Apr 22  2024 /lib -> usr/lib
+lrwxrwxrwx 1 root root 9 Apr 22  2024 /lib64 -> usr/lib64
+lrwxrwxrwx 1 root root 8 Apr 22  2024 /sbin -> usr/sbin
+--- which file system holds which top-level directory:
+/         ext4   /dev/vda
+/usr      ext4   /dev/vda
+/var      ext4   /dev/vda
+/etc      ext4   /dev/vda
+/tmp      ext4   /dev/vda
+/run      ext4   /dev/vda
+/proc     proc   proc
+/sys      sysfs  sysfs
+/dev/shm  tmpfs  tmpfs
+--- the virtual file systems in /proc/mounts (no device behind them):
+proc /proc proc rw,relatime 0 0
+sysfs /sys sysfs rw,relatime 0 0
+--- /proc is generated by the kernel: one directory per process, and more
+67
+lrwxrwxrwx 1 root root 11 Oct  7 18:17 /proc/mounts -> self/mounts
+major minor  #blocks  name
+
+ 254        0  268435456 vda
+--- sizes of the big three:
+6.7G	/usr
+190M	/var
+8.0M	/etc
+```
+
+The four symbolic links of the usr-merge date from the Ubuntu 24.04 base image. Everything except the virtual file systems lives on one ext4 file system on `/dev/vda` (major number 254, a virtio disk): this machine is a minimal cloud virtual machine without the usual service manager, so even `/run` is an ordinary directory here. On a standard installation `findmnt /run` shows a tmpfs, and servers often put `/var` or `/home` on logical volumes of their own. `/proc` holds 67 process directories at this moment, and `/proc/mounts`, the kernel's list of mounts, is itself a symbolic link into `/proc/self`, the directory of whichever process reads it. The installed software in `/usr` is more than 800 times larger than the configuration in `/etc`.
+
+<details>
+<summary><b>Explained simply:</b> findmnt, /proc/self, du -sh</summary>
+
+- **findmnt:** shows which file system a folder belongs to, and from which device it comes. `-T` finds the file system that contains a given path.
+- **/proc/self:** a magic folder that always means "the process that is looking at me".
+- **du -sh:** total size of a folder, in human-readable units.
 
 </details>
 
@@ -1004,6 +1213,47 @@ With 7% spare flash, a typical value for consumer SSDs, a victim block still hol
 
 </details>
 
+### LVM on a virtual machine
+
+Neither test machine provides LVM (machine A has no device mapper tools, machine B's user is not root), so this part is a lab to run as root on a virtual machine of your own (for example Fedora, AlmaLinux or Ubuntu Server) with two extra empty virtual disks of 1 GiB, here `/dev/vdb` and `/dev/vdc`; on a SATA or SCSI virtual disk the names are `/dev/sdb` and `/dev/sdc`. No output is shown, because none was measured: run the commands and read the output yourself. Check with `lsblk` first that the two disks are really empty, as these commands destroy their contents.
+
+```console
+# --- create: one partition marked for LVM, a PV, a VG, an LV of 600 MiB, XFS
+parted -s /dev/vdb mklabel gpt mkpart lvm 1MiB 100% set 1 lvm on
+udevadm settle                        # wait until /dev/vdb1 appears
+pvcreate /dev/vdb1
+vgcreate vg1 /dev/vdb1
+lvcreate -n lv_data -L 600M vg1
+mkfs.xfs /dev/vg1/lv_data
+mkdir -p /data && mount /dev/vg1/lv_data /data
+pvs; vgs; lvs; lsblk /dev/vdb
+vgdisplay vg1 | grep -E 'PE Size|Total PE|Free  PE'
+# --- fill it, then grow it online with a second disk
+dd if=/dev/zero of=/data/big bs=1M count=550 status=none; df -h /data
+pvcreate /dev/vdc
+vgextend vg1 /dev/vdc
+lvextend -r -l +20%FREE /dev/vg1/lv_data   # also runs xfs_growfs
+df -h /data; lvs -o +devices vg1
+# --- retire the first disk while /data stays mounted
+pvmove /dev/vdb1
+vgreduce vg1 /dev/vdb1
+pvremove /dev/vdb1
+lvs -o +devices vg1; cat /data/big > /dev/null && echo "data still readable"
+# --- try to shrink: XFS refuses
+lvreduce -r -L 400M /dev/vg1/lv_data
+```
+
+Things to observe: the extent size and count in `vgdisplay`; that `df` shows the larger file system immediately after `lvextend -r`, without unmounting; in `lvs -o +devices`, on which PV the extents of the LV lie before and after `pvmove`; and the error message of the last command. If the second disk is smaller than the used space of the first, `pvmove` fails: a disk can only be retired if the rest of the group can hold its data.
+
+<details>
+<summary><b>Explained simply:</b> parted, udevadm settle, lsblk</summary>
+
+- **parted:** a tool for creating and changing partitions; `set 1 lvm on` marks partition 1 as intended for LVM.
+- **udevadm settle:** wait until the system has finished creating the device files for the new partition.
+- **lsblk:** shows the disks, their partitions and what is built on them, as a tree.
+
+</details>
+
 ## Lab exercises
 
 1. **Disk arithmetic.** For a 15,000 rpm server disk with 3.5 ms average seek and 250 MB/s transfer, compute the average time of a random 4 KiB read and the number of such reads per second. How long does it take to read 1 GB sequentially, and as 4 KiB random reads? Repeat for 64 KiB requests.
@@ -1014,6 +1264,8 @@ With 7% spare flash, a typical value for consumer SSDs, a victim block still hol
 6. **FAT by hand.** Extend `fat16.py` with an `undelete` command that restores a deleted file if its clusters are still free, assuming they were contiguous. Test it on `A.DAT` before `C.DAT` is added. Why is the contiguity assumption needed?
 7. **Three file systems, one workload.** On a Linux machine where you are root, create 1 GiB images formatted as ext4, XFS and (if available) Btrfs, mount them, and time the creation of 100,000 empty files and of one 500 MiB file. Compare `df -i` before and after.
 8. **Write amplification.** Change `ftlsim.py` to use a cost-benefit victim selection (prefer old blocks with few valid pages) or to separate frequently and rarely written data into different blocks ("hot/cold separation") with a skewed workload in which 20% of the pages get 80% of the writes. How does write amplification change?
+9. **File types.** Run `filetypes.sh`. Then, in two terminals: `cat pipe` in one, `echo hello > pipe` in the other; which of the two commands waits for the other, and why does `ls -l pipe` still show size 0? Find a socket, a block device and a character device on your own system (`find / -xdev -type s 2>/dev/null | head`, `ls -l /dev`), and use `file` on a few files of your home directory after renaming them. What does `2>/dev/null` do in the `find` command?
+10. **LVM.** Carry out the [LVM lab](#lvm-on-a-virtual-machine) on a virtual machine. Write down the extent size, the number of extents of each PV before and after `lvextend`, and on which PV the LV's extents lie before and after `pvmove`. Then repeat the growth step with an ext4 file system instead of XFS, and shrink it with `lvreduce -r`: what does LVM do differently, and why must the file system be unmounted?
 
 ## Review questions
 
@@ -1034,6 +1286,11 @@ With 7% spare flash, a typical value for consumer SSDs, a victim block still hol
 15. Compare ext4, XFS and NTFS: metadata records, data location, directories, free space, inode allocation and typical use.
 16. What is a resident attribute in NTFS? What does the run list of a non-resident attribute say?
 17. Why did `fsync` make file creation up to 150 times slower in the measurement? When must an application call it?
+18. Name the seven file types shown by `ls -l`. What is the difference between a named pipe and a socket, and between a block and a character device? What does the inode of a device file contain instead of data block addresses?
+19. Where do the following belong in the Linux directory tree, and why: the configuration of the SSH server, the log files of the web server, the PID file of a running service, the `ls` program, a temporary file that must survive a reboot?
+20. A 7,200 rpm disk's head flies 1–2 nm above the platter. How many revolutions does the platter make per second, what is the average rotational latency, and why is a dust particle a danger to the disk?
+21. FAT16 has at most 65,524 clusters. What is the largest volume with 4 KiB and with 32 KiB clusters? Why did large clusters become a problem, and how did FAT32 solve it?
+22. Describe the LVM layers from a disk to a mounted file system. A logical volume holding an XFS file system is full: list the commands that give it the space of a newly installed disk without unmounting. Why could it not be shrunk later?
 
 <details>
 <summary><strong>Answer key (for instructors)</strong></summary>
@@ -1055,8 +1312,13 @@ With 7% spare flash, a typical value for consumer SSDs, a victim block still hol
 15. See the comparison table: inode 256 B / inode 512 B / MFT record 1 KiB; extents / B+-tree extents / run lists; htree / local, block, B+ tree / B+ tree; bitmaps / B+ trees per AG / `$Bitmap`; fixed / dynamic / dynamic; Linux default / RHEL and large servers / Windows.
 16. An attribute stored inside the MFT record itself (for small files, also the data). A run list gives runs of clusters: file cluster (VCN), volume cluster (LCN), length.
 17. Each fsync waits for the data block, a journal commit and a device cache flush, instead of returning after a memory copy. Applications must call it when the data must survive a crash before they report success (databases, editors saving files, mail servers), ideally batching changes.
+18. `-` regular file, `d` directory, `l` symbolic link, `p` named pipe (FIFO), `s` socket, `b` block device, `c` character device. A FIFO is a one-way byte channel (one writer end, one reader end); a Unix domain socket is two-way, and can carry a connection (stream) or separate messages (datagrams). A block device is accessed in blocks at arbitrary positions (disks), a character device as a byte stream (terminals, `/dev/null`). A device file's inode holds the major number (driver) and minor number (device), and no data blocks.
+19. `/etc/ssh/sshd_config` (host-specific configuration); `/var/log/...` (variable data that must persist); `/run/...` (runtime data, valid only since boot, tmpfs); `/usr/bin/ls` (installed read-only software; `/bin/ls` is the same file through the usr-merge symlink); `/var/tmp` (temporary but kept across reboots, unlike `/tmp`).
+20. 7,200 / 60 = 120 revolutions per second, 8.33 ms per turn, 4.17 ms average rotational latency. A particle of even 2.5 µm is more than a thousand times larger than the gap; the head hits it, scratches the surface and itself (head crash), destroying data. Hence sealed, filtered cases and parking ramps.
+21. 65,524 × 4 KiB ≈ 256 MiB; 65,524 × 32 KiB ≈ 2 GiB (2 GB). Every file wastes on average half a cluster (internal fragmentation), so with 32 KiB clusters many small files waste much of the disk. FAT32 uses 28-bit cluster numbers, so it can keep 4 KiB clusters on volumes up to 8 GB (and use larger clusters only on larger volumes).
+22. Block device (disk, partition, RAID, SAN LUN) → `pvcreate` → physical volume divided into extents (4 MiB) → `vgcreate`/`vgextend` → volume group (pool) → `lvcreate` → logical volume → `mkfs` → file system → `mount`. Growing: `pvcreate /dev/sdX`, `vgextend vg /dev/sdX`, `lvextend -r -l +100%FREE /dev/vg/lv` (the `-r` runs `xfs_growfs`). XFS supports growing only; to shrink, one must back up, recreate a smaller file system and restore.
 
-**Lab answers.** Lab 1: 3.5 + 2 + 0.016 ≈ 5.5 ms, ≈ 180 reads/s; 1 GB sequential ≈ 4 s, as 4 KiB random reads ≈ 244,000 × 5.5 ms ≈ 22 min; with 64 KiB requests ≈ 15,250 × 5.77 ms ≈ 88 s. Lab 4: the space is freed only when the last file descriptor is closed: the inode's link count is 0, but the open file keeps it alive. Lab 5: root = 2, lost+found = 11, journal = 8; a 200 MiB file needs at least 2 extents (128 MiB max each); a 100-character target no longer fits in the 60-byte i_block and gets a data block. Lab 6: FAT keeps no record of the deleted chain, only the first cluster and the size, so the rest of the chain must be guessed. Lab 2: a file made by `truncate` is one big hole, and reading a hole never touches the device. Lab 7: a 1 GiB ext4 has 65,536 inodes by default, so creating 100,000 files fails at about 65,500 with "No space left on device" (use `mkfs.ext4 -N` or `-i`); XFS and Btrfs succeed.
+**Lab answers.** Lab 1: 3.5 + 2 + 0.016 ≈ 5.5 ms, ≈ 180 reads/s; 1 GB sequential ≈ 4 s, as 4 KiB random reads ≈ 244,000 × 5.5 ms ≈ 22 min; with 64 KiB requests ≈ 15,250 × 5.77 ms ≈ 88 s. Lab 4: the space is freed only when the last file descriptor is closed: the inode's link count is 0, but the open file keeps it alive. Lab 5: root = 2, lost+found = 11, journal = 8; a 200 MiB file needs at least 2 extents (128 MiB max each); a 100-character target no longer fits in the 60-byte i_block and gets a data block. Lab 6: FAT keeps no record of the deleted chain, only the first cluster and the size, so the rest of the chain must be guessed. Lab 2: a file made by `truncate` is one big hole, and reading a hole never touches the device. Lab 7: a 1 GiB ext4 has 65,536 inodes by default, so creating 100,000 files fails at about 65,500 with "No space left on device" (use `mkfs.ext4 -N` or `-i`); XFS and Btrfs succeed. Lab 9: each side of a FIFO blocks in `open` until the other side opens it; the bytes are passed through a kernel buffer, never written to the disk, so the size stays 0. `2>/dev/null` sends the error messages (file descriptor 2, e.g. "Permission denied") to the null device, which discards them. Lab 10: with ext4, `lvextend -r` calls `resize2fs` instead of `xfs_growfs`; `lvreduce -r` must first shrink the file system with `resize2fs` (ext4 can only shrink offline, so it is unmounted, or the command refuses) and only then reduce the LV, otherwise the end of the file system would be cut off.
 
 </details>
 
@@ -1070,7 +1332,11 @@ Carrier, B. (2005). *File system forensic analysis*. Addison-Wesley.
 
 Hu, X.-Y., Eleftheriou, E., Haas, R., Iliadis, I., & Pletka, R. (2009). Write amplification analysis in flash-based solid state drives. In *Proceedings of SYSTOR 2009: The Israeli Experimental Systems Conference* (Article 10). ACM. https://doi.org/10.1145/1534530.1534544
 
+Linux Foundation. (2015). *Filesystem Hierarchy Standard* (Version 3.0). https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html
+
 Mathur, A., Cao, M., Bhattacharya, S., Dilger, A., Tomas, A., & Vivier, L. (2007). The new ext4 filesystem: Current status and future plans. In *Proceedings of the Linux Symposium* (Vol. 2, pp. 21–34). https://www.kernel.org/doc/ols/2007/ols2007v2-pages-21-34.pdf
+
+Matthes, L. M. (2016). *Experimental studies of the head-disk interface from a tribological and controls point of view for flying heights below 2 nm* [Doctoral dissertation, University of California, San Diego]. eScholarship. https://escholarship.org/uc/item/12d6n2s5
 
 McKusick, M. K., Joy, W. N., Leffler, S. J., & Fabry, R. S. (1984). A fast file system for UNIX. *ACM Transactions on Computer Systems, 2*(3), 181–197. https://doi.org/10.1145/989.990
 
@@ -1078,7 +1344,9 @@ Microsoft. (2009). *How FAT works*. https://learn.microsoft.com/en-us/previous-v
 
 Microsoft. (2025). *NTFS overview*. https://learn.microsoft.com/en-us/windows-server/storage/file-server/ntfs-overview
 
-Red Hat. (n.d.). *Managing file systems: Red Hat Enterprise Linux 10*. Retrieved October 7, 2026, from https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html-single/managing_file_systems/index
+Red Hat. (n.d.-a). *Configuring and managing logical volumes: Red Hat Enterprise Linux 9*. Retrieved October 7, 2026, from https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html-single/configuring_and_managing_logical_volumes/index
+
+Red Hat. (n.d.-b). *Managing file systems: Red Hat Enterprise Linux 10*. Retrieved October 7, 2026, from https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html-single/managing_file_systems/index
 
 Ritchie, D. M., & Thompson, K. (1974). The UNIX time-sharing system. *Communications of the ACM, 17*(7), 365–375. https://doi.org/10.1145/361011.361061
 
@@ -1091,6 +1359,8 @@ Seagate. (n.d.). *Seagate introduces hard drive capacities of up to 36TB, extend
 SpeedGuide. (n.d.). *SLC, MLC or TLC NAND for solid state drives?* Retrieved October 7, 2026, from https://www.speedguide.net/faq/slc-mlc-or-tlc-nand-for-solid-state-drives-406
 
 Sweeney, A., Doucette, D., Hu, W., Anderson, C., Nishimoto, M., & Peck, G. (1996). Scalability in the XFS file system. In *Proceedings of the USENIX 1996 Annual Technical Conference*. USENIX Association. https://www.usenix.org/legacy/publications/library/proceedings/sd96/sweeney.html
+
+U.S. Environmental Protection Agency. (n.d.). *Particulate matter (PM) basics*. Retrieved October 7, 2026, from https://www.epa.gov/pm-pollution/particulate-matter-pm-basics
 
 ## Further reading
 

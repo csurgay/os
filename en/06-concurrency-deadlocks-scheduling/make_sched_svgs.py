@@ -245,9 +245,174 @@ def classes():
     return svg(900, y + 112, title, "\n".join(p))
 
 
+# ---------------- 7. The railway semaphore ----------------
+def signal(x, y, state, side=1, h=56):
+    """A railway semaphore signal: post from (x, y) up by h; arm horizontal (stop) or raised (go).
+    side=+1: arm points right, -1: left."""
+    top = y - h
+    p = [f'<path d="M{x} {y}V{top}" class="edge" stroke-width="3" fill="none"/>',
+         f'<path d="M{x - 7} {y}H{x + 7}" class="edge" stroke-width="3" fill="none"/>']
+    if state == "stop":
+        p.append(f'<path d="M{x} {top + 4}H{x + side * 34}" class="bads" stroke-width="7" fill="none" stroke-linecap="round"/>')
+    else:
+        p.append(f'<path d="M{x} {top + 4}L{x + side * 24} {top - 20}" class="acc" stroke-width="7" fill="none" stroke-linecap="round"/>')
+    p.append(f'<circle cx="{x}" cy="{top + 4}" r="4" class="ink"/>')
+    return "".join(p)
+
+
+def railway():
+    title = "The railway semaphore: one train at a time on a single-track section"
+    p = [text(24, 30, title, 15, 600)]
+    # critical section band
+    p.append(f'<rect x="250" y="122" width="350" height="36" rx="6" class="accf"/>')
+    # tracks
+    tr = 'class="edge" stroke-width="3" fill="none"'
+    p.append(f'<path d="M30 110H200L250 140H600L650 110H820" {tr}/>')
+    p.append(f'<path d="M30 170H200L250 140M600 140L650 170H820" {tr}/>')
+    # trains
+    p.append(rect(360, 128, 96, 24, "c2", rx=10)); p.append(text(408, 145, "train A →", 11.5, 600, anchor="middle"))
+    p.append(rect(680, 96, 96, 24, "c2", rx=10)); p.append(text(728, 113, "← train B", 11.5, 600, anchor="middle"))
+    # signals guarding both ends; both at stop because A is inside (S = 0)
+    p.append(signal(240, 114, "stop", 1)); p.append(signal(610, 114, "stop", -1))
+    p.append(text(425, 186, "single-track section = critical section;  S = 0 (occupied)", 12, 600, cls="acct", anchor="middle"))
+    p.append(text(425, 204, "A entered with P(S) and holds the line; B stops at the east signal until A leaves with V(S)", 11.5, cls="quiet", anchor="middle"))
+    p.append(text(228, 66, "west signal", 11, cls="quiet", anchor="end"))
+    p.append(text(622, 66, "east signal", 11, cls="quiet", anchor="start"))
+    # legend: the two arm positions
+    y0 = 300
+    p.append(rect(24, 228, 800, 108, "tint", rx=8))
+    p.append(signal(80, y0 + 20, "stop", 1)); p.append(signal(470, y0 + 20, "go", 1))
+    p.append(text(140, 262, "arm horizontal: STOP", 12.5, 600)); p.append(text(140, 282, "S = 0: a train that does P(S) must wait", 11.5, cls="quiet"))
+    p.append(text(140, 300, "(the section is occupied)", 11.5, cls="quiet"))
+    p.append(text(530, 262, "arm raised: GO", 12.5, 600)); p.append(text(530, 282, "S = 1: P(S) passes and sets S = 0,", 11.5, cls="quiet"))
+    p.append(text(530, 300, "the signals return to stop behind the train", 11.5, cls="quiet"))
+    p.append(text(24, 362, "Leaving the section is V(S): S becomes 1 again and one waiting train may enter. A semaphore that starts at n admits n trains at once.", 11.5, cls="quiet"))
+    return svg(844, 378, title, "\n".join(p))
+
+
+# ---------------- 8. Classic Unix sleep priorities ----------------
+def unix_prio():
+    m = "up"
+    title = "Classic Unix process priorities (System V, after Bach, 1986)"
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600)]
+    rows = ["swapper", "waiting for disk I/O", "waiting for a buffer", "waiting for an inode",
+            ("bads", "bad", "PZERO: signal threshold"),
+            "waiting for tty input", "waiting for tty output", "waiting for child exit",
+            ("edge", "quiet", "PUSER: user base"),
+            "user level 0", "user level 1", "⋮", "user level n"]
+    beads = [1, 3, 1, 2, None, 2, 0, 1, None, 2, 3, 0, 1]
+    x0, w, rh, y0 = 250, 300, 30, 56
+    y = y0
+    ys = []
+    for r, b in zip(rows, beads):
+        if isinstance(r, tuple):
+            p.append(f'<path d="M{x0 - 120} {y + 7}H{x0 + w + 80}" class="{r[0]}" stroke-width="2.5" fill="none"/>')
+            p.append(text(x0 + w + 86, y + 11, r[2], 11, 600, cls=r[1]))
+            ys.append(y); y += 14; continue
+        n = len(ys)
+        kind = "c2" if n < 4 else ("acc" if n < 8 else "tint")
+        p.append(rect(x0, y, w, rh - 4, kind, rx=4))
+        p.append(text(x0 + 12, y + 18, r, 12, 600 if n < 8 else 400))
+        for i in range(b):
+            cx = x0 + w + 22 + i * 22
+            if i: p.append(f'<path d="M{cx - 15} {y + 13}H{cx - 7}" class="edge" stroke-width="1.5" fill="none"/>')
+            p.append(f'<circle cx="{cx}" cy="{y + 13}" r="7" class="tint"/><circle cx="{cx}" cy="{y + 13}" r="7" fill="none" class="edge" stroke-width="1.5"/>')
+        ys.append(y); y += rh
+    yend = y
+    # brackets
+    def bracket(xb, ya, yb, lab1, lab2, cls):
+        p.append(f'<path d="M{xb + 8} {ya}H{xb}V{yb}H{xb + 8}" fill="none" class="{cls}" stroke-width="1.5"/>')
+        p.append(text(xb - 8, (ya + yb) / 2 - 2, lab1, 11.5, 600, anchor="end"))
+        if lab2: p.append(text(xb - 8, (ya + yb) / 2 + 14, lab2, 11, cls="quiet", anchor="end"))
+    bracket(x0 - 14, ys[0], ys[3] + rh - 4, "not interruptible", "by signals", "c2s")
+    bracket(x0 - 14, ys[5], ys[7] + rh - 4, "interruptible", "by signals", "acc")
+    bracket(x0 - 14, ys[9], yend - 4, "user mode", "priorities", "edge")
+    p.append(f'<path d="M{x0 - 150} {ys[0]}V{ys[7] + rh - 4}" fill="none" class="edge" stroke-width="1.25"/>')
+    p.append(text(x0 - 158, (ys[0] + ys[7]) / 2 + 10, "kernel-mode", 11.5, 600, anchor="end"))
+    p.append(text(x0 - 158, (ys[0] + ys[7]) / 2 + 26, "sleep priorities", 11.5, 600, anchor="end"))
+    p.append(path(f"M{x0 + w + 260} {yend - 10}V{y0 + 4}", m, width=1.4))
+    p.append(text(x0 + w + 252, y0 + 60, "higher", 11, cls="quiet", anchor="end"))
+    p.append(text(x0 + w + 252, y0 + 74, "priority", 11, cls="quiet", anchor="end"))
+    p.append(text(x0 + w + 22, y0 - 6, "queue of sleeping processes", 10.5, cls="quiet"))
+    p.append(text(24, yend + 24, "A process that goes to sleep inside the kernel gets its priority from the event it waits for, so on wake-up it runs before every", 11.5, cls="quiet"))
+    p.append(text(24, yend + 42, "user-mode process and soon releases the buffers and inodes it holds. Above PZERO a signal cannot wake it (Linux: D state);", 11.5, cls="quiet"))
+    p.append(text(24, yend + 60, "between PZERO and PUSER a signal can (Linux: S state). Lower on the ladder means a numerically larger priority value.", 11.5, cls="quiet"))
+    return svg(840, yend + 76, title, "\n".join(p))
+
+
+# ---------------- 9. Gridlock at a crossroads and its resource-allocation graph ----------------
+def gridlock():
+    m, mb = "gl", "glb"
+    title = "Gridlock: four cars, four quarters of a crossroads, one cycle"
+    p = [f"<defs>{marker(m)}{marker(mb, 'bad')}</defs>", text(24, 30, title, 15, 600)]
+    # roads
+    cx, cy, half = 190, 200, 56
+    p.append(f'<rect x="{cx - half}" y="50" width="{2 * half}" height="300" class="tint"/>')
+    p.append(f'<rect x="40" y="{cy - half}" width="300" height="{2 * half}" class="tint"/>')
+    p.append(f'<path d="M{cx - half} 50V{cy - half}H40M{cx + half} 50V{cy - half}H340M{cx - half} 350V{cy + half}H40M{cx + half} 350V{cy + half}H340" fill="none" class="edge" stroke-width="1.5"/>')
+    p.append(f'<path d="M{cx} 50V{cy - half}M{cx} {cy + half}V350M40 {cy}H{cx - half}M{cx + half} {cy}H340" fill="none" class="edge" stroke-width="1.25" stroke-dasharray="8 6"/>')
+    p.append(f'<rect x="{cx - half}" y="{cy - half}" width="{2 * half}" height="{2 * half}" class="accf"/>')
+    p.append(f'<path d="M{cx} {cy - half}V{cy + half}M{cx - half} {cy}H{cx + half}" fill="none" class="acc" stroke-width="1" stroke-dasharray="3 3"/>')
+    q = {"NW": (cx - 28, cy - 28), "NE": (cx + 28, cy - 28), "SE": (cx + 28, cy + 28), "SW": (cx - 28, cy + 28)}
+    for k, (x, y) in q.items():
+        p.append(text(x + (-20 if "W" in k else 20), y + (-20 if "N" in k else 26), k, 10, 600, cls="acct", anchor="middle"))
+    # cars (right-hand traffic, all going straight): (label, quarter held, size, arrow direction)
+    cars = [("1", "SE", "up"), ("2", "NE", "left"), ("3", "NW", "down"), ("4", "SW", "right")]
+    for lab, k, d in cars:
+        x, y = q[k]
+        vw, vh = (20, 34) if d in ("up", "down") else (34, 20)
+        p.append(rect(x - vw / 2, y - vh / 2, vw, vh, "c2", rx=4))
+        p.append(text(x, y + 4, lab, 11, 700, anchor="middle"))
+    # queues behind each car
+    for (x, y, vw, vh) in [(cx + 28, cy + 92, 20, 30), (cx + 28, cy + 130, 20, 30), (cx + 92, cy - 28, 30, 20), (cx + 130, cy - 28, 30, 20),
+                           (cx - 28, cy - 92, 20, 30), (cx - 28, cy - 130, 20, 30), (cx - 92, cy + 28, 30, 20), (cx - 130, cy + 28, 30, 20)]:
+        p.append(rect(x - vw / 2, y - vh / 2, vw, vh, "plain", rx=4))
+    # wants-arrows inside the crossroads
+    p.append(path(f"M{cx + 28} {cy + 8}V{cy - 8}", mb, cls="bads", width=1.5))
+    p.append(path(f"M{cx + 8} {cy - 28}H{cx - 8}", mb, cls="bads", width=1.5))
+    p.append(path(f"M{cx - 28} {cy - 8}V{cy + 8}", mb, cls="bads", width=1.5))
+    p.append(path(f"M{cx - 8} {cy + 28}H{cx + 8}", mb, cls="bads", width=1.5))
+    p.append(text(cx, 372, "each car holds one quarter and wants the next", 11.5, cls="quiet", anchor="middle"))
+    # resource-allocation graph
+    gx = 420
+    p.append(text(gx, 64, "Resource-allocation graph", 13, 600))
+    R = {"SE": (gx + 220, 290), "NE": (gx + 220, 110), "NW": (gx + 40, 110), "SW": (gx + 40, 290)}
+    P = {"1": (gx + 220, 200), "2": (gx + 130, 110), "3": (gx + 40, 200), "4": (gx + 130, 290)}
+    for k, (x, y) in R.items():
+        p.append(rect(x - 30, y - 20, 60, 40, "acc", rx=3))
+        p.append(text(x, y - 4, k, 10.5, 600, anchor="middle"))
+        p.append(f'<circle cx="{x}" cy="{y + 8}" r="4" class="ink"/>')
+    for k, (x, y) in P.items():
+        p.append(f'<circle cx="{x}" cy="{y}" r="20" class="c2f"/><circle cx="{x}" cy="{y}" r="20" fill="none" class="c2s" stroke-width="1.75"/>')
+        p.append(text(x, y + 4, "car " + k, 10.5, 600, anchor="middle"))
+    # holds: from the instance dot to the process; wants: from the process to the resource box
+    p.append(path(f"M{gx + 224} 282V222", m, width=1.5))          # SE dot -> car 1
+    p.append(path(f"M{gx + 220} 180V132", mb, cls="bads", width=1.5))  # car 1 -> NE
+    p.append(path(f"M{gx + 214} 118H{gx + 152}", m, width=1.5))      # NE dot -> car 2
+    p.append(path(f"M{gx + 110} 110H{gx + 72}", mb, cls="bads", width=1.5))  # car 2 -> NW
+    p.append(path(f"M{gx + 36} 118V178", m, width=1.5))              # NW dot -> car 3
+    p.append(path(f"M{gx + 40} 220V268", mb, cls="bads", width=1.5))  # car 3 -> SW
+    p.append(path(f"M{gx + 46} 298H{gx + 108}", m, width=1.5))        # SW dot -> car 4
+    p.append(path(f"M{gx + 150} 290H{gx + 188}", mb, cls="bads", width=1.5))  # car 4 -> SE
+    # legend
+    lx = gx + 290
+    p.append(f'<circle cx="{lx + 14}" cy="104" r="12" class="c2f"/><circle cx="{lx + 14}" cy="104" r="12" fill="none" class="c2s" stroke-width="1.5"/>')
+    p.append(text(lx + 34, 108, "process", 11.5))
+    p.append(rect(lx, 128, 30, 24, "acc", rx=3)); p.append(f'<circle cx="{lx + 9}" cy="140" r="3" class="ink"/><circle cx="{lx + 21}" cy="140" r="3" class="ink"/>')
+    p.append(text(lx + 40, 138, "resource; one dot", 11.5)); p.append(text(lx + 40, 153, "per instance", 11.5))
+    p.append(path(f"M{lx} 184H{lx + 30}", mb, cls="bads", width=1.5)); p.append(text(lx + 40, 188, "request (wants)", 11.5))
+    p.append(path(f"M{lx} 212H{lx + 30}", m, width=1.5)); p.append(text(lx + 40, 216, "assignment (holds)", 11.5))
+    p.append(text(lx, 250, "One instance each:", 11.5, 600)); p.append(text(lx, 266, "cycle = deadlock.", 11.5, cls="quiet"))
+    p.append(text(lx, 290, "Several instances:", 11.5, 600)); p.append(text(lx, 306, "a cycle is necessary,", 11.5, cls="quiet"))
+    p.append(text(lx, 322, "but not sufficient.", 11.5, cls="quiet"))
+    p.append(text(gx, 344, "1 → NE → 2 → NW → 3 → SW → 4 → SE → 1", 11.5, 600, cls="bad"))
+    return svg(880, 390, title, "\n".join(p))
+
+
 if __name__ == "__main__":
     for name, fn in [("process-states", states), ("sync-layers", layers), ("store-buffer", reorder),
-                     ("bridge-deadlock", bridge), ("gantt", gantt), ("linux-sched-classes", classes)]:
+                     ("bridge-deadlock", bridge), ("gantt", gantt), ("linux-sched-classes", classes),
+                     ("railway-semaphore", railway), ("unix-sleep-priorities", unix_prio), ("gridlock", gridlock)]:
         with open(f"{name}.svg", "w") as f:
             f.write(fn())
         print("wrote", name + ".svg")

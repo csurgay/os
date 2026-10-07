@@ -1,0 +1,105 @@
+# Website build for the course (MkDocs + Material theme).
+#
+# The lectures stay where they are (README.md, en/, hu/); tools/mkdocs_hooks.py
+# feeds them to MkDocs, builds the navigation from the lecture titles and adapts
+# the few GitHub-specific Markdown habits. Local preview:
+#
+#   pip install -r tools/requirements.txt
+#   mkdocs serve          (then open http://127.0.0.1:8000)
+#   mkdocs build          (writes the finished website into site/)
+
+site_name: Operációs rendszerek · Operating Systems
+site_description: Egyetemi operációsrendszer-kurzus / University Operating Systems course
+site_author: Peter Árpád Csurgay
+# Overridden by the SITE_URL variable in the publishing workflow.
+site_url: !ENV [SITE_URL, ""]
+copyright: "© 2026 Peter Árpád Csurgay · MIT License"
+
+# The real sources are added by the hook; this folder only holds site assets.
+docs_dir: tools/site-docs
+site_dir: site
+use_directory_urls: true
+strict: true
+
+watch:
+  - README.md
+  - en
+  - hu
+  - tools/mkdocs_hooks.py
+
+hooks:
+  - tools/mkdocs_hooks.py
+
+validation:
+  links:
+    not_found: warn
+    anchors: warn
+    absolute_links: info
+    unrecognized_links: info
+
+theme:
+  name: material
+  language: hu
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.highlight
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Világos mód / light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Sötét mód / dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Rendszerbeállítás / system setting
+
+plugins:
+  - search:
+      lang:
+        - hu
+        - en
+
+markdown_extensions:
+  - tables
+  - footnotes
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+      # GitHub-style heading anchors (lower case, accents kept), so that the
+      # links between lectures work the same way as on GitHub.
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem
+  - pymdownx.tilde:
+      subscript: false
+  - pymdownx.highlight:
+      anchor_linenums: false
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.magiclink
+
+extra_css:
+  - assets/extra.css
+
+extra_javascript:
+  - assets/mathjax-config.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

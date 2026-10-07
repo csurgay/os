@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 728" width="920" height="728" role="img" aria-label="One memory access with a page fault: what the hardware does and what the operating system does">
+<title>One memory access with a page fault: what the hardware does and what the operating system does</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="ff" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">One memory access with a page fault: hardware and operating system</text>
+<text x="70" y="60" font-size="12.5" font-weight="600" class="quiet" text-anchor="start">hardware (CPU and MMU)</text>
+<rect x="70" y="90" width="240" height="36" rx="6" class="accf"/><rect x="70" y="90" width="240" height="36" rx="6" fill="none" class="acc" stroke-width="2"/><text x="190.0" y="112.0" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">CPU issues a virtual address</text>
+<rect x="70" y="150" width="240" height="36" rx="6" class="c2f"/><rect x="70" y="150" width="240" height="36" rx="6" fill="none" class="c2s" stroke-width="1.5"/><text x="190.0" y="172.0" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">translation in the TLB?</text>
+<rect x="70" y="210" width="240" height="36" rx="6" class="tint"/><rect x="70" y="210" width="240" height="36" rx="6" fill="none" class="edge" stroke-width="1.25"/><text x="190.0" y="232.0" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">page-table walk</text>
+<rect x="70" y="270" width="240" height="36" rx="6" class="c2f"/><rect x="70" y="270" width="240" height="36" rx="6" fill="none" class="c2s" stroke-width="1.5"/><text x="190.0" y="292.0" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">page valid, access allowed?</text>
+<rect x="70" y="330" width="240" height="36" rx="6" class="tint"/><rect x="70" y="330" width="240" height="36" rx="6" fill="none" class="edge" stroke-width="1.25"/><text x="190.0" y="352.0" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">store the translation in the TLB</text>
+<rect x="70" y="390" width="240" height="36" rx="6" class="accf"/><rect x="70" y="390" width="240" height="36" rx="6" fill="none" class="acc" stroke-width="2"/><text x="190.0" y="412.0" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">physical address → cache, RAM</text>
+<path d="M190 126V146" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/>
+<path d="M190 186V206" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/><text x="198" y="200" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">no (TLB miss)</text>
+<path d="M190 246V266" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/>
+<path d="M190 306V326" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/><text x="198" y="320" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">yes</text>
+<path d="M190 366V386" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/>
+<path d="M70 168H50V408H66" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/><text x="44" y="290" font-size="10.5" font-weight="400" class="quiet" text-anchor="end">hit</text>
+<path d="M310 288H426" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/><text x="368" y="280" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">no: page fault</text>
+<text x="368" y="304" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">(an exception)</text>
+<rect x="400" y="236" width="490" height="452" rx="10" fill="none" class="edge" stroke-width="1.25" stroke-dasharray="6 4"/>
+<text x="416" y="256" font-size="12.5" font-weight="600" class="quiet" text-anchor="start">operating system: the page-fault handler</text>
+<rect x="430" y="270" width="270" height="36" rx="6" class="c2f"/><rect x="430" y="270" width="270" height="36" rx="6" fill="none" class="c2s" stroke-width="1.5"/><text x="565.0" y="292.0" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">address in a VMA, access allowed?</text>
+<rect x="730" y="270" width="140" height="36" rx="6" class="badf"/><rect x="730" y="270" width="140" height="36" rx="6" fill="none" class="bads" stroke-width="1.5"/><text x="800.0" y="292.0" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">SIGSEGV: program error</text>
+<path d="M700 288H726" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/><text x="713" y="282" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">no</text>
+<rect x="430" y="330" width="270" height="36" rx="6" class="c2f"/><rect x="430" y="330" width="270" height="36" rx="6" fill="none" class="c2s" stroke-width="1.5"/><text x="565.0" y="352.0" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">a free frame?</text>
+<rect x="730" y="318" width="140" height="60" rx="6" class="tint"/><rect x="730" y="318" width="140" height="60" rx="6" fill="none" class="edge" stroke-width="1.25"/><text x="800.0" y="337.0" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">evict a victim; if</text><text x="800.0" y="352.0" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">dirty, write it to</text><text x="800.0" y="367.0" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">disk first</text>
+<path d="M700 348H726" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/><text x="713" y="342" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">no</text>
+<path d="M800 378V408H704" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/>
+<rect x="430" y="390" width="270" height="36" rx="6" class="tint"/><rect x="430" y="390" width="270" height="36" rx="6" fill="none" class="edge" stroke-width="1.25"/><text x="565.0" y="412.0" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">start reading the page from disk (DMA)</text>
+<rect x="430" y="450" width="270" height="36" rx="6" class="tint"/><rect x="430" y="450" width="270" height="36" rx="6" fill="none" class="edge" stroke-width="1.25"/><text x="565.0" y="472.0" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">block the process, run another one</text>
+<rect x="430" y="510" width="270" height="36" rx="6" class="accf"/><rect x="430" y="510" width="270" height="36" rx="6" fill="none" class="acc" stroke-width="2"/><text x="565.0" y="532.0" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">disk interrupt: the read is complete</text>
+<rect x="430" y="570" width="270" height="36" rx="6" class="tint"/><rect x="430" y="570" width="270" height="36" rx="6" fill="none" class="edge" stroke-width="1.25"/><text x="565.0" y="592.0" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">page-table entry: frame, valid = 1</text>
+<rect x="430" y="630" width="270" height="36" rx="6" class="tint"/><rect x="430" y="630" width="270" height="36" rx="6" fill="none" class="edge" stroke-width="1.25"/><text x="565.0" y="652.0" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">process ready; it restarts the instruction</text>
+<path d="M565 306V326" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/><text x="573" y="320" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">yes</text>
+<path d="M565 366V386" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/><text x="573" y="380" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">yes</text>
+<path d="M565 426V446" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/>
+<path d="M565 486V506" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/>
+<path d="M565 546V566" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/>
+<path d="M565 606V626" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/>
+<path d="M700 648H900V78H190V86" fill="none" class="edge" stroke-width="1.4" marker-end="url(#ff)"/>
+<text x="560" y="70" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">the same access again: now the page is valid</text>
+<text x="420" y="130" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Minor faults (first touch of a page, copy-on-write,</text>
+<text x="420" y="148" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">a page already in the page cache) need no disk:</text>
+<text x="420" y="166" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">the kernel zero-fills, copies or just maps a frame</text>
+<text x="420" y="184" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">and skips the disk read, the wait and the interrupt.</text>
+<text x="24" y="712" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">The page fault is an exception raised by the faulting instruction; only the end of the disk read is an interrupt request (IRQ).</text>
+</svg>

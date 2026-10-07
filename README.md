@@ -6,7 +6,7 @@ Egyetemi operációsrendszer-kurzus előadásanyaga linuxos (x86-64) példákkal
 
 | | |
 | --- | --- |
-| **[English](en/)** | nine lectures, from the history of operating systems to file systems |
-| **[Magyar](hu/)** | kilenc előadás, az operációs rendszerek történetétől a fájlrendszerekig |
+| **[English](en/)** | ten lectures, from the history of operating systems to file systems and access control |
+| **[Magyar](hu/)** | tíz előadás, az operációs rendszerek történetétől a fájlrendszerekig és a hozzáférés-szabályozásig |
 
 License / Licenc: [LICENSE](LICENSE).

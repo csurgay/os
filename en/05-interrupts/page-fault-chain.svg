@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 450" width="760" height="450" role="img" aria-label="A page fault that needs the disk: exception, DMA, another process, interrupt">
+<title>A page fault that needs the disk: exception, DMA, another process, interrupt</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.tint{fill:#f4f3ee}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.tint{fill:#22221f}
+  }
+</style>
+<defs><marker id="fc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">A page fault that needs the disk: exception, DMA, another process, interrupt</text>
+<text x="24" y="101" font-size="13" font-weight="600" class="ink" text-anchor="start">Process A</text>
+<line x1="140" y1="96.0" x2="740" y2="96.0" class="grid"/>
+<text x="24" y="161" font-size="13" font-weight="600" class="ink" text-anchor="start">Kernel</text>
+<line x1="140" y1="156.0" x2="740" y2="156.0" class="grid"/>
+<text x="24" y="221" font-size="13" font-weight="600" class="ink" text-anchor="start">Process B</text>
+<line x1="140" y1="216.0" x2="740" y2="216.0" class="grid"/>
+<text x="24" y="281" font-size="13" font-weight="600" class="ink" text-anchor="start">Disk (DMA)</text>
+<line x1="140" y1="276.0" x2="740" y2="276.0" class="grid"/>
+<rect x="140" y="80" width="86" height="32" rx="8" class="accf"/><rect x="140" y="80" width="86" height="32" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="183.0" y="101" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">A runs</text>
+<path d="M226 96.0H676" fill="none" class="edge" stroke-width="1.25" stroke-dasharray="4 4"/>
+<rect x="380" y="86" width="176" height="20" class="tint"/>
+<text x="468" y="101" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">A blocked: waits for the page</text>
+<rect x="680" y="80" width="60" height="32" rx="8" class="accf"/><rect x="680" y="80" width="60" height="32" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="710.0" y="101" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">A again</text>
+<rect x="230" y="140" width="112" height="32" rx="8" class="tint"/><rect x="230" y="140" width="112" height="32" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="286.0" y="161" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">fault handler</text>
+<rect x="600" y="140" width="72" height="32" rx="8" class="tint"/><rect x="600" y="140" width="72" height="32" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="636.0" y="161" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">IRQ handler</text>
+<rect x="344" y="200" width="250" height="32" rx="8" class="accf"/><rect x="344" y="200" width="250" height="32" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="469.0" y="221" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">B runs: the CPU stays busy</text>
+<rect x="312" y="260" width="284" height="32" rx="8" class="tint"/><rect x="312" y="260" width="284" height="32" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="454.0" y="281" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">transfer: disk → free frame</text>
+<path d="M228 112V140" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fc)"/>
+<circle cx="244" cy="126" r="9" class="accf"/><circle cx="244" cy="126" r="9" fill="none" class="acc" stroke-width="1.25"/>
+<text x="244" y="130" font-size="11" font-weight="600" class="ink" text-anchor="middle">1</text>
+<path d="M318 172V260" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fc)"/>
+<circle cx="302" cy="246" r="9" class="accf"/><circle cx="302" cy="246" r="9" fill="none" class="acc" stroke-width="1.25"/>
+<text x="302" y="250" font-size="11" font-weight="600" class="ink" text-anchor="middle">2</text>
+<path d="M338 172V200" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fc)"/>
+<circle cx="356" cy="186" r="9" class="accf"/><circle cx="356" cy="186" r="9" fill="none" class="acc" stroke-width="1.25"/>
+<text x="356" y="190" font-size="11" font-weight="600" class="ink" text-anchor="middle">3</text>
+<path d="M598 260V172" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fc)"/>
+<circle cx="614" cy="246" r="9" class="accf"/><circle cx="614" cy="246" r="9" fill="none" class="acc" stroke-width="1.25"/>
+<text x="614" y="250" font-size="11" font-weight="600" class="ink" text-anchor="middle">4</text>
+<path d="M664 140V124H704V112" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fc)"/>
+<circle cx="648" cy="126" r="9" class="accf"/><circle cx="648" cy="126" r="9" fill="none" class="acc" stroke-width="1.25"/>
+<text x="648" y="130" font-size="11" font-weight="600" class="ink" text-anchor="middle">5</text>
+<path d="M140 312H740" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fc)"/>
+<text x="740" y="330" font-size="11.5" font-weight="400" class="quiet" text-anchor="end">time</text>
+<text x="24" y="356" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">1  A touches a page that is not in memory: a page fault, an exception (synchronous, caused by the instruction).</text>
+<text x="24" y="376" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">2  The handler finds a free frame and tells the disk controller to read the page into it by DMA. A is blocked.</text>
+<text x="24" y="396" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">3  The scheduler runs another process, B: the CPU does useful work while the disk transfers the page.</text>
+<text x="24" y="416" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">4  When the transfer is complete, the disk raises an interrupt (asynchronous, from outside).</text>
+<text x="24" y="436" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">5  The handler updates the page table and makes A ready; A re-executes the faulting instruction, which now succeeds.</text>
+</svg>

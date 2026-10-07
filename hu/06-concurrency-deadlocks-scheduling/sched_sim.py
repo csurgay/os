@@ -7,7 +7,9 @@ Usage:
   python3 sched_sim.py --switch 0.5 ...  add a context-switch cost (time units)
 
 Prints a text Gantt chart and the average waiting, turnaround and response
-times for FIFO, SJF, SRTF and Round Robin (quantum 1, 2 and 4).
+times for FIFO, SJF, SRTF, HRRN and Round Robin (quantum 1, 2 and 4).
+HRRN (highest response ratio next) is non-preemptive and picks the job with
+the largest (waiting time + burst) / burst.
 
 Conventions: a job that arrives at the moment another is preempted enters the
 ready queue before the preempted job; ties in SJF/SRTF go to the job that has
@@ -23,6 +25,7 @@ def simulate(jobs, policy, quantum=None, switch=0.0):
     first_run = {}
     timeline, queue, last = [], [], None
     pending = sorted(jobs, key=lambda j: j[1])
+    arrival = {n: a for n, a, b in jobs}; burst = {n: b for n, a, b in jobs}
     def admit(now):
         while pending and pending[0][1] <= now:
             queue.append(pending.pop(0)[0])
@@ -32,11 +35,13 @@ def simulate(jobs, policy, quantum=None, switch=0.0):
             timeline.append(("-", t, pending[0][1])); t = pending[0][1]; admit(t); continue
         if policy in ("SJF", "SRTF"):                   # pick the shortest (remaining) job: O(n)
             queue.sort(key=lambda n: left[n])
+        elif policy == "HRRN":                          # largest (W + S) / S first
+            queue.sort(key=lambda n: -((t - arrival[n]) + burst[n]) / burst[n])
         name = queue.pop(0)
         if last is not None and name != last and switch:
             timeline.append(("s", t, t + switch)); t += switch; admit(t)
         first_run.setdefault(name, t)
-        if policy in ("FIFO", "SJF"):
+        if policy in ("FIFO", "SJF", "HRRN"):
             run = left[name]                            # non-preemptive: to the end
         elif policy == "RR":
             run = min(quantum, left[name])
@@ -75,6 +80,6 @@ if __name__ == "__main__":
     print("jobs:", ", ".join(f"{n}(arrives {a:g}, needs {b:g})" for n, a, b in jobs))
     print(f"{'algorithm':10} {'wait':>6} {'turnaround':>10} {'response':>8} {'end':>6}   timeline (2 chars = 1 unit)")
     for label, pol, q in [("FIFO", "FIFO", None), ("SJF", "SJF", None), ("SRTF", "SRTF", None),
-                          ("RR q=1", "RR", 1), ("RR q=2", "RR", 2), ("RR q=4", "RR", 4)]:
+                          ("HRRN", "HRRN", None), ("RR q=1", "RR", 1), ("RR q=2", "RR", 2), ("RR q=4", "RR", 4)]:
         tl, (w, ta, r, end) = simulate(jobs, pol, q, switch)
         print(f"{label:10} {w:6.2f} {ta:10.2f} {r:8.2f} {end:6.1f}   {gantt(tl)}")

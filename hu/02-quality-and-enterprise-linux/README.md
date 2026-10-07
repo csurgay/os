@@ -15,11 +15,14 @@ Az előadás végére a hallgatók képesek lesznek:
 - felsorolni egy operációs rendszer minőségi szempontjait, és összevetni őket az ISO/IEC 25010 minőségmodellel;
 - definiálni az MTTF, MTTR, MTBF és a rendelkezésre állás fogalmát, kiszámítani a rendelkezésre állást és a megengedett leállási időt;
 - kiszámítani sorosan és párhuzamosan kapcsolt komponensek rendelkezésre állását, és megmagyarázni, miért segít a redundancia;
+- valószínűség és hatás szerint kockázati mátrixban értékelni a kockázatokat, és ennek alapján eldönteni, mire érdemes költeni a rendelkezésre állás javításából;
 - elmagyarázni az SLI, az SLO és az SLA közötti különbséget, és megmérni egy egyszerű SLI-t;
+- összehasonlítani a saját szerverek birtoklását (capex) a felhőkapacitás bérlésével (opex), és megmagyarázni, mikor melyik az olcsóbb;
 - használni a kódvonalak szókincsét: ág (branch), összefésülés (merge), fork, upstream, downstream, javítócsomag (patch), visszaportolás (backport), frissítés (update);
 - leírni, hogyan viszonyul egymáshoz a Fedora, a CentOS Stream, a RHEL, az AlmaLinux, a Rocky Linux és az Oracle Linux, és mi változott 2020-ban és 2023-ban;
 - megmagyarázni, miért portolja vissza egy vállalati disztribúció a javításokat ahelyett, hogy új verzióra váltana, és miért mond önmagában keveset a verziószám a biztonságról;
 - elmagyarázni, mi a konténerkép (rétegek, registryk, OCI), miért osztozik a konténer a gazdagép (host) kernelén, és mi következik ebből a kompatibilitásra és a támogatásra;
+- megkülönböztetni a konténerképet, a konténert és a kötetet (volume), konténerképet építeni Containerfile-ból, és megmagyarázni, miért kell a konténer fő folyamatának az előtérben futnia;
 - összehasonlítani a család alapképeit (UBI és változatai, Fedora, CentOS Stream, AlmaLinux, Rocky Linux) és felhasználási feltételeiket, valamint megnevezni a Podman, a Buildah, a Skopeo és az image mode szerepét.
 
 <details>
@@ -78,6 +81,14 @@ Az „arányosság” külön megjegyzést érdemel: az adatközpontokban az **e
 
 Amit nem lehet mérni, azt nem lehet megígérni. A szervezetek ezért **kulcsfontosságú teljesítménymutatókat** (key performance indicators, KPI) követnek: néhány számot, amelyből látszik, hogy egy rendszer azt teszi-e, amit kell. Egy operációs rendszer vagy a rajta futó szolgáltatás legfontosabb KPI-jai a **megbízhatóságot** (milyen ritkán hibásodik meg) és a **rendelkezésre állást** (az idő mekkora részében működik) mérik.
 
+Nem ezek az egyetlenek. Egy operációs rendszer és a rajta futó szolgáltatások KPI-jai három csoportba sorolhatók:
+
+- **teljesítmény:** **átbocsátóképesség** (throughput: kérés vagy tranzakció másodpercenként), **késleltetés** (latency: válaszidő, általában **percentilisként** megadva, például „a kérések 99%-ára 200 ms-on belül érkezik válasz”, mert az átlag elrejti azt a lassú kisebbséget, amelyet a felhasználók észrevesznek), valamint a CPU, a memória, a lemez és a hálózat **kihasználtsága** (utilisation);
+- **hatékonyság:** magának az operációs rendszernek a többletterhelése (a [történeti előadás](../01-historic-evolution/) $\eta_{OS}$-e), a kérésenként felhasznált energia, az indulási (boot) idő;
+- **üzemeltetés:** egy biztonsági javítás közzétételétől addig eltelt idő, amíg minden szerverre feltelepül, a teljesen naprakész szerverek aránya, a havi incidensek száma és az MTTR.
+
+A jó KPI-t automatikusan mérik, célértéke van, és ha nem teljesül, intézkedés következik belőle. A szakasz további része a két legfontosabbal, a megbízhatósággal és a rendelkezésre állással foglalkozik.
+
 ### MTTF, MTTR és MTBF
 
 ![A rendszer felváltva működik és javítás alatt áll](mtbf-mttr.svg)
@@ -128,6 +139,10 @@ Két egyszerű, egyenként két kilences gép együtt négy kilencest ad, felté
 <summary><b>Egyszerűen elmagyarázva:</b> KPI, megbízhatóság, rendelkezésre állás, MTTF, MTTR, MTBF, leállási idő, redundancia, soros, párhuzamos, egyedüli hibapont, terheléselosztó, kádgörbe, tervezett leállás, csökkent szolgáltatási szint, RTO, RPO, hibatűrés</summary>
 
 - **KPI** (Key Performance Indicator, kulcsfontosságú teljesítménymutató): az a néhány legfontosabb szám, amely megmutatja, mennyire mennek jól a dolgok, mint egy diák tanulmányi átlaga.
+- **Átbocsátóképesség, késleltetés:** az átbocsátóképesség az, hogy másodpercenként mennyi munka készül el, mint ahány autó percenként áthalad egy hídon; a késleltetés az, hogy egyetlen munka mennyi ideig tart, mint ameddig egy autó átér a hídon.
+- **Percentilis:** „a 99. percentilis 200 ms” azt jelenti, hogy 100 kérésből 99 legfeljebb 200 ms alatt teljesült. Megmutatja azokat a lassú eseteket, amelyeket az átlag elrejt.
+- **Kihasználtság:** az idő mekkora részében dolgozik egy erőforrás, mint ahány órát naponta jár egy mosógép.
+- **Incidens:** nem tervezett esemény, amely megzavar egy szolgáltatást, például egy leállás vagy egy biztonsági betörés.
 - **Megbízhatóság:** milyen ritkán romlik el valami. **Rendelkezésre állás:** az idő mekkora részében használható. Az az autó, amely évente egyszer romlik el, de egy hónapig javítják, megbízható, de nem nagyon áll rendelkezésre.
 - **MTTF, MTTR, MTBF:** átlagos idő a meghibásodásig, a javításig, illetve két meghibásodás között.
 - **Leállási idő:** az az idő, amíg a rendszer nem működik.
@@ -140,6 +155,30 @@ Két egyszerű, egyenként két kilences gép együtt négy kilencest ad, felté
 - **Csökkent szolgáltatási szint (degraded):** működik, de rosszabbul a szokásosnál, például lassan vagy csak a felhasználók egy részének.
 - **RTO, RPO** (Recovery Time / Point Objective): milyen gyorsan kell a szolgáltatásnak egy katasztrófa után újra működnie, és mennyi a legfrissebb adatokból veszhet el.
 - **Hibatűrés, helyreállíthatóság:** az a képesség, hogy hiba ellenére is tovább működik, illetve hogy hiba után visszatér a normális működéshez.
+
+</details>
+
+### Mire költsünk a rendelkezésre állásból: a kockázati mátrix
+
+Minden újabb kilences pénzbe kerül, ezért oda érdemes költeni, ahol a legtöbb kockázatot szünteti meg. A kockázatértékelés minden fenyegetést két tényező szerint ítél meg: a **valószínűsége** (milyen gyakran várható, hogy bekövetkezik) és a **hatása** (mekkora kárt okoz, ha bekövetkezik) szerint; a kockázat e kettő együttese (Joint Task Force Transformation Initiative, 2012). Ha mindkettő számszerűen becsülhető, szorzatuk az évi várható veszteség: egy ötévente egyszer várható meghibásodás, amely 50 000 euró kiesett bevételbe és javításba kerül, évi 10 000 euró kockázatot jelent, így egy intézkedés, amely megszünteti, évente nagyjából ennyit ér meg. Gyakrabban mindkettőt durva skálán becsülik, és a fenyegetéseket egy **kockázati mátrixban** helyezik el:
+
+![Kockázati mátrix: valószínűség és hatás, egy szervert érő példafenyegetésekkel](risk-matrix.svg)
+
+A cella színe a választ sugallja. Az alacsony kockázatot **elfogadják** és figyelik. A nagyobbat **csökkentik**: vagy kevésbé valószínűvé teszik (teszteléssel, karbantartással, olyan felügyelettel, amely észreveszi a problémát, mielőtt meghibásodás lesz belőle), vagy kevésbé károssá (redundanciával, mentésekkel, gyors helyreállítással). **Át is hárítható** valaki másra, biztosítással vagy SLA-t tartalmazó kiszervezési szerződéssel, bár a jóváírás ritkán fedezi az ügyfél teljes kárát. És **elkerülhető** is, ha a kockázatos dolgot egyáltalán nem tesszük.
+
+Ennek az előadásnak a mennyiségei mindkét tengelyhez eszközt adnak. A meghibásodási ráta (1/MTTF) a meghibásodás valószínűsége; az MTTR, az RTO és az RPO a hatását határozza meg: meddig áll a szolgáltatás, és mennyi adat vész el. A redundancia főleg a hatást csökkenti: egy RAID 1 tükörben lévő lemez ugyanolyan gyakran hibásodik meg, mint addig, de a meghibásodása leállás helyett csak egy lemezcserébe kerül. A mátrix azt is megmutatja, hogy a legsúlyosabb kockázatok gyakran nem egyes komponensek. Egy minden szerverre átmásolt konfigurációs hiba egyszerre hatástalanítja az összes redundanciát (a fenti közös egyedüli hibapont), zsarolóvírus vagy adatközponti tűz ellen pedig csak a máshol tárolt mentések segítenek, mert az ugyanott lévő redundáns másolatokat együtt titkosítják vagy együtt égnek el.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> kockázat, valószínűség, hatás, várható veszteség, kockázati mátrix, elfogadás, csökkentés (mitigáció), áthárítás, elkerülés, RAID 1, zsarolóvírus, mentés</summary>
+
+- **Kockázat:** valami rossz, ami megtörténhet, aszerint megítélve, mennyire valószínű és mekkora kárt okozna.
+- **Valószínűség, hatás:** milyen gyakran várható, hogy valami bekövetkezik, és mekkora kárt okoz, ha bekövetkezik. A defekt valószínű, de olcsó; a háztűz valószínűtlen, de szörnyű.
+- **Várható veszteség:** egy esemény kára szorozva azzal, milyen gyakran fordul elő. Egy kétévente várható 500 eurós javítás átlagosan évi 250 euróba „kerül”.
+- **Kockázati mátrix:** táblázat, amelynek egyik oldalán a valószínűség, a másikon a hatás áll; minden fenyegetés kap egy cellát, és a veszélyes sarok az, ahol mindkettő nagy.
+- **Elfogadás, csökkentés (mitigáció), áthárítás, elkerülés:** a négy dolog, amit egy kockázattal tehetsz: együtt élsz vele, kisebbé teszed, mással viseled (mint a biztosításnál), vagy abbahagyod azt, ami okozza.
+- **RAID 1** (tükrözés): két lemez, amelyeken mindig ugyanaz az adat van, így az egyik tönkremehet anélkül, hogy bármi elveszne.
+- **Zsarolóvírus (ransomware):** kártevő program, amely titkosítja az áldozat fájljait, és pénzt követel a kulcsért.
+- **Mentés (backup):** az adatok külön másolata, amelyből visszaállíthatók; legjobb, ha másik helyen tárolják, hogy egyetlen katasztrófa ne pusztíthassa el mindkettőt.
 
 </details>
 
@@ -201,6 +240,34 @@ Az ügyfél számára az előfizetés ára csak egy része a **teljes birtoklás
 
 </details>
 
+### Birtoklás vagy bérlés: capex, opex és a felhő
+
+A TCO nagy részéről az dönt, hogy egy szervezet egyáltalán saját szervereket üzemeltet-e. A két lehetőség költségszerkezete eltérő:
+
+- **Saját adatközpont (on-premises).** A szervereket, tárolókat és hálózati eszközöket blokkokban vásárolják meg, **tőkekiadásként** (capital expenditure, **capex**): ez előre kifizetett beruházás, amelyet több év alatt írnak le. Az üzemeltetés **működési kiadással** (operating expenditure, **opex**) jár: személyzet, áram, hűtés, hely és támogatási előfizetések. Mivel az új hardver megrendelése és üzembe helyezése heteket vesz igénybe, az igény *előtt* kell megvenni. Minden vásárlás után van kifizetett, de kihasználatlan, tétlen kapacitás; ha az igény az előrejelzésnél gyorsabban nő, a következő blokk megérkezéséig hiány van (lent az A panel).
+- **Felhő.** A számítási kapacitást órára vagy másodpercre, a tárhelyet gigabájtra és hónapra bérlik, tisztán opexként. A kapacitás perceken belül követheti az igényt (**rugalmasság**, elasticity), így sem a tétlen kapacitással, sem a hiánnyal nem kell előre tervezni: a téves előrejelzés kockázata az ügyféltől a szolgáltatóra kerül (Armbrust et al., 2010).
+
+![A panel: a saját kapacitás lépcsőkben, az igény előtt nő; B panel: a saját szerverek költségének nagy fix része van és lépcsőzetes, a felhő költsége a terheléssel arányosan nő](cloud-vs-own.svg)
+
+A B panel a havi költségeket hasonlítja össze a terhelés függvényében. A birtoklásnak nagy fix része van (legalább egy blokk szerver és egy minimális személyzet, kis terhelés mellett is), utána lépcsőkben nő; a bérlés közel nulláról indul, és a használattal arányosan nő, de meredekebben, mert a szolgáltató ára fedezi a saját hardverét, személyzetét, az összes ügyfele számára fenntartott tartalékkapacitást és a nyereségét. Innen a hüvelykujjszabály: a felhő olcsóbb egy új vagy kis szolgáltatásnak, hullámzó vagy szezonális terhelésnél (egy webáruház karácsony előtt, egy egyetem tárgyfelvétele a félév első hetében) és olyan kísérleteknél, amelyeket a következő hónapban talán leállítanak; nagy, egyenletes és kiszámítható terhelésnél általában a birtoklás az olcsóbb. Több nagy cég ezért költöztetett vissza szolgáltatásokat a nyilvános felhőből a saját adatközpontjába; a Dropbox például közel 75 millió dollár megtakarításról számolt be két év alatt, miután munkaterhelései nagy részét a nyilvános felhőből saját, egyedi tervezésű infrastruktúrájára költöztette bérelt adatközponti helyeken (Wang & Casado, 2021). Sok szervezet ezért kombinálja a kettőt: saját szerverek az egyenletes alapterhelésre, felhő a csúcsokra.
+
+Nem az ár az egyetlen szempont. A törvény előírhatja, hogy bizonyos adatokat egy adott országban tároljanak; az adatok *kivitele* a felhőből külön díjba kerül (kimenő forgalmi díj, egress fee); egy szolgáltató szolgáltatásait nehéz átvinni egy másikhoz (szállítói függőség, vendor lock-in); és a személyzetnek más készségekre van szüksége. Ennek az előadásnak a fogalmaival: a felhő a capex-döntést opex-döntéssé alakítja, és a költséget a használattal *arányossá* teszi, ami ugyanaz a szempont, mint az első szakasz energiaarányossága.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> on-premises, capex, opex, leírás, felhő, rugalmasság, megtérülési pont, kimenő forgalmi díj, szállítói függőség</summary>
+
+- **On-premises (helyben üzemeltetett):** a szerverek a szervezet saját épületében vagy bérelt szervertermében állnak, és ő maga birtokolja és üzemelteti őket.
+- **Capex** (capital expenditure, tőkekiadás): egyszerre kifizetett pénz valamiért, amit évekig használnak, mint egy autó megvásárlása.
+- **Opex** (operating expenditure, működési kiadás): folyamatosan fizetett pénz a működtetésért, mint az üzemanyag, vagy egy autó napi bérlése.
+- **Leírás (értékcsökkenés):** egy hosszú életű vásárlás árának szétosztása a használat éveire, így egy négy évig használt, 4000 eurós szerver évente 1000 euróba „kerül”.
+- **Felhő:** egy szolgáltató adatközpontjaiban álló számítógépek, amelyeket az ügyfelek az interneten át bérelnek, és a használat szerint fizetnek értük.
+- **Rugalmasság (elasticity):** az a képesség, hogy terhelésnövekedéskor perceken belül több kapacitást kapjunk, és csökkenéskor visszaadjuk.
+- **Megtérülési pont (break-even):** az a pont, ahol két lehetőség ugyanannyiba kerül; az egyik oldalán az első olcsóbb, a másikon a második.
+- **Kimenő forgalmi díj (egress fee):** az a díj, amelyet egy felhőszolgáltató az adatközpontjaiból kiküldött adatokért számol fel.
+- **Szállítói függőség (vendor lock-in):** annyira függeni egyetlen szállító különleges szolgáltatásaitól, hogy a másikra való átállás nagyon drágává válik.
+
+</details>
+
 ## A kódvonalak szókincse
 
 Egy operációs rendszer nem egyetlen kódbázis, hanem több ezer projekt, amelyek mindegyike szétváló és egyesülő történeti vonalak mentén fejlődik. Ennek szavai a szoftverfejlesztésből és az üzemeltetésből származnak; az elsők az olyan verziókezelő rendszerekből, mint a Git:
@@ -219,7 +286,7 @@ Egy operációs rendszer nem egyetlen kódbázis, hanem több ezer projekt, amel
 | **függőség (dependency)** | másik csomag, amelyre egy programnak a működéséhez szüksége van; egy patch is függhet attól, hogy más patcheket előbb alkalmazzanak |
 | **visszaportolás (backport)** | egy újabb verzióban készült javítás átvétele és hozzáigazítása egy régebbi, még támogatott verzióhoz |
 | **telepítés (install)** | egy kiadás felrakása egy gépre |
-| **frissítés (update, patch deployment)** | javítások alkalmazása már telepített, használatban lévő rendszereken, újratelepítés nélkül |
+| **frissítés (update, patch deployment, retrofit)** | javítások alkalmazása már telepített, használatban lévő rendszereken, újratelepítés nélkül |
 
 **A patchek függőségei a gyakorlatban.** Tegyük fel, hogy egy biztonsági javítás a legújabb kernelhez készült. Amikor egy öt évvel régebbi kernelre portolják vissza, a karbantartók gyakran azt tapasztalják, hogy a javítás olyan segédfüggvényekre vagy adatszerkezet-változásokra támaszkodik, amelyek közben kerültek be. Ilyenkor előbb ezeket a korábbi patcheket (a javítás függőségeit) is vissza kell portolniuk, mindegyiket a régi kódhoz igazítva, és tesztelniük kell, hogy egyikük sem változtatja meg a stabil interfészeket. Egyetlen upstream patchből így egy tucatnyi downstream patchből álló sorozat lehet.
 
@@ -240,7 +307,7 @@ Ebből a szókincsből két munkaszabály következik:
 - **Patch (javítócsomag):** pontos leírás arról, mely sorokat kell megváltoztatni, mint egy nyomtatott könyvhöz mellékelt hibajegyzék.
 - **Függőség:** valami, ami egy programnak a működéséhez kell, mint a távirányítónak az elem.
 - **Visszaportolás (backport):** az új modellhez tervezett javítás átvétele és hozzáigazítása a régi modellhez, amelyet a vásárlók még használnak.
-- **Frissítés (patch deployment):** fejlesztés beszerelése valamibe, ami már használatban van, mint amikor régi autókba utólag biztonsági övet szerelnek.
+- **Frissítés (patch deployment, retrofit):** fejlesztés beszerelése valamibe, ami már használatban van, mint amikor régi autókba utólag biztonsági övet szerelnek; a „retrofit” (utólagos beépítés) éppen erre használt általános mérnöki szó.
 - **Élő javítás (live patching):** a futó kernel javítása a memóriában, újraindítás nélkül (a Red Hat eszköze a kpatch, az Oracle-é a Ksplice): olyan frissítés, amely elkerüli a tervezett leállást.
 
 </details>
@@ -334,6 +401,80 @@ Egy virtuális gép egy teljes számítógépet szimulál, így mindegyik a saj�
 A **konténerkép** az a becsomagolt fájlrendszer, amelyből egy konténer elindul. Csak olvasható **rétegek** (layer) halmaza, mindegyiket tartalmának kriptográfiai hash-e (ujjlenyomata) azonosítja: egy alapréteg egy disztribúció felhasználói terével, majd építési lépésenként egy-egy réteg, amely csomagokat vagy az alkalmazást adja hozzá. Az ugyanarra az alapra épített képek osztoznak ezen a rétegen, amelyet így csak egyszer kell tárolni és letölteni. A képeket **registrykben** (regisztrációs adatbázis, registry) tárolják: olyan szervereken, amelyekről név alapján letölthetők (pull), például `registry.access.redhat.com/ubi9/ubi-minimal`.
 
 Maga az elszigetelés régebbi, mint amit a „konténer” szó sejtet: előbb jöttek a FreeBSD jailek (2000), a Solaris Zones (2004), valamint a Linux cgroupok és az LXC (2008). A Docker 2013-tól tette népszerűvé, egyszerű képformátumot és munkafolyamatot adva hozzá: építsd meg a képet egyszer, töltsd fel egy registrybe, és futtasd bárhol. Hogy a képek ne egyetlen cég eszközeitől függjenek, a Docker, a CoreOS és mások 2015. június 22-én a Linux Foundation keretében megalapították az **Open Container Initiative-et (OCI)**. Ez három specifikációt gondoz: a *futtatási* (runtime) specifikációt (hogyan kell egy konténert futtatni), a *kép* (image) specifikációt (a képek és rétegek formátuma) és a *terjesztési* (distribution) specifikációt (hogyan szolgálják ki őket a registryk) (Open Container Initiative, n.d.). Az egyik OCI-eszközzel épített kép bármely másikkal letölthető és futtatható (ugyanazon a CPU-architektúrán), és ez teszi lehetővé a gyártókon átívelő képökoszisztémát.
+
+### Kép, konténer, kötet
+
+A kép és a konténer úgy viszonyul egymáshoz, mint egy tervrajz és az alapján épült dolgok, vagy mint a programozásban egy osztály és objektumai: a `podman run` *példányosítja* a képet, és ugyanabból a képből egyszerre akárhány konténer futhat. Maga a kép sosem változik, **megváltoztathatatlan** (immutable). Minden konténer saját vékony **írható réteget** (writable layer) kap a kép csak olvasható rétegei fölött. Ha egy folyamat a konténerben fájlt hoz létre vagy módosít, a változás ebbe a rétegbe kerül (a módosított fájlt előbb felmásolják az alatta lévő csak olvasható rétegből, ez az **írásra másolás**, copy-on-write; a törölt fájlt csak elrejtik). Az írható réteg a konténerhez tartozik, és vele együtt törlődik (Docker Inc., n.d.-c).
+
+![A Containerfile lépéseiből lesznek a kép rétegei és konfigurációja; minden konténer saját írható réteget ad hozzá; a kötet a konténereken kívül él](image-container-volume.svg)
+
+A megmaradó adatoknak ezért nincs helyük a konténerben. A **kötet** (volume) a konténermotor által kezelt tárhely (vagy *bind mount*-ként a gazdagép egy könyvtára), amelyet a konténerbe egy útvonalra, például a `/data` vagy a `/var/lib/mysql` alá csatolnak. Minden konténertől függetlenül él, így egy konténer eltávolítható és egy újabb képből indított konténerre cserélhető (ez a lent tárgyalt „újraépítés és újratelepítés”), miközben az adatbázisfájlok a helyükön maradnak. A konténerek tehát eldobhatók, egy szolgáltatás állapota a köteteiben él; a mért bemutató a [Konténer, írható réteg és kötet](#konténer-írható-réteg-és-kötet) szakaszban található.
+
+A konténer pontosan addig él, amíg a **fő folyamata** (main process). A `podman run` parancsnak megadott vagy a kép alapértelmezett `CMD`-jében szereplő parancs a konténer saját folyamatnévterében az 1-es folyamatként fut; amikor kilép, a konténer leáll, és minden más folyamatát leállítják. Egy hagyományos Unix-szerver **démonizálja magát** (daemonise): az elindított folyamat forkol egy gyermeket, amely a háttérben végzi a munkát, ő maga pedig azonnal kilép, ami konténerben a konténer azonnali leállását jelentené. Konténerben ezért a szervereket az előtérben indítják, például az Apache-t `httpd -D FOREGROUND`, az nginxet `-g 'daemon off;'` kapcsolóval. A motor a fő folyamat szabványos kimenetét és hibakimenetét a konténer naplójaként gyűjti is (`podman logs`).
+
+### Kép építése: kézzel vagy Containerfile-ból
+
+Egy kép kézzel is elkészíthető, nagyjából úgy, ahogy egy szervert beállítanánk:
+
+```bash
+podman pull registry.access.redhat.com/ubi9/ubi
+podman run -it --name work registry.access.redhat.com/ubi9/ubi /bin/bash
+#   inside the container: dnf install -y httpd, edit /etc/httpd/conf/httpd.conf, then exit
+podman commit work registry.example.com/web/httpd:1.0
+podman push registry.example.com/web/httpd:1.0
+```
+
+A shellből való kilépés befejezi a konténer fő folyamatát, így a konténer leáll (a `-d` kapcsolóval a háttérben indított konténert a `podman stop` állítja le). A `podman commit` a leállt konténer írható rétegéből új képréteget készít, a `podman push` pedig feltölti a képet egy registrybe. Ez működik, de mindenhez, amit élesben használnak, antiminta (anti-pattern). Később senki sem tudja megmondani, pontosan mi történt: a kép csak a konténer által futtatott parancsot rögzíti, a shellbe gépelt parancsokat nem. A munka nem ismételhető meg automatikusan, amikor az alapkép biztonsági javítást kap, ami meghiúsítja az „újraépítés és újratelepítés” elvét. Minden, ami a konténerben maradt, a képbe kerül: csomaggyorsítótárak, ideiglenes fájlok, a shell előzményei. És a konténer beállításaiból a kép beállításai lesznek, ahogy az alábbi bemutató megmutatja.
+
+A reprodukálható út a **Containerfile** (a Docker nevén Dockerfile): építési lépések szövegfájlja, amelyet az alkalmazás mellett verziókezelőben tartanak, és egyetlen parancs, amely felépíti:
+
+```dockerfile
+FROM registry.access.redhat.com/ubi9/ubi
+RUN dnf install -y httpd && dnf clean all
+COPY httpd.conf /etc/httpd/conf/httpd.conf
+EXPOSE 8080
+USER apache
+CMD ["httpd", "-D", "FOREGROUND"]
+```
+
+```bash
+podman build -t registry.example.com/web/httpd:1.0 .
+```
+
+(Ez vázlat: a konfigurációs fájl a 8080-as portra állítja a httpd-t, mert az 1024 alatti portokhoz root kell; egy éles kép a napló- és futási könyvtárak tulajdonosát is a nem root felhasználóhoz igazítja.) A végén álló `.` az **építési környezet** (build context), az a könyvtár, amelynek fájljait a `COPY` használhatja. Minden utasításból vagy egy réteg, vagy egy konfigurációs sor lesz (Docker Inc., n.d.-a):
+
+| Utasítás | Mit csinál? | A képben |
+| --- | --- | --- |
+| `FROM` | megnevezi az alapképet, amelyre az építés épül | az alapkép rétegei, változatlanul újrahasznosítva |
+| `RUN` | építés közben egy parancsot futtat egy ideiglenes konténerben | új réteg a parancs által módosított fájlokkal |
+| `COPY` | fájlokat másol az építési környezetből a képbe | új réteg |
+| `EXPOSE` | dokumentálja a portot, amelyen a szolgáltatás figyel | csak konfiguráció |
+| `USER` | az a felhasználó, amelynek nevében a későbbi `RUN` lépések és a konténer fő folyamata fut | csak konfiguráció |
+| `WORKDIR` | a munkakönyvtár a későbbi lépések és a konténer számára | konfiguráció (a könyvtárat létrehozza, ha hiányzik) |
+| `CMD` | az alapértelmezett parancs: a konténer fő folyamata | csak konfiguráció |
+
+A rétegekből két következmény adódik. Egy későbbi lépésben törölt fájl a korábbi rétegben továbbra is helyet foglal, ezért a `dnf install` és a `dnf clean all` *egyetlen* `RUN` lépésben fut. Az építő ráadásul a korábbi építésekből újrahasznosítja a változatlan lépések rétegeit, ezért a ritkán változó lépések (csomagok telepítése) a gyakran változók (az alkalmazás bemásolása) előtt állnak.
+
+**Képnevek.** A teljes képnév alakja `registry/namespace/name:tag`, például `registry.example.com/web/httpd:1.0` vagy `registry.access.redhat.com/ubi9/ubi-minimal:latest`: a registry gépneve (opcionálisan porttal), egy névtér (felhasználó, szervezet vagy projekt), a tároló (repository) neve és egy **címke** (tag) (Docker Inc., n.d.-b). Registry megadása nélkül a Docker a Docker Hubot (`docker.io`) feltételezi, a Podman pedig az `/etc/containers/registries.conf` fájlban felsorolt registrykben keres, ezért biztonságosabbak a teljes nevek. Címke nélkül a `latest` címkét használják. A neve ellenére a `latest` csak alapértelmezett címke, nem garancia a legújabb verzióra: arra mutat, amit legutóbb ezzel a címkével töltöttek fel, és elmozdul. A `:1.0`-hoz hasonló verziócímkéket is áthelyezheti, aki feltölt, ezért a pontosan reprodukálandó telepítés a kép **kivonatával** (digest, `name@sha256:…`), a tartalma hash-ével nevezi meg a képet. Ennek ára ugyanaz, mint amit lent az „újraépítés és újratelepítés” kapcsán tárgyalunk: a kivonathoz rögzített kép addig nem kap javításokat, amíg valaki újra nem építi, és szándékosan át nem állítja a rögzítést.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> tervrajz, példány, megváltoztathatatlan, írható réteg, írásra másolás, kötet, bind mount, fő folyamat, 1-es folyamat, démonizálás, előtér, commit, push, antiminta, Containerfile, építési környezet, EXPOSE, címke, latest, kivonat</summary>
+
+- **Tervrajz, példány:** a tervrajz egy ház terve; minden belőle épült ház egy példány. A kép a terv, minden konténer egy ház.
+- **Megváltoztathatatlan (immutable):** elkészülte után nem lehet megváltoztatni. Ha a képen változtatni akarsz, újat építesz.
+- **Írható réteg:** a konténer saját piszkozatlapja a kép fölé terítve; minden, amit a konténer ír, oda kerül, és a konténerrel együtt kidobják.
+- **Írásra másolás (copy-on-write):** egy fájlt csak abban a pillanatban másolnak le, amikor valaki módosítani akarja, mint amikor egy könyvtári könyv oldalát lefénymásolod, mielőtt ráírnál.
+- **Kötet, bind mount:** a konténeren kívül élő tárhely, amelyet egy mappánál bedugnak a konténerbe; a bind mount magának a gazdagépnek egy mappáját dugja be. Ami oda kerül, megmarad, amikor a konténert törlik.
+- **Fő folyamat, 1-es folyamat:** az első program, amely a konténerben elindul; amikor véget ér, a konténer is véget ér.
+- **Démonizálás, előtér:** a démonizáló program elindítja egy másolatát a háttérben, és kilép; az előtérben futó program maga fut tovább. Konténerben az első program kilépése mindent leállít.
+- **Commit, push:** a commit egy konténer változásait új képként menti el; a push feltölt egy képet egy registrybe.
+- **Antiminta (anti-pattern):** olyan módszer, amely látszólag működik, de később gondokat okoz.
+- **Containerfile, építési környezet:** a kép receptje lépésről lépésre, és az a mappa, amelyből a recept fájlokat vehet.
+- **EXPOSE:** megjegyzés a képben arról, melyik hálózati porton figyel a program.
+- **Címke (tag), latest:** a címke egy képverzió felirata, például „1.0”; a „latest” az a felirat, amelyet akkor használnak, ha nincs megadva más, és nem feltétlenül a legújabbat jelenti.
+- **Kivonat (digest):** egy kép pontos tartalmának ujjlenyomata (hash-e); ugyanaz a kivonat mindig pontosan ugyanazt a képet jelenti.
+
+</details>
 
 ### Alapképek és registryk
 
@@ -624,6 +765,128 @@ Nagyobb léptékben ugyanez a mechanizmus teszi lehetővé, hogy több száz, UB
 
 </details>
 
+### Konténer, írható réteg és kötet
+
+A `container-lifecycle/` mappa egy második minimális képet tartalmaz. Egyetlen programja, a `tool.c` (ismét statikusan linkelve) egy sort tud hozzáfűzni egy fájlhoz (`tool write FILE TEXT`), ki tud írni egy fájlt (`tool cat FILE`), létre tud hozni egy könyvtárat adott tulajdonossal (`tool mkdir DIR UID`, ezt építéskor használjuk), és szervert tud játszani (`tool serve`), vagy az előtérben, vagy a `--daemon` kapcsolóval úgy, hogy egy klasszikus démonhoz hasonlóan háttérben futó gyermeket forkol, és kilép. A `Containerfile` a fenti táblázat utasításainak többségét használja:
+
+```dockerfile
+# Each instruction below adds either a file-system layer or only metadata.
+FROM scratch
+COPY --chmod=755 tool /bin/tool
+RUN ["/bin/tool", "mkdir", "/data", "1000"]
+COPY app.conf /etc/app.conf
+EXPOSE 8080
+USER 1000
+WORKDIR /data
+CMD ["/bin/tool", "serve"]
+```
+
+(A `--chmod=755` a program jogosultságait a képben állítja be, függetlenül attól, milyenek az építési könyvtárban; a `RUN` az exec formát, argumentumlistát használ, mert egy `FROM scratch` alapú képben nincs shell.) A `docker build -f Containerfile -t course/app:1.0 .` paranccsal megépítve az előzmények megmutatják, mely lépések adtak hozzá fájlokat:
+
+```console
+$ docker history course/app:1.0
+IMAGE          CREATED                  CREATED BY                                   SIZE      COMMENT
+cfe360c7eca9   Less than a second ago   CMD ["/bin/tool" "serve"]                    0B        buildkit.dockerfile.v0
+<missing>      Less than a second ago   WORKDIR /data                                4.1kB     buildkit.dockerfile.v0
+<missing>      Less than a second ago   USER 1000                                    0B        buildkit.dockerfile.v0
+<missing>      Less than a second ago   EXPOSE [8080/tcp]                            0B        buildkit.dockerfile.v0
+<missing>      Less than a second ago   COPY app.conf /etc/app.conf # buildkit       12.3kB    buildkit.dockerfile.v0
+<missing>      Less than a second ago   RUN /bin/tool mkdir /data 1000 # buildkit    20.5kB    buildkit.dockerfile.v0
+<missing>      Less than a second ago   COPY --chmod=755 tool /bin/tool # buildkit   836kB     buildkit.dockerfile.v0
+```
+
+A `COPY` és a `RUN` rétegeket adott hozzá; az `EXPOSE`, a `USER` és a `CMD` egyet sem. Ez az építő a `WORKDIR`-t saját apró rétegként rögzítette, bár a `/data` már létezett: hogy pontosan mely lépésekből lesz réteg, az az építő részletkérdése, de valódi helyet csak a fájlváltozások foglalnak. Az alábbi parancsok a `container-lifecycle/demo.sh` szkriptben vannak, a kimenetek pedig ugyanabból a futásból származnak, mint a fenti építés.
+
+**Az írható réteg a konténerrel együtt eltűnik.** A `c1` konténerben írt fájl nem látszik egy második, ugyanabból a képből indított konténerben, a `docker diff` pedig felsorolja, mi van a `c1` írható rétegében (`A` hozzáadott, `C` módosított):
+
+```console
+$ docker run --name c1 course/app:1.0 tool write notes.txt "written in container c1"
+$ docker run --rm course/app:1.0 tool cat notes.txt
+notes.txt: No such file or directory
+$ docker diff c1
+C /data
+A /data/notes.txt
+```
+
+Amikor a `c1`-et eltávolítják (`docker rm c1`), az írható rétege és a `notes.txt` végleg eltűnik. A `/data` alá csatolt **kötettel** a fájl túléli az őt író konténert (a `--rm` minden konténert töröl, amint véget ér):
+
+```console
+$ docker volume create appdata
+appdata
+$ docker run --rm -v appdata:/data course/app:1.0 tool write notes.txt "kept in the volume"
+$ docker run --rm -v appdata:/data course/app:1.0 tool cat notes.txt
+kept in the volume
+```
+
+**A konténer addig él, amíg a fő folyamata.** Két konténert indítunk a háttérben (`-d`): az egyiket az alapértelmezett paranccsal, egy előtérben futó szerverrel, a másikat a démonizáló változattal:
+
+```console
+$ docker run -d --name fg course/app:1.0
+99bc7b3683c32bc58b2b3da0125a485e8fee2cc6d538ea50ff51fd33bb4862eb
+$ docker run -d --name bg course/app:1.0 tool serve --daemon
+094ad61fdc11042a1030a98a782e2e2161018ea26e22e583af6edfaab25dd416
+$ docker ps -a --filter name=fg --filter name=bg --format 'table {{.Names}}\t{{.Command}}\t{{.Status}}'
+NAMES     COMMAND                 STATUS
+bg        "tool serve --daemon"   Exited (0) 2 seconds ago
+fg        "/bin/tool serve"       Up 2 seconds
+$ docker logs bg
+server: started in the background as pid 7, parent (pid 1) exits
+```
+
+A démonizáló szerver a konténere 1-es folyamata volt. Elindította háttérben futó gyermekét (a 7-es folyamatot), majd „sikeresen” kilépett, és vele együtt leállt a konténer is, magával víve a gyermeket. Ezt akadályozza meg a `httpd -D FOREGROUND`.
+
+**Mit rögzít a `commit`?** Egy rootként (`--user 0`) indított konténer módosítja az `/etc/app.conf` fájlt, majd a konténert új képként mentjük (commit):
+
+```console
+$ docker run --user 0 --name edit course/app:1.0 tool write /etc/app.conf "colour=blue"
+$ docker commit edit course/app:1.1-manual
+sha256:12301fc7ca5bdbdff31c89804bbee167642a8e77e1c38dc7eff60dc1c9ec0e06
+$ docker history course/app:1.1-manual
+IMAGE          CREATED                  CREATED BY                                   SIZE      COMMENT
+12301fc7ca5b   Less than a second ago   tool write /etc/app.conf colour=blue         12.3kB    
+cfe360c7eca9   4 seconds ago            CMD ["/bin/tool" "serve"]                    0B        buildkit.dockerfile.v0
+<missing>      4 seconds ago            WORKDIR /data                                4.1kB     buildkit.dockerfile.v0
+<missing>      4 seconds ago            USER 1000                                    0B        buildkit.dockerfile.v0
+<missing>      4 seconds ago            EXPOSE [8080/tcp]                            0B        buildkit.dockerfile.v0
+<missing>      4 seconds ago            COPY app.conf /etc/app.conf # buildkit       12.3kB    buildkit.dockerfile.v0
+<missing>      4 seconds ago            RUN /bin/tool mkdir /data 1000 # buildkit    20.5kB    buildkit.dockerfile.v0
+<missing>      4 seconds ago            COPY --chmod=755 tool /bin/tool # buildkit   836kB     buildkit.dockerfile.v0
+$ docker image inspect -f 'Cmd={{.Config.Cmd}} User={{.Config.User}}' course/app:1.0 course/app:1.1-manual
+Cmd=[/bin/tool serve] User=1000
+Cmd=[tool write /etc/app.conf colour=blue] User=0
+```
+
+Az új réteg megvan, de az előzmények csak azt mondják meg, milyen parancsot futtatott a konténer, azt nem, hogy miért, vagy mi mást gépeltek még be. Ami rosszabb: a commitolt kép átvette a szerkesztő konténer beállításait: alapértelmezett parancsa most az egyszeri szerkesztés, és az 1000-es felhasználó helyett rootként fut. Egy belőle indított konténer a szerver elindítása helyett még egyszer hozzáfűzné ugyanazt a sort a konfigurációs fájlhoz, és kilépne. Egy ilyen kép javítása a munka kézi megismétlését jelenti; Containerfile-lal a változás egyetlen további, átnézett sor és egy újraépítés.
+
+**Nevek és címkék.** A címke csak egy névre mutató hivatkozás: a címkézés nem készít másolatot, és ha a címkét elhagyjuk, az `latest` lesz:
+
+```console
+$ docker tag course/app:1.0 registry.example.com/course/app:1.0
+$ docker tag course/app:1.0 course/app
+$ docker image ls --format 'table {{.Repository}}\t{{.Tag}}\t{{.ID}}' --filter reference='*/app' --filter reference='*/*/app'
+REPOSITORY                        TAG          IMAGE ID
+course/app                        1.1-manual   12301fc7ca5b
+registry.example.com/course/app   1.0          cfe360c7eca9
+course/app                        1.0          cfe360c7eca9
+course/app                        latest       cfe360c7eca9
+```
+
+Három név, egy képazonosító. Figyeld meg, hogy a `course/app:latest` az 1.0-s verzióra mutat, nem az újabb `1.1-manual`-ra: a `latest` az, amit legutóbb így címkéztek. A registry gépnevét is tartalmazó teljes név az, amire a `push`-nak szüksége van; a mérőkörnyezetből egyetlen registry sem volt elérhető, ezért a feltöltés a 10. laborfeladatra marad.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> exec forma, docker diff, docker volume, -d, docker ps, docker logs, docker commit, docker tag</summary>
+
+- **Exec forma:** a parancs listaként való megadása (`["/bin/tool", "mkdir", ...]`), hogy közvetlenül induljon el, shell nélkül, amely értelmezné.
+- **`docker diff`:** felsorolja azokat a fájlokat, amelyeket egy konténer a képéhez képest hozzáadott (A), módosított (C) vagy törölt (D).
+- **`docker volume create`, `-v appdata:/data`:** névvel ellátott kötet létrehozása, illetve bedugása egy konténerbe a `/data` mappánál.
+- **`-d`** (detached, leválasztott): a konténer elindítása a háttérben, és a parancssor visszaadása.
+- **`docker ps -a`:** a konténerek listája, a leállítottakat is beleértve, az állapotukkal.
+- **`docker logs`:** megmutatja, mit írt ki egy konténer fő folyamata.
+- **`docker commit`:** egy konténer írható rétegének és beállításainak mentése új képként.
+- **`docker tag`:** egy meglévő kép újabb névvel való ellátása; semmi sem másolódik.
+
+</details>
+
 ### Miért hazudik a verziószám: a visszaportolás a gyakorlatban
 
 Egy vállalati kernel egy főverzió teljes élettartama alatt megtartja verziószámát, miközben több ezer javítást és funkciót portolnak vissza bele. A RHEL 8 egy 4.18-as számú kernelt szállít; a RHEL 10.1 a 6.12.0-124.8.1-et, ahol a 6.12.0 az upstream alap, a többi pedig a Red Hat saját buildszáma (Red Hat, 2025).
@@ -656,6 +919,8 @@ A tanulság kétirányú: az a biztonsági szkenner, amely csak verziószámok a
 7. **Kernel és disztribúció a konténerekben.** Egy Podmannel felszerelt Fedora, AlmaLinux vagy Rocky Linux gépen futtasd a gazdagépen az `uname -r` és a `cat /etc/os-release` parancsot, majd a `podman run --rm registry.access.redhat.com/ubi9/ubi-minimal cat /etc/os-release` és a `podman run --rm registry.access.redhat.com/ubi9/ubi-minimal uname -r` parancsot. Ismételd meg a `quay.io/centos/centos:stream9`, a `quay.io/almalinuxorg/almalinux:9` és a `docker.io/rockylinux/rockylinux:9` képpel (teljes nevekkel, hogy a Podmannek ne kelljen megkérdeznie, melyik registryt használja). Mely sorok változnak, melyek maradnak ugyanazok, és miért? Ezután építsd meg a kétfájlos képet a `container-demo/` mappában: fordíts a `gcc -static -O2 -o whoami-os whoami-os.c` paranccsal (ehhez a `glibc-static` csomag kell; AlmaLinuxon és Rocky Linuxon a CRB tárolóban van: `sudo dnf --enablerepo=crb install glibc-static`), majd `podman build -f Containerfile -t demo-os:1.0 .`, és vesd össze a kimenetét a UBI-konténerével.
 8. **Képek letöltés nélkül.** Futtasd a `skopeo inspect docker://registry.access.redhat.com/ubi9/ubi-minimal` és a `skopeo inspect docker://registry.access.redhat.com/ubi9/ubi` parancsot. Hasonlítsd össze a rétegeket és méretüket (`LayersData`) és a címkéket (keresd a verziót és a kiadást). Ezután töltsd le mindkettőt `podman pull`-lal, és hasonlítsd össze a méretüket a `podman images` paranccsal. Próbáld ki a `dnf install -y bzip2` és a `microdnf install -y bzip2` parancsot `ubi`, `ubi-minimal` és `ubi-micro` konténerekben (például `podman run --rm registry.access.redhat.com/ubi9/ubi-minimal microdnf install -y bzip2`). Melyik parancs melyik képben létezik, és miért választaná bárki azt a képet, amelyikben egyik sincs?
 9. **Rétegmegosztás.** A `container-demo/` mappában csak az `os-release`-t módosítsd, építsd újra `demo-os:1.1` néven, és hasonlítsd össze a két kép rétegeinek hash-ét a `podman image inspect -f '{{range .RootFS.Layers}}{{println .}}{{end}}' demo-os:1.0 demo-os:1.1` paranccsal (közben ne fordítsd újra és ne `touch`-old a `whoami-os`-t: már egy új időbélyeg is új hash-t ad). Ezután írj egy `Containerfile`-t, amely `FROM registry.access.redhat.com/ubi9/ubi-minimal` sorral kezdődik, és egy csomagot ad hozzá; építsd meg, és a `podman history` paranccsal ellenőrizd, mely rétegek származnak a UBI-ból.
+10. **A konténer életciklusa.** A `container-lifecycle/` mappában fordítsd le a `tool.c`-t a `gcc -static -O2 -o tool tool.c` paranccsal, építsd meg a képet a `podman build -f Containerfile -t course/app:1.0 .` paranccsal, és futtasd a `D=podman bash demo.sh writable`, majd a `volume`, `foreground`, `commit` és `tags` részt (a végén pedig a `clean`-t). Vesd össze a kimeneteidet az ebben az előadásban szereplőkkel. A `podman rm c1` után hol van a `notes.txt`? Miért állt le a `bg` konténer, bár a szerverfolyamata sosem lépett ki? Ezután indíts egy helyi registryt (`podman run -d -p 5000:5000 --name registry docker.io/library/registry:2`), címkézd fel a képet `localhost:5000/course/app:1.0` néven, töltsd fel a `podman push --tls-verify=false localhost:5000/course/app:1.0` paranccsal, töröld a helyi példányt, és töltsd le újra.
+11. **Birtokolni vagy bérelni?** Egy szerver 6000 euróba kerül, és négy év alatt írják le; az áram, a hely és a személyzet idejéből rá eső rész további havi 100 euró. Egy hasonló felhőpéldány óránként 0,40 euróba kerül. Mennyibe kerül havonta az egyik és a másik, ha a szolgáltatás éjjel-nappal fut (havi 730 óra)? Az órák mekkora aránya fölött lesz olcsóbb a birtoklás? Mennyibe kerül a felhő, ha a szolgáltatásra csak napi 10 órában, 22 munkanapon van szükség? Mely, a számításból kihagyott tényezők változtathatnák meg a döntést?
 
 ## Ellenőrző kérdések
 
@@ -676,6 +941,10 @@ A tanulság kétirányú: az a biztonsági szkenner, amely csak verziószámok a
 15. Miért javít ki egyetlen frissített alapréteg egy sebezhetőséget sok képben, és miért kell a képeket mégis újraépíteni és a konténereket lecserélni?
 16. Nevezz meg két tervezési különbséget a Podman és a Docker között, és kapcsold mindegyiket az előadás egy minőségi szempontjához!
 17. Hogyan változtatja meg az image mode for RHEL egy szerver frissítését, és melyik KPI-t javítja a visszaállás lehetősége?
+18. Egy startup arra számít, hogy forgalma egy éven belül tízszeresére nő, hétvégi csúcsokkal. Vásároljon szervereket, vagy béreljen felhőkapacitást? Magyarázd el a capex, az opex és a tétlen kapacitás fogalmával, és mondd meg, mikor változna a válasz!
+19. Helyezz el két fenyegetést egy kockázati mátrixban: (a) egy adatbázis egyetlen példánya egyetlen lemezen van; (b) egy munkafolyamat (worker) naponta nagyjából egyszer összeomlik, és egy másodpercen belül automatikusan újraindul. Melyik válasz illik az egyes esetekhez, és az előadás melyik mennyiségét (MTTF, MTTR, RPO) javítják az egyes válaszok?
+20. Mi a különbség a kép, a konténer és a kötet között? Egy adatbázis kötet nélküli konténerben fut; mi lesz az adataival, amikor a konténert egy frissített képből indított konténerre cserélik?
+21. Miért rossz módszer a `podman commit` éles használatra szánt képek készítésére, és mit ad helyette a Containerfile? Miért használja egy webszerver képe a `CMD ["httpd", "-D", "FOREGROUND"]` sort, és mi a kockázata annak, ha egy képet a `latest` címkével telepítenek?
 
 <details>
 <summary><strong>Megoldókulcs (oktatóknak)</strong></summary>
@@ -697,14 +966,20 @@ A tanulság kétirányú: az a biztonsági szkenner, amely csak verziószámok a
 15. A rétegeket hash azonosítja, és közösek, így egy frissített alapot egyszer kell letölteni, és minden rá épített kép használja. A kép rétegei azonban csak olvashatók, és a konténer egy rögzített képből indul, így a javítás csak akkor jut el egy alkalmazáshoz, ha a képét az új alapra újraépítik, és új konténerek váltják le a régieket.
 16. Nincs démon: nincs központi, rootként futó szolgáltatás, így nincs minden konténerre kiterjedő egyedüli hibapont, és a konténerek közönséges systemd-szolgáltatásként futhatnak (robusztusság). Rootless működés: közönséges felhasználók rendszergazdai jogok nélkül futtatnak konténereket, így egy konténerből való kitörés csak az adott felhasználó jogait adja (biztonság); a Docker is kínál rootless módot, de szokásos beállítása rootként futó démon.
 17. A teljes operációs rendszer, a kernelt is beleértve, bootolható OCI-kép; a frissítés újraindításkor atomi módon átvált az új képre, a sikertelen frissítést pedig az előző képre való visszaállással lehet visszacsinálni. Ez egy rossz frissítés után lerövidíti az MTTR-t, az azonos képek pedig következetesebbé teszik a gépparkot.
+18. Kezdetben bérelni. Nincs előre fizetendő capex, és a kapacitás követi a növekedést és a hétvégi csúcsokat is (rugalmasság), így a startup sem az igény előtt vett tétlen szerverekért nem fizet, sem hiányt nem szenved, ha a növekedés meghaladja az előrejelzést: az előrejelzés kockázata a szolgáltatóra kerül. A válasz akkor változik, amikor a terhelés nagy, egyenletes és kiszámítható lesz: ekkor a saját hardver olcsóbb munkaegységenként (a megtérülési ponton túl), és gyakori a kettő kombinációja (saját szerverek az alapterhelésre, felhő a csúcsokra). Az adatok helyére vonatkozó jogszabályok, a kimenő forgalmi díjak és a szállítói függőség is számítanak.
+19. (a) A lemezek tönkremennek, és a hatás katasztrofális (minden adat elvész): magas kockázat, csökkenteni kell. A tükrözés (RAID 1) egy lemez meghibásodásának hatását leállás nélküli lemezcserére csökkenti (gyakorlatilag sokkal rövidebb MTTR), a rendszeresen, máshol tárolt mentések pedig az adatvesztést (RPO) is korlátozzák, még ha az egész szerver elvész is. (b) Gyakori, de elhanyagolható: a mátrix sarokcellája, legfeljebb közepes kockázat, és az olcsó csökkentés már a helyén van: az automatikus újraindítás egy másodpercen tartja az MTTR-t, így ami marad, azt elfogadják és figyelik. Ha az összeomlások gyakoribbá válnak, a hiba kijavítása meghosszabbítaná az MTTF-et.
+20. A kép a csak olvasható, megváltoztathatatlan tervrajz, közös rétegekből; a konténer ennek futó példánya: a kép rétegei plusz saját vékony írható rétege és folyamatai; a kötet a konténerbe csatolt tárhely, amely minden konténertől függetlenül él. Kötet nélkül az adatbázisfájlok a konténer írható rétegében vannak; amikor a konténert eltávolítják és lecserélik, velük együtt törlődnek. Kötettel az új konténer ugyanazt a kötetet csatolja, és megtalálja az adatokat.
+21. A commitolt kép nem rögzíti, mi történt (csak a konténer által futtatott parancsot), nem építhető újra automatikusan, amikor az alapkép javítást kap, maradványokat hordoz (gyorsítótárak, ideiglenes fájlok, shell-előzmények), és átveszi a konténer beállításait (a bemutatóban megváltozott az alapértelmezett parancs és a felhasználó). A Containerfile átnézhető szöveg a verziókezelőben, a `podman build` minden alkalommal ugyanazt az eredményt adja vele, a frissített alapra való újraépítés triviálissá válik, és kihasználja a rétegek gyorsítótárát. A konténer addig él, amíg a fő folyamata; a `-D FOREGROUND` nélküli `httpd` démonizálná magát, az első folyamata kilépne, és a konténer azonnal leállna; az előtérben ráadásul a kimenetét a motor naplójára bízza. A `latest` elmozduló címke: különböző szervereken ugyanazon a néven különböző képek futhatnak, a következő letöltéskor észrevétlenül megtörténhet egy frissítés, és a visszaállás sem egyértelmű; rögzíts verziócímkét vagy kivonatot, és szándékosan frissíts.
 
-**Laborválaszok.** 1. labor: 1000 / 1008 ≈ 99,21%; 4 órás MTTR-rel 1000 / 1004 ≈ 99,60%, ugyanannyi, mintha az MTTF-et 2000 órára dupláznánk (2000 / 2008). 2. labor: ha mindhárom kell: 0,995³ ≈ 98,51%; ha bármelyik elég: 1 − 0,005³ ≈ 99,99999%. 3. labor: a hiányzó oldal 404-gyel válaszol; az `urlopen` erre hibát dob, így a próba minden kérést sikertelennek számol, bár a szerver rendben van; a legtöbb SLI csak a szerverhibákat (5xx) és az időtúllépéseket számolja a szolgáltatás terhére. 7. labor: az `/etc/os-release` minden konténerben a kép disztribúcióját mutatja, a `uname -r` viszont mindenhol a gazdagép kernelét. 8. labor: a szabványos ubi képben van `dnf`, az ubi-minimalban csak `microdnf`, az ubi-microban egyik sem, így ott mindkét parancs sikertelen; az ubi-micro-t azért választják, mert a legkisebb, és a legkevesebb olyan szoftvert tartalmazza, amelyben sebezhetőség lehet, a csomagokat pedig építéskor, a képen kívülről adják hozzá. 9. labor: a változatlan programot tartalmazó réteg megtartja a hash-ét; csak az `os-release` réteg új.
+**Laborválaszok.** 1. labor: 1000 / 1008 ≈ 99,21%; 4 órás MTTR-rel 1000 / 1004 ≈ 99,60%, ugyanannyi, mintha az MTTF-et 2000 órára dupláznánk (2000 / 2008). 2. labor: ha mindhárom kell: 0,995³ ≈ 98,51%; ha bármelyik elég: 1 − 0,005³ ≈ 99,99999%. 3. labor: a hiányzó oldal 404-gyel válaszol; az `urlopen` erre hibát dob, így a próba minden kérést sikertelennek számol, bár a szerver rendben van; a legtöbb SLI csak a szerverhibákat (5xx) és az időtúllépéseket számolja a szolgáltatás terhére. 7. labor: az `/etc/os-release` minden konténerben a kép disztribúcióját mutatja, a `uname -r` viszont mindenhol a gazdagép kernelét. 8. labor: a szabványos ubi képben van `dnf`, az ubi-minimalban csak `microdnf`, az ubi-microban egyik sem, így ott mindkét parancs sikertelen; az ubi-micro-t azért választják, mert a legkisebb, és a legkevesebb olyan szoftvert tartalmazza, amelyben sebezhetőség lehet, a csomagokat pedig építéskor, a képen kívülről adják hozzá. 9. labor: a változatlan programot tartalmazó réteg megtartja a hash-ét; csak az `os-release` réteg új. 10. labor: a `notes.txt` csak a `c1` írható rétegében volt, így a `podman rm c1` után már sehol sem létezik, a kötetben lévő fájl viszont megmarad; a `bg` konténer azért állt le, mert az 1-es folyamata a forkolás után kilépett, a gyermeket pedig a konténerrel együtt leállították. 11. labor: a birtoklás havi 6000 / 48 + 100 = 225 euróba kerül; a felhő éjjel-nappal 0,40 × 730 = 292 euróba; a megtérülési pont az órák 225 / 292 ≈ 77%-ánál van; 10 × 22 = 220 óra 88 euróba kerül. Kimaradt: a beszerzésre és telepítésre fordított személyzeti idő, a csúcsokhoz és a növekedéshez szükséges tartalékkapacitás, az adatátviteli díjak, a lefoglalt felhőkapacitás kedvezményei, a jogi követelmények és a hardver maradványértéke.
 
 </details>
 
 ## Irodalom
 
 AlmaLinux OS Foundation. (2023, July 13). *The future of AlmaLinux is bright*. https://almalinux.org/blog/future-of-almalinux/
+
+Armbrust, M., Fox, A., Griffith, R., Joseph, A. D., Katz, R., Konwinski, A., Lee, G., Patterson, D., Rabkin, A., Stoica, I., & Zaharia, M. (2010). A view of cloud computing. *Communications of the ACM, 53*(4), 50–58. https://doi.org/10.1145/1721654.1721672
 
 Avižienis, A., Laprie, J.-C., Randell, B., & Landwehr, C. (2004). Basic concepts and taxonomy of dependable and secure computing. *IEEE Transactions on Dependable and Secure Computing, 1*(1), 11–33. https://doi.org/10.1109/TDSC.2004.2
 
@@ -716,6 +991,12 @@ Breard, B. (2025, May 20). *Image mode for Red Hat Enterprise Linux is generally
 
 CentOS. (n.d.). In *Wikipedia*. Retrieved October 6, 2026, from https://en.wikipedia.org/wiki/CentOS
 
+Docker Inc. (n.d.-a). *Dockerfile reference*. Docker Docs. Retrieved October 7, 2026, from https://docs.docker.com/reference/dockerfile/
+
+Docker Inc. (n.d.-b). *docker image tag*. Docker Docs. Retrieved October 7, 2026, from https://docs.docker.com/reference/cli/docker/image/tag/
+
+Docker Inc. (n.d.-c). *Storage*. Docker Docs. Retrieved October 7, 2026, from https://docs.docker.com/engine/storage/
+
 Free Software Foundation. (1991). *GNU General Public License, version 2*. https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
 Hennessy, J. L., & Patterson, D. A. (2019). *Computer architecture: A quantitative approach* (6th ed.). Morgan Kaufmann.
@@ -723,6 +1004,8 @@ Hennessy, J. L., & Patterson, D. A. (2019). *Computer architecture: A quantitati
 International Organization for Standardization. (2023). *Systems and software engineering — Systems and software Quality Requirements and Evaluation (SQuaRE) — Product quality model* (ISO/IEC Standard No. 25010:2023). https://www.iso.org/standard/78176.html
 
 Itechtics. (n.d.). *Fedora Linux lifecycle: End of life and support status*. Retrieved October 6, 2026, from https://itechtics.com/eol/fedora-linux/
+
+Joint Task Force Transformation Initiative. (2012). *Guide for conducting risk assessments* (NIST Special Publication 800-30, Rev. 1). National Institute of Standards and Technology. https://doi.org/10.6028/NIST.SP.800-30r1
 
 Kellermann, M. (2022). *The Dirty Pipe vulnerability*. CM4all. https://dirtypipe.cm4all.com/
 
@@ -759,6 +1042,8 @@ Red Hat. (2025). *Red Hat Enterprise Linux 10: 10.1 release notes*. https://linu
 Rocky Enterprise Software Foundation. (n.d.). *About Rocky Linux*. Retrieved October 6, 2026, from https://rockylinux.org/about
 
 Rocky Linux. (2023, June 29). *Keeping open source open*. https://rockylinux.org/news/keeping-open-source-open/
+
+Wang, S., & Casado, M. (2021, May 27). *The cost of cloud, a trillion dollar paradox*. Andreessen Horowitz. https://a16z.com/the-cost-of-cloud-a-trillion-dollar-paradox/
 
 ## További olvasnivaló
 

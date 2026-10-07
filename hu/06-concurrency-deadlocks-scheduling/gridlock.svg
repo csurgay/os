@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 390" width="880" height="390" role="img" aria-label="Bedugult kereszteződés: négy autó, négy negyed, egy kör">
+<title>Bedugult kereszteződés: négy autó, négy negyed, egy kör</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="gl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker><marker id="glb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="bad"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Bedugult kereszteződés: négy autó, négy negyed, egy kör</text>
+<rect x="134" y="50" width="112" height="300" class="tint"/>
+<rect x="40" y="144" width="300" height="112" class="tint"/>
+<path d="M134 50V144H40M246 50V144H340M134 350V256H40M246 350V256H340" fill="none" class="edge" stroke-width="1.5"/>
+<path d="M190 50V144M190 256V350M40 200H134M246 200H340" fill="none" class="edge" stroke-width="1.25" stroke-dasharray="8 6"/>
+<rect x="134" y="144" width="112" height="112" class="accf"/>
+<path d="M190 144V256M134 200H246" fill="none" class="acc" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="142" y="152" font-size="10" font-weight="600" class="acct" text-anchor="middle">ÉNy</text>
+<text x="238" y="152" font-size="10" font-weight="600" class="acct" text-anchor="middle">ÉK</text>
+<text x="238" y="254" font-size="10" font-weight="600" class="acct" text-anchor="middle">DK</text>
+<text x="142" y="254" font-size="10" font-weight="600" class="acct" text-anchor="middle">DNy</text>
+<rect x="208.0" y="211.0" width="20" height="34" rx="4" class="c2f"/><rect x="208.0" y="211.0" width="20" height="34" rx="4" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="218" y="232" font-size="11" font-weight="700" class="ink" text-anchor="middle">1</text>
+<rect x="201.0" y="162.0" width="34" height="20" rx="4" class="c2f"/><rect x="201.0" y="162.0" width="34" height="20" rx="4" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="218" y="176" font-size="11" font-weight="700" class="ink" text-anchor="middle">2</text>
+<rect x="152.0" y="155.0" width="20" height="34" rx="4" class="c2f"/><rect x="152.0" y="155.0" width="20" height="34" rx="4" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="162" y="176" font-size="11" font-weight="700" class="ink" text-anchor="middle">3</text>
+<rect x="145.0" y="218.0" width="34" height="20" rx="4" class="c2f"/><rect x="145.0" y="218.0" width="34" height="20" rx="4" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="162" y="232" font-size="11" font-weight="700" class="ink" text-anchor="middle">4</text>
+<rect x="208.0" y="277.0" width="20" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="208.0" y="315.0" width="20" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="267.0" y="162.0" width="30" height="20" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="305.0" y="162.0" width="30" height="20" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="152.0" y="93.0" width="20" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="152.0" y="55.0" width="20" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="83.0" y="218.0" width="30" height="20" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="45.0" y="218.0" width="30" height="20" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M218 208V192" fill="none" class="bads" stroke-width="1.5" marker-end="url(#glb)"/>
+<path d="M198 172H182" fill="none" class="bads" stroke-width="1.5" marker-end="url(#glb)"/>
+<path d="M162 192V208" fill="none" class="bads" stroke-width="1.5" marker-end="url(#glb)"/>
+<path d="M182 228H198" fill="none" class="bads" stroke-width="1.5" marker-end="url(#glb)"/>
+<text x="190" y="372" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">minden autó foglal egy negyedet, és a következőre vár</text>
+<text x="420" y="64" font-size="13" font-weight="600" class="ink" text-anchor="start">Erőforrás-foglalási gráf</text>
+<rect x="610" y="270" width="60" height="40" rx="3" class="accf"/><rect x="610" y="270" width="60" height="40" rx="3" fill="none" class="acc" stroke-width="2"/>
+<text x="640" y="286" font-size="10.5" font-weight="600" class="ink" text-anchor="middle">DK</text>
+<circle cx="640" cy="298" r="4" class="ink"/>
+<rect x="610" y="90" width="60" height="40" rx="3" class="accf"/><rect x="610" y="90" width="60" height="40" rx="3" fill="none" class="acc" stroke-width="2"/>
+<text x="640" y="106" font-size="10.5" font-weight="600" class="ink" text-anchor="middle">ÉK</text>
+<circle cx="640" cy="118" r="4" class="ink"/>
+<rect x="430" y="90" width="60" height="40" rx="3" class="accf"/><rect x="430" y="90" width="60" height="40" rx="3" fill="none" class="acc" stroke-width="2"/>
+<text x="460" y="106" font-size="10.5" font-weight="600" class="ink" text-anchor="middle">ÉNy</text>
+<circle cx="460" cy="118" r="4" class="ink"/>
+<rect x="430" y="270" width="60" height="40" rx="3" class="accf"/><rect x="430" y="270" width="60" height="40" rx="3" fill="none" class="acc" stroke-width="2"/>
+<text x="460" y="286" font-size="10.5" font-weight="600" class="ink" text-anchor="middle">DNy</text>
+<circle cx="460" cy="298" r="4" class="ink"/>
+<circle cx="640" cy="200" r="20" class="c2f"/><circle cx="640" cy="200" r="20" fill="none" class="c2s" stroke-width="1.75"/>
+<text x="640" y="199" font-size="10.5" font-weight="600" class="ink" text-anchor="middle">1.</text>
+<text x="640" y="210" font-size="9.5" font-weight="600" class="ink" text-anchor="middle">autó</text>
+<circle cx="550" cy="110" r="20" class="c2f"/><circle cx="550" cy="110" r="20" fill="none" class="c2s" stroke-width="1.75"/>
+<text x="550" y="109" font-size="10.5" font-weight="600" class="ink" text-anchor="middle">2.</text>
+<text x="550" y="120" font-size="9.5" font-weight="600" class="ink" text-anchor="middle">autó</text>
+<circle cx="460" cy="200" r="20" class="c2f"/><circle cx="460" cy="200" r="20" fill="none" class="c2s" stroke-width="1.75"/>
+<text x="460" y="199" font-size="10.5" font-weight="600" class="ink" text-anchor="middle">3.</text>
+<text x="460" y="210" font-size="9.5" font-weight="600" class="ink" text-anchor="middle">autó</text>
+<circle cx="550" cy="290" r="20" class="c2f"/><circle cx="550" cy="290" r="20" fill="none" class="c2s" stroke-width="1.75"/>
+<text x="550" y="289" font-size="10.5" font-weight="600" class="ink" text-anchor="middle">4.</text>
+<text x="550" y="300" font-size="9.5" font-weight="600" class="ink" text-anchor="middle">autó</text>
+<path d="M644 282V222" fill="none" class="edge" stroke-width="1.5" marker-end="url(#gl)"/>
+<path d="M640 180V132" fill="none" class="bads" stroke-width="1.5" marker-end="url(#glb)"/>
+<path d="M634 118H572" fill="none" class="edge" stroke-width="1.5" marker-end="url(#gl)"/>
+<path d="M530 110H492" fill="none" class="bads" stroke-width="1.5" marker-end="url(#glb)"/>
+<path d="M456 118V178" fill="none" class="edge" stroke-width="1.5" marker-end="url(#gl)"/>
+<path d="M460 220V268" fill="none" class="bads" stroke-width="1.5" marker-end="url(#glb)"/>
+<path d="M466 298H528" fill="none" class="edge" stroke-width="1.5" marker-end="url(#gl)"/>
+<path d="M570 290H608" fill="none" class="bads" stroke-width="1.5" marker-end="url(#glb)"/>
+<circle cx="724" cy="104" r="12" class="c2f"/><circle cx="724" cy="104" r="12" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="744" y="108" font-size="11.5" font-weight="400" class="ink" text-anchor="start">folyamat</text>
+<rect x="710" y="128" width="30" height="24" rx="3" class="accf"/><rect x="710" y="128" width="30" height="24" rx="3" fill="none" class="acc" stroke-width="2"/>
+<circle cx="719" cy="140" r="3" class="ink"/><circle cx="731" cy="140" r="3" class="ink"/>
+<text x="750" y="138" font-size="11.5" font-weight="400" class="ink" text-anchor="start">erőforrás; minden</text>
+<text x="750" y="153" font-size="11.5" font-weight="400" class="ink" text-anchor="start">példány egy pont</text>
+<path d="M710 184H740" fill="none" class="bads" stroke-width="1.5" marker-end="url(#glb)"/>
+<text x="750" y="188" font-size="11.5" font-weight="400" class="ink" text-anchor="start">kérés (vár rá)</text>
+<path d="M710 212H740" fill="none" class="edge" stroke-width="1.5" marker-end="url(#gl)"/>
+<text x="750" y="216" font-size="11.5" font-weight="400" class="ink" text-anchor="start">hozzárendelés</text>
+<text x="750" y="231" font-size="11.5" font-weight="400" class="ink" text-anchor="start">(birtokolja)</text>
+<text x="710" y="262" font-size="11.5" font-weight="600" class="ink" text-anchor="start">Egy-egy példány:</text>
+<text x="710" y="278" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">kör = holtpont.</text>
+<text x="710" y="302" font-size="11.5" font-weight="600" class="ink" text-anchor="start">Több példány:</text>
+<text x="710" y="318" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">a kör szükséges,</text>
+<text x="710" y="334" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">de nem elégséges.</text>
+<text x="420" y="344" font-size="11.5" font-weight="600" class="bad" text-anchor="start">1 → ÉK → 2 → ÉNy → 3 → DNy → 4 → DK → 1</text>
+</svg>

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 468" width="880" height="468" role="img" aria-label="Every access is checked: the layers a request passes, and the reference monitor at each check">
+<title>Every access is checked: the layers a request passes, and the reference monitor at each check</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Every access is checked: the layers a request passes, and the reference monitor at each check</text>
+<marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker>
+<marker id="a1b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="bad"/></marker>
+<text x="24" y="62" font-size="12.5" font-weight="600" class="quiet" text-anchor="start">a request from the network to a web server</text>
+<rect x="40" y="76" width="300" height="50" rx="6" class="tint"/><rect x="40" y="76" width="300" height="50" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="54" y="97" font-size="12.5" font-weight="600" class="ink" text-anchor="start">5. execution</text>
+<text x="54" y="115" font-size="11" font-weight="400" class="quiet" text-anchor="start">the operation is performed</text>
+<rect x="40" y="136" width="300" height="50" rx="6" class="accf"/><rect x="40" y="136" width="300" height="50" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="54" y="157" font-size="12.5" font-weight="600" class="ink" text-anchor="start">4. MAC: SELinux, AppArmor</text>
+<text x="54" y="175" font-size="11" font-weight="400" class="ink" text-anchor="start">system-wide policy; binds root, too</text>
+<path d="M190 146V134" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a1)"/>
+<rect x="40" y="196" width="300" height="50" rx="6" class="c2f"/><rect x="40" y="196" width="300" height="50" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="54" y="217" font-size="12.5" font-weight="600" class="ink" text-anchor="start">3. DAC: mode bits, ACLs</text>
+<text x="54" y="235" font-size="11" font-weight="400" class="ink" text-anchor="start">the owner of the file decides</text>
+<path d="M190 206V194" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a1)"/>
+<rect x="40" y="256" width="300" height="50" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="54" y="277" font-size="12.5" font-weight="600" class="ink" text-anchor="start">2. the service (daemon)</text>
+<text x="54" y="295" font-size="11" font-weight="400" class="quiet" text-anchor="start">its own configuration and logins</text>
+<path d="M190 266V254" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a1)"/>
+<rect x="40" y="316" width="300" height="50" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="54" y="337" font-size="12.5" font-weight="600" class="ink" text-anchor="start">1. firewall</text>
+<text x="54" y="355" font-size="11" font-weight="400" class="quiet" text-anchor="start">which hosts may reach which ports</text>
+<path d="M190 326V314" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a1)"/>
+<path d="M190 398V368" fill="none" class="edge" stroke-width="1.5" marker-end="url(#a1)"/>
+<text x="190" y="412" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">request (e.g. GET /index.html)</text>
+<text x="40" y="434" font-size="11" font-weight="400" class="quiet" text-anchor="start">A request is refused at the first layer that says no;</text>
+<text x="40" y="450" font-size="11" font-weight="400" class="quiet" text-anchor="start">an attacker must break every layer to succeed.</text>
+<text x="400" y="62" font-size="12.5" font-weight="600" class="quiet" text-anchor="start">the reference monitor (one check, e.g. layer 3 or 4)</text>
+<rect x="400" y="84" width="132" height="80" rx="8" class="tint"/><rect x="400" y="84" width="132" height="80" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="466" y="106" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">subject</text>
+<text x="466" y="126" font-size="11" font-weight="400" class="ink" text-anchor="middle">a process: httpd</text>
+<text x="466" y="142" font-size="11" font-weight="400" class="quiet" text-anchor="middle">UID apache</text>
+<text x="466" y="156" font-size="11" font-weight="400" class="quiet" text-anchor="middle">context httpd_t</text>
+<rect x="572" y="84" width="132" height="80" rx="8" class="accf"/><rect x="572" y="84" width="132" height="80" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="638" y="108" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">reference</text>
+<text x="638" y="126" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">monitor</text>
+<text x="638" y="148" font-size="11" font-weight="400" class="quiet" text-anchor="middle">(in the kernel)</text>
+<rect x="744" y="84" width="112" height="80" rx="8" class="tint"/><rect x="744" y="84" width="112" height="80" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="800" y="106" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">object</text>
+<text x="800" y="126" font-size="11" font-weight="400" class="ink" text-anchor="middle">index.html</text>
+<text x="800" y="142" font-size="11" font-weight="400" class="quiet" text-anchor="middle">or TCP port 80</text>
+<path d="M532 124H570" fill="none" class="edge" stroke-width="1.5" marker-end="url(#a1)"/>
+<text x="551" y="117" font-size="11" font-weight="600" class="ink" text-anchor="middle">action</text>
+<text x="551" y="186" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">open, read,</text>
+<text x="551" y="200" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">write, bind …</text>
+<path d="M704 116H742" fill="none" class="edge" stroke-width="1.5" marker-end="url(#a1)"/>
+<text x="723" y="108" font-size="11" font-weight="600" class="acct" text-anchor="middle">yes</text>
+<path d="M704 146C722 150 730 170 736 184" fill="none" class="bads" stroke-width="1.5" marker-end="url(#a1b)"/>
+<text x="742" y="198" font-size="11" font-weight="600" class="bad" text-anchor="start">no: EACCES / EPERM</text>
+<rect x="572" y="226" width="132" height="50" rx="8" class="c2f"/><rect x="572" y="226" width="132" height="50" rx="8" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="638" y="247" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">policy</text>
+<text x="638" y="264" font-size="10.5" font-weight="400" class="ink" text-anchor="middle">mode bits, ACL, rules</text>
+<path d="M638 226V166" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a1)"/>
+<rect x="744" y="226" width="112" height="50" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="800" y="247" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">audit log</text>
+<text x="800" y="264" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">denials recorded</text>
+<path d="M800 204V224" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a1)" stroke-dasharray="4 3"/>
+<text x="400" y="312" font-size="12" font-weight="600" class="ink" text-anchor="start">A reference monitor must be:</text>
+<text x="406" y="336" font-size="11.5" font-weight="600" class="ink" text-anchor="start">• always invoked: </text>
+<text x="516" y="336" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">no access path around it (complete mediation)</text>
+<text x="406" y="356" font-size="11.5" font-weight="600" class="ink" text-anchor="start">• tamper-proof: </text>
+<text x="516" y="356" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">user programs cannot change it (it runs in kernel mode)</text>
+<text x="406" y="376" font-size="11.5" font-weight="600" class="ink" text-anchor="start">• verifiable: </text>
+<text x="516" y="376" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">small and simple enough to be checked</text>
+</svg>

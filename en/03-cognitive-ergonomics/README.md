@@ -22,6 +22,7 @@ By the end, students will be able to:
 - describe affective computing, its uses and its risks (feeds, FOMO, dark patterns), and the regulation that answers it;
 - explain the role of mutual gaze, gaze correction and its side effects, the uncanny valley hypothesis and the ethological approach to robots;
 - explain feedback and response-time limits, error prevention and undo, the cost of interruptions, and the accessibility services of an OS;
+- write a persona and user stories with acceptance criteria for an operating-system feature, and connect them to the usability principles of this lecture;
 - apply the Fitts and Hick–Hyman laws and colour-contrast calculations on Linux.
 
 <details>
@@ -47,7 +48,7 @@ Two arguments make this an operating-systems topic, not only a design topic:
 - **The user is part of the system.** Several quality criteria from the [previous lecture](../02-quality-and-enterprise-linux/#what-makes-an-operating-system-good) are about people: consistent (the same things work the same way everywhere), forgiving (mistakes can be undone), convenient (easy to install, learn and use). A wrong command, a misread warning or a confusing dialog can take a system down just as a failed disk can; an interface that makes errors likely lowers availability.
 - **The operating system sets the conventions.** Applications inherit the look, the shortcuts, the dialogs, the notification system and the accessibility features from the OS and its design guidelines. When a platform changes them, millions of programs change their behaviour at once, which is why the design guidelines of Apple, Google, Microsoft and GNOME carry so much weight.
 
-The rest of the lecture covers nine topics, after a short history of how people have talked to operating systems, and closes with three topics that any OS interface must handle: feedback and response time, errors and interruptions, and accessibility.
+The rest of the lecture covers nine topics, after a short history of how people have talked to operating systems, and closes with three topics that any OS interface must handle: feedback and response time, errors and interruptions, and accessibility, followed by two tools that design teams use to keep real users in view: personas and user stories.
 
 ## From teletype to glasses: how OS interfaces evolved
 
@@ -362,6 +363,38 @@ Three further topics belong to every operating system's interface, and each conn
 
 </details>
 
+## Designing for real users: personas and user stories
+
+The principles above describe people in general. A design team must also decide **which** people it designs for and what they need to get done; otherwise each developer quietly designs for the user they know best, themselves. Two lightweight tools, one from interaction design and one from agile software development, keep real users in view.
+
+**Personas.** A persona is a fictional but research-based portrait of a typical user: a name, a short background, goals, skills, working conditions and frustrations. Alan Cooper introduced personas to replace the "elastic user", who stretches to fit whatever the developers find convenient, with one specific person the design must satisfy (Cooper, 1999). A persona is built from interviews and observation of real users, not invented at a desk; a product usually has a few, and one **primary persona** whose needs win when they conflict (Cooper et al., 2014). Two personas for an operating system's update feature:
+
+> **Kata, 52, accountant at a small firm.** Works on a laptop eight hours a day: spreadsheets, e-mail, the firm's bookkeeping program. Not interested in computers; finds her files by the folder names she gave them. Uses the mouse, Ctrl+C, Ctrl+V and Ctrl+S, and a larger text size. *Goals:* never lose a day's work; finish the month-end close on time. *Frustrations:* restarts and update prompts at the worst moment; dialogs she does not understand ("Allow this app to make changes to your device?").
+>
+> **Bence, 24, system administrator.** Runs 200 Linux servers over SSH from a terminal. *Goals:* the same, repeatable configuration on every machine; nothing changes without his knowledge. *Frustrations:* settings that can only be changed in a graphical tool; commands whose options differ from one tool to the next.
+
+**User stories.** A user story states one requirement from the user's point of view, in one sentence: "As a ‹role›, I want ‹capability›, so that ‹benefit›." The format comes from agile teams of the early 2000s and was popularised by Cohn (2004). The sentence is deliberately short: it is a reminder to talk with the users, and it is completed by **acceptance criteria**, testable conditions that decide when the story is done. For the two personas:
+
+- *As an office worker (Kata), I want updates to be installed while I am not working, without losing my open documents, so that an update never costs me unsaved work.* Acceptance criteria: the system restarts for an update only outside the active hours the user set; it asks at most once a day; documents open before the restart are reopened after it; the update can be postponed by at least a week.
+- *As a server administrator (Bence), I want to set the update policy from the command line, so that I can apply the same policy to all 200 servers with one script.* Acceptance criteria: every setting of the graphical dialog has a command-line equivalent; the command returns a non-zero exit status on failure; the same options work on every supported release.
+
+The two tools connect the lecture's principles to concrete decisions. Kata's persona says that recognition must beat recall (section IV), that errors must be forgivable and interruptions rare (the previous section), and that colours and text size matter (section I). Bence's persona asks for the expert paths of section V and for a command line that is consistent and scriptable. The acceptance criteria are where the lecture's numbers become requirements: a response within 0.1 s, a contrast of at least 4.5:1, touch targets of 44 points or more. Two mistakes are common: personas invented without research, which become stereotypes, and stories that prescribe a solution ("I want a blue button") instead of a need.
+
+<details>
+<summary><b>Explained simply:</b> persona, elastic user, primary persona, user story, agile, acceptance criteria, requirement, SSH, exit status</summary>
+
+- **Persona:** an imagined but realistic person, described from what real users said and did, who stands for a whole group of users. Designers ask "would Kata understand this?" instead of "would a user understand this?".
+- **Elastic user:** a vague "user" who can be stretched to agree with any design decision.
+- **Primary persona:** the persona whose needs come first when two personas want different things.
+- **Requirement:** something a product must do or a property it must have.
+- **User story:** one requirement written as a short sentence from the user's point of view: who wants what, and why.
+- **Agile:** a way of developing software in short steps, with frequent feedback from users, instead of one long plan.
+- **Acceptance criteria:** checkable conditions that say when a requirement is fulfilled, like a checklist a teacher uses to mark homework.
+- **SSH** (Secure Shell): a way to log in to a distant computer over the network and type commands there.
+- **Exit status:** a number a command gives back when it finishes: 0 means success, anything else an error, so a script can check it.
+
+</details>
+
 ## The same ideas on Linux (x86-64)
 
 The outputs below come from a real system: an Ubuntu 24.04 environment in a cloud data centre, with `bash` 5.2. It has no graphical desktop, so the demonstrations show the command line and the files that describe the desktop's applications.
@@ -550,6 +583,7 @@ Choosing one of 64 items is always $\log_2 64 = 6$ bits of information, however 
 6. **Fitts at work.** With `hci_laws.py fitts`, compare a 24-pixel close button in the corner of a maximised window (the corner makes it effectively large) with the same button in a window that does not touch the screen edge. What changes if a second monitor is placed to the right? Then measure the touch targets of one app on your phone (screenshots, and the pixel density of your screen): do they reach 44 points or 48 dp?
 7. **Shortcuts.** For one application you use daily, list three operations you perform by menu. Find their shortcuts, use only the shortcuts for one week, and note when they became faster than the menu.
 8. **Attention audit.** On your phone, open Screen Time (iOS) or Digital Wellbeing (Android). Which three apps send you the most notifications? For each, identify which emotion (curiosity, belonging, envy, FOMO, urgency) its notifications appeal to, and change their notification settings. Report what changed after a week.
+9. **Personas and stories.** Interview two people who use computers very differently (for example a relative and a fellow student) for 15 minutes each about how they install software, find their files and react to notifications. Write a persona for each, then three user stories with acceptance criteria for one OS feature (file search, notifications or backups). Mark which of this lecture's principles each acceptance criterion tests, and where the two personas conflict, decide which is primary and why.
 
 ## Review questions
 
@@ -568,6 +602,7 @@ Choosing one of 64 items is always $\log_2 64 = 6$ bits of information, however 
 13. Why is mutual gaze important, why is it lost in video calls, and what are the side effects of correcting it?
 14. Describe Mori's uncanny valley. What is the status of the hypothesis today, and what design advice follows from it?
 15. What does ethorobotics propose instead of building ever more human-like robots, and why is the dog its model?
+16. What is a persona, how is it made, and what problem of design teams does it solve? Write a user story with two acceptance criteria for an operating-system feature, and name the principle of this lecture that each criterion checks.
 
 <details>
 <summary><strong>Answer key (for instructors)</strong></summary>
@@ -587,6 +622,7 @@ Choosing one of 64 items is always $\log_2 64 = 6$ bits of information, however 
 13. It signals attention, builds trust and engagement, and raises arousal and approach motivation. The camera is above the screen, so looking at the partner's face looks like looking away. Correction produces a constant stare, can feel uncanny, may show attention that is not there, and raises authenticity and consent questions.
 14. Affinity rises with human likeness, then falls sharply for almost-human figures, and rises again for real people; movement deepens the effect. It was an intuition; experiments (e.g. Mathur & Reichling, 2016) support a dip for some stimuli, but the shape and causes are debated. Advice: aim for moderate likeness (the first peak).
 15. Design robots for their function and niche, with the social competence that function needs (attention, signalling, attachment, cooperation), and with a body that suits the function, not a human imitation. Dogs show that a very different-looking species can be an excellent social partner through social competence.
+16. A fictional but research-based portrait of a typical user (background, goals, skills, context, frustrations), built from interviews and observation; a product has a few, with one primary persona. It replaces the vague "elastic user" (and designing for oneself) with a specific person the design must satisfy (Cooper). Example story: "As a laptop user, I want a low-battery warning that I cannot miss but that does not interrupt typing, so that I can save my work before the machine shuts down." Criteria: the warning appears at 10% and again at 5% (feedback); it does not take the keyboard focus (interruptions); it is readable with a contrast of at least 4.5:1 and announced by the screen reader (colour, accessibility). Any story in the "As a …, I want …, so that …" form with testable criteria is acceptable.
 
 **Lab answers.** Lab 2: with the protanopia matrix, red loses most of its lightness (#6d5f00, L* about 40) and green becomes bright yellow (L* about 90), so archive and executable stay apart by lightness (delta E 65.7); the real casualty is directory versus image (blue #5c5cff versus magenta #ff00ff), which shrinks from 55.4 to 4.1, practically identical. For deuteranopia, the closest pair is archive versus executable (28.0). Lab 3: typical answers are `df -h`, `ps aux` or `top`, `ip addr`; many students recall `ifconfig`, which is deprecated and missing on minimal systems. Lab 5: the intercept is a few hundred milliseconds (more, because the answer is typed and confirmed with Enter). Because typing the digit you see is a highly compatible mapping, the slope is usually small, often only tens of milliseconds per bit, and practice reduces it further. So 8 choices do not take 3.17 times as long as 1: the time is $a + b \cdot \text{bits}$, and the intercept $a$ dominates. Lab 6: the corner button behaves like a very large target (ID near 0–1 bit); the floating one has ID $\log_2(D/24+1)$. With a second monitor on the right, the right edge is no longer a barrier, and the top-right close button loses most of its advantage.
 
@@ -611,6 +647,12 @@ AppleInsider. (2020, June 22). *FaceTime eye contact correction feature to launc
 Birch, J. (2012). Worldwide prevalence of red-green color deficiency. *Journal of the Optical Society of America A, 29*(3), 313–320. https://doi.org/10.1364/JOSAA.29.000313
 
 Clover, J. (2025, February 18). *Humane's $700 Ai Pin discontinued and defunct after less than 1 year*. MacRumors. https://www.macrumors.com/2025/02/18/humane-ai-pin-discontinued/
+
+Cohn, M. (2004). *User stories applied: For agile software development*. Addison-Wesley.
+
+Cooper, A. (1999). *The inmates are running the asylum: Why high-tech products drive us crazy and how to restore the sanity*. Sams.
+
+Cooper, A., Reimann, R., Cronin, D., & Noessel, C. (2014). *About face: The essentials of interaction design* (4th ed.). Wiley.
 
 Cowan, N. (2001). The magical number 4 in short-term memory: A reconsideration of mental storage capacity. *Behavioral and Brain Sciences, 24*(1), 87–114. https://doi.org/10.1017/S0140525X01003922
 

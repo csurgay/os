@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 468" width="880" height="468" role="img" aria-label="Minden hozzáférést ellenőrizni kell: a kérés rétegei és a referenciamonitor minden ellenőrzésnél">
+<title>Minden hozzáférést ellenőrizni kell: a kérés rétegei és a referenciamonitor minden ellenőrzésnél</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Minden hozzáférést ellenőrizni kell: a kérés rétegei és a referenciamonitor minden ellenőrzésnél</text>
+<marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker>
+<marker id="a1b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="bad"/></marker>
+<text x="24" y="62" font-size="12.5" font-weight="600" class="quiet" text-anchor="start">egy hálózati kérés egy webszerverhez</text>
+<rect x="40" y="76" width="300" height="50" rx="6" class="tint"/><rect x="40" y="76" width="300" height="50" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="54" y="97" font-size="12.5" font-weight="600" class="ink" text-anchor="start">5. végrehajtás</text>
+<text x="54" y="115" font-size="11" font-weight="400" class="quiet" text-anchor="start">a művelet végrehajtódik</text>
+<rect x="40" y="136" width="300" height="50" rx="6" class="accf"/><rect x="40" y="136" width="300" height="50" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="54" y="157" font-size="12.5" font-weight="600" class="ink" text-anchor="start">4. MAC: SELinux, AppArmor</text>
+<text x="54" y="175" font-size="11" font-weight="400" class="ink" text-anchor="start">rendszerszintű házirend; a rootot is köti</text>
+<path d="M190 146V134" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a1)"/>
+<rect x="40" y="196" width="300" height="50" rx="6" class="c2f"/><rect x="40" y="196" width="300" height="50" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="54" y="217" font-size="12.5" font-weight="600" class="ink" text-anchor="start">3. DAC: módbitek, ACL-ek</text>
+<text x="54" y="235" font-size="11" font-weight="400" class="ink" text-anchor="start">a fájl tulajdonosa dönt</text>
+<path d="M190 206V194" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a1)"/>
+<rect x="40" y="256" width="300" height="50" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="54" y="277" font-size="12.5" font-weight="600" class="ink" text-anchor="start">2. a szolgáltatás (démon)</text>
+<text x="54" y="295" font-size="11" font-weight="400" class="quiet" text-anchor="start">saját konfiguráció és hitelesítés</text>
+<path d="M190 266V254" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a1)"/>
+<rect x="40" y="316" width="300" height="50" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="54" y="337" font-size="12.5" font-weight="600" class="ink" text-anchor="start">1. tűzfal</text>
+<text x="54" y="355" font-size="11" font-weight="400" class="quiet" text-anchor="start">mely gépek mely portokat érhetik el</text>
+<path d="M190 326V314" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a1)"/>
+<path d="M190 398V368" fill="none" class="edge" stroke-width="1.5" marker-end="url(#a1)"/>
+<text x="190" y="412" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">kérés (pl. GET /index.html)</text>
+<text x="40" y="434" font-size="11" font-weight="400" class="quiet" text-anchor="start">A kérést az első réteg elutasítja, amelyik nemet mond;</text>
+<text x="40" y="450" font-size="11" font-weight="400" class="quiet" text-anchor="start">a támadónak minden rétegen át kell jutnia a sikerhez.</text>
+<text x="400" y="62" font-size="12.5" font-weight="600" class="quiet" text-anchor="start">a referenciamonitor (egy ellenőrzés, pl. a 3. vagy a 4. réteg)</text>
+<rect x="400" y="84" width="132" height="80" rx="8" class="tint"/><rect x="400" y="84" width="132" height="80" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="466" y="106" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">alany</text>
+<text x="466" y="126" font-size="11" font-weight="400" class="ink" text-anchor="middle">folyamat: httpd</text>
+<text x="466" y="142" font-size="11" font-weight="400" class="quiet" text-anchor="middle">UID apache</text>
+<text x="466" y="156" font-size="11" font-weight="400" class="quiet" text-anchor="middle">kontextus: httpd_t</text>
+<rect x="572" y="84" width="132" height="80" rx="8" class="accf"/><rect x="572" y="84" width="132" height="80" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="638" y="108" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">referencia-</text>
+<text x="638" y="126" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">monitor</text>
+<text x="638" y="148" font-size="11" font-weight="400" class="quiet" text-anchor="middle">(a kernelben)</text>
+<rect x="744" y="84" width="112" height="80" rx="8" class="tint"/><rect x="744" y="84" width="112" height="80" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="800" y="106" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">objektum</text>
+<text x="800" y="126" font-size="11" font-weight="400" class="ink" text-anchor="middle">index.html</text>
+<text x="800" y="142" font-size="11" font-weight="400" class="quiet" text-anchor="middle">vagy a 80-as port</text>
+<path d="M532 124H570" fill="none" class="edge" stroke-width="1.5" marker-end="url(#a1)"/>
+<text x="551" y="184" font-size="11" font-weight="600" class="ink" text-anchor="middle">művelet:</text>
+<text x="551" y="200" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">megnyitás, olvasás,</text>
+<text x="551" y="214" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">írás, bind …</text>
+<path d="M704 116H742" fill="none" class="edge" stroke-width="1.5" marker-end="url(#a1)"/>
+<text x="723" y="108" font-size="11" font-weight="600" class="acct" text-anchor="middle">igen</text>
+<path d="M704 146C722 150 730 170 736 184" fill="none" class="bads" stroke-width="1.5" marker-end="url(#a1b)"/>
+<text x="742" y="198" font-size="11" font-weight="600" class="bad" text-anchor="start">nem: EACCES / EPERM</text>
+<rect x="572" y="226" width="132" height="50" rx="8" class="c2f"/><rect x="572" y="226" width="132" height="50" rx="8" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="638" y="247" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">házirend</text>
+<text x="638" y="264" font-size="10.5" font-weight="400" class="ink" text-anchor="middle">bitek, ACL, szabályok</text>
+<path d="M638 226V166" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a1)"/>
+<rect x="744" y="226" width="112" height="50" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="800" y="247" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">auditnapló</text>
+<text x="800" y="264" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">rögzített tiltások</text>
+<path d="M800 204V224" fill="none" class="edge" stroke-width="1.25" marker-end="url(#a1)" stroke-dasharray="4 3"/>
+<text x="400" y="312" font-size="12" font-weight="600" class="ink" text-anchor="start">A referenciamonitor tulajdonságai:</text>
+<text x="406" y="336" font-size="11.5" font-weight="600" class="ink" text-anchor="start">• mindig meghívódik: </text>
+<text x="548" y="336" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">nem lehet megkerülni (teljes közvetítés)</text>
+<text x="406" y="356" font-size="11.5" font-weight="600" class="ink" text-anchor="start">• sérthetetlen: </text>
+<text x="548" y="356" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">a felhasználói kód nem módosíthatja (kernelmódban fut)</text>
+<text x="406" y="376" font-size="11.5" font-weight="600" class="ink" text-anchor="start">• ellenőrizhető: </text>
+<text x="548" y="376" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">elég kicsi és egyszerű az ellenőrzéshez</text>
+</svg>

@@ -12,6 +12,7 @@ A modern operációs rendszerek szinte minden szolgáltatását azért találtá
 
 Az előadás végére a hallgatók képesek lesznek:
 
+- meghatározni az operációs rendszert mint multiplexelő, erőforrás-kezelő virtuális gépet, megmagyarázni, miért nehéz operációs rendszert építeni, és megfogalmazni a kényelem, a biztonság és a hatásfok közötti kompromisszumot;
 - megmagyarázni, hogyan alakította az operációs rendszerek történetét a hardver és az emberi munka viszonylagos költsége;
 - leírni a kötegelt feldolgozást, a rezidens monitort, a multiprogramozást, a virtuális memóriát és az időosztást, valamint azt, hogy melyik milyen problémát oldott meg;
 - megindokolni, miért növeli a multiprogramozás a CPU kihasználtságát, és ezt egy idődiagramból kiszámítani;
@@ -19,6 +20,8 @@ Az előadás végére a hallgatók képesek lesznek:
 - elhelyezni ebben a történetben a Multicsot, a Unixot, a miniszámítógépeket, a CP/M-et és az MS-DOS-t, és megmagyarázni, miért mondtak le az első személyi számítógépes rendszerek olyan szolgáltatásokról, amelyek a nagygépeken már megvoltak;
 - elmondani az MS-DOS és a grafikus felület piacra kerülésének dokumentált történetét, és elválasztani a legendáktól;
 - megnevezni az operációs rendszer négy szerepét, és elhelyezni az OS-t a számítógépes rendszer rétegei között;
+- osztályozni az operációs rendszereket licenc, platform, felület, a felhasználók és a feladatok száma, valamint a kernel felépítése szerint;
+- példákkal megmagyarázni, miért térnek vissza a régi operációsrendszer-technikák, amikor a gazdasági feltételek, a technológia vagy az igények megváltoznak;
 - megtalálni minden történeti ötletet egy futó Linux rendszeren.
 
 <details>
@@ -30,13 +33,54 @@ Az előadás végére a hallgatók képesek lesznek:
 
 </details>
 
+## Mi az operációs rendszer, és miért nehéz megírni
+
+Egy rövid definíció, amelyet az előadás további része tölt meg tartalommal: **az operációs rendszer a gépből egy másik gépet csinál, egy gépből pedig sokat.**
+
+- **Gép → másik gép (absztrakció).** A hardver sorszámozott lemezblokkokat, eszközregisztereket és egyetlen processzort kínál. A programok ezzel szemben elnevezett, növekedni képes fájlokat látnak, folyamatokat, amelyek mindegyike úgy tűnik, mintha saját processzora volna, és saját memóriát, amely a 0. címen kezdődik. Az OS által létrehozott gép **teljesen különbözhet** a valódi géptől: a lemezen semmi sem hasonlít egy mappára, és a CPU-ban semmi sem hasonlít egy folyamatra.
+- **Egy gép → N gép (multiplexelés).** Sok program és sok felhasználó osztozik az egyetlen valódi gépen, időben (a CPU felváltva futtatja őket) és térben (mindegyik megkapja a memória és a lemez egy részét), és mindegyik úgy érzi, hogy egy egész gép az övé.
+
+Összefoglalva: az OS egy **multiplexelő, erőforrás-kezelő virtuális gép**. Az [előadás egy későbbi részében](#az-operációs-rendszer-szerepei) bemutatott négy szerep ugyanezt a feladatot írja le részletesebben.
+
+**Miért nehéz operációs rendszert írni.** Az OS a legnehezebben megépíthető programfajták egyike, és az okok összeadódnak:
+
+- **Túl nagy egyetlen embernek.** Egy modern OS több millió kódsorból áll; csak a Linux-kernel forrásfája több tízmilliót tartalmaz, ennek nagy része eszközmeghajtó. Senki sem érti az egészet, ezért tiszta interfészű részekből kell felépíteni.
+- **Hosszú élettartam.** A Unix ötletei 1969-ből, a Windows NT kernele 1993-ból származik. Egy OS évtizedekig él, továbbra is futtatnia kell a régi programokat, és be kell fogadnia olyan hardvert, amely a tervezésekor még nem létezett.
+- **Aszinkron események.** Az eszközök, az időzítők és a hálózat bármelyik pillanatban, bármely két utasítás között megszakíthatják a processzort. Az időzítéstől függő hibák ritkán jelentkeznek, és nehéz őket reprodukálni.
+- **Általános célú, ismeretlen felhasználóknak.** Az OS-t azelőtt írják meg, hogy a rajta futó programok elkészülnének. Nem hangolható egyetlen programra, és igazságosnak és biztonságosnak kell maradnia olyan programokkal szemben is, amelyekről semmit sem tud, beleértve az ártó szándékúakat is.
+- **Ha leáll, minden leáll.** Egy alkalmazás hibája csak azt az alkalmazást öli meg; a kernel hibája a gép összes programját megállítja.
+- **Ez kezeli a legtöbb erőforrást.** Processzoridő, memória, háttértár, eszközök, hálózat és energia, egymásnak ellentmondó igényekkel; és egyes problémáinak (például a minden célnak egyszerre megfelelő, igazságos és gyors ütemezésnek) nincs tökéletes megoldása, csak kompromisszumok.
+
+**Miért érdemes tanulni őket.** Kevesen írnak operációs rendszert, de mindenki függ tőlük, és az ötleteiket mindenhol újrahasznosítják: a gyorsítótárazás, az ütemezés, a virtualizáció, a zárolás és a naplózás visszatér az adatbázisokban, a webböngészőkben, a játékmotorokban és a felhőplatformokon. Ha egy programozó tudja, mit csinál alatta az OS, meg tudja magyarázni, miért lassú egy program, vagy miért omlott össze.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> absztrakció, multiplexelés, virtuális gép, aszinkron, kódsor, kernel</summary>
+
+- **Absztrakció:** egyszerűbb kép, amely elrejti a részleteket – mint a térkép a táj helyett.
+- **Multiplexelés:** sokan használnak egyetlen dolgot úgy, hogy mindegyikük úgy érezze, egyedül az övé – mint amikor sok telefonbeszélgetés halad egyetlen kábelen.
+- **Virtuális gép:** itt az a látszólagos gép, amelyet az OS a programoknak mutat, és amely kényelmesebb a valódinál.
+- **Aszinkron:** kiszámíthatatlan időpontokban történik, nem a programmal összhangban; mint a telefonhívások, amelyek főzés közben bármikor jöhetnek.
+- **Kódsor:** egy program szövegének egy sora. Egymillió sor nagyjából 20 000 nyomtatott oldalt töltene meg.
+- **Kernel:** az operációs rendszer magja, az a része, amely teljes ellenőrzést gyakorol a hardver felett.
+
+</details>
+
 ## A történet két hajtóereje
 
 **A hajtóerő: a hardver és az ember viszonylagos költsége.** Az első húsz évben egy számítógép milliókba került és egy egész termet megtöltött, a használói viszont ehhez képest olcsók voltak. Mindent úgy szerveztek meg, hogy a drága gép folyamatosan dolgozzon, még ha az embereknek várniuk kellett is. Ahogy a hardver olcsóbb lett, és az emberek ideje vált a drágább erőforrássá, megfordult a sorrend: most már a gép várjon az emberre, ne fordítva. Ennek a történetnek a legtöbb fordulata ebből az egy változásból következik.
 
 **A hatókör: milyen feladatokat oldunk meg számítógéppel.** A korai számítógépek számoltak: lőtáblázatokat, népszámlálási statisztikákat, mérnöki feladatokat. Később nyilvántartásokat vezettek, embereket kötöttek össze, zenét játszottak, és a zsebekbe is bekerültek. Minden új feladattípus új követelményeket támasztott az operációs rendszerrel szemben.
 
-A történet során végig két cél húz ellentétes irányba: a **hatásfok** (minél több hasznos munkát kihozni a gépből) és a **biztonság** (megakadályozni, hogy a programok és a felhasználók kárt tegyenek egymásban). Minden védelmi mechanizmus elvesz valamennyit a hatásfokból, és minden időt spóroló rövidítés kockázatot nyit.
+A történet során végig három cél húz különböző irányokba: a **kényelem** (a gép könnyen használható, és megtakarítja az emberek idejét), a **biztonság** (a programok és a felhasználók nem tehetnek kárt egymásban) és a **hatásfok** (minél több hasznos munka jön ki a gépből). Bármelyik kettő ütközik egymással. Minden védelmi mechanizmus elvesz valamennyit a hatásfokból, és minden időt spóroló rövidítés kockázatot nyit; egy kényelmes felület processzoridőbe és memóriába kerül; az ellenőrzések és a jelszavak biztonságosabbá, de kevésbé kényelmessé teszik a rendszert. Egyetlen rendszer sem maximalizálhatja mindhármat, ezért minden tervezés egyensúlyt választ közöttük.
+
+Hogy melyik cél győz, az attól függ, mi drága az adott időben, ezért minden korszaknak volt egy **meghatározó szempontja**:
+
+| Korszak | Mi volt drága | Meghatározó szempont |
+| --- | --- | --- |
+| kötegelt korszak (I–VII. lépés) | a gép | kihasználtság: a CPU és az eszközök legyenek folyamatosan elfoglalva |
+| időosztás (VIII–XI. lépés) | az emberek ideje | interaktivitás: válaszidő, a programozók termelékenysége |
+| személyi számítógépek (XII. lépés) | az ár egyetlen vásárló számára | alacsony ár, gyors piacra jutás |
+| hálózatok és mobil eszközök (XIII–XIV. lépés) | a támadások okozta kár, az akkumulátor töltése | biztonság, energia |
 
 **A hatásfok pontosan.** Általában a hatásfok a hasznos munka aránya a teljes munkán belül:
 
@@ -49,7 +93,7 @@ $$\eta_{OS} = \frac{t_{user}}{t_{user} + t_{OS}}$$
 Az az OS, amely sokkal könnyebben használhatóvá teszi a gépet, de elviszi az idejének a felét ($\eta_{OS} = 0{,}5$, azaz 50%), rossz üzlet, ha a gép drága, és jó üzlet lehet, ha az emberek ideje a drága. A Linuxos szakasz megmutatja, hogyan mérhető $t_{user}$ és $t_{OS}$. A képlet feltételezi, hogy a felhasználó programjában töltött idő a hasznos rész; ez általában igaz, de nem mindig.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> hardver, hatásfok, biztonság, többletterhelés, CPU, η</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> hardver, hatásfok, biztonság, többletterhelés, CPU, η, kényelem, kompromisszum, szempont</summary>
 
 - **Hardver:** a számítógép fizikai részei: chipek, vezetékek, lemezek, képernyő. A programok összessége a **szoftver**.
 - **CPU** (Central Processing Unit, központi feldolgozóegység), vagyis a **processzor:** az a chip, amely a programok utasításait végrehajtja, apró lépésről apró lépésre.
@@ -57,6 +101,9 @@ Az az OS, amely sokkal könnyebben használhatóvá teszi a gépet, de elviszi a
 - **η** (a görög éta betű): a hatásfok szokásos jele.
 - **Többletterhelés** (overhead): olyan munka, amelyet el kell végezni, de nem ez az, amit valójában akartunk – mint az orvosi vizsgálat előtti nyomtatványkitöltés.
 - **Biztonság:** védelem a károkozás ellen, akár szándékos (támadó), akár véletlen (hibás program).
+- **Kényelem:** mennyire könnyű és kellemes valamit használni.
+- **Kompromisszum** (trade-off): olyan választás, amelyben az egyik jó dologból csak úgy kaphatunk többet, ha a másikból kevesebbet kapunk – mint egy autónál a sebesség és a fogyasztás.
+- **Szempont** (kritérium): az a mérce, amely alapján valamit megítélünk.
 
 </details>
 
@@ -68,10 +115,12 @@ A gépek a statisztika kedvéért kezdtek tömegesen adatot feldolgozni. Az **18
 
 **A második világháború** hozta az első elektronikus számítógépeket, katonai célokra, katonai erőforrásokból: a Colossust a kódfejtéshez Nagy-Britanniában (1944) és az ENIAC-ot az Egyesült Államokban, amelyet a háború alatt terveztek tüzérségi lőtáblázatok kiszámítására, és 1945 végén készült el.
 
-**Az 1940-es és az 1950-es évek elején** operációs rendszer egyáltalán nem létezett. A programozó egy időszakra lefoglalta az egész gépet, és közvetlenül kezelte az előlapján lévő **kapcsolókkal, nyomógombokkal és lámpasorokkal**, vagy a **kapcsolótáblák** átkábelezésével. A gép interaktív volt, de egyszerre csak egy felhasználó számára, és a felhasználói felület maga a nyers hardver *volt*. Egy híres epizód ebből a korból: 1947 szeptemberében a Harvard Mark II relés számítógép kezelői egy relébe szorult molylepkét találtak, és beragasztották a naplóba ezzel a megjegyzéssel: „first actual case of bug being found” (az első eset, amikor tényleg bogarat találtak). A hibát jelentő *bug* (bogár) szó régebbi (Edison már az 1870-es években használta); a tréfa az volt, hogy ezúttal valódi rovarról volt szó.
+Az ENIAC-ot kapcsolók beállításával és kábelek átdugásával programozták, így a program megváltoztatása napokig tartott. A döntő ötlet saját tervezőitől és Neumann János 1945-ös, az utódjáról, az EDVAC-ról szóló jelentéséből származott: a **tárolt program** elve, amely szerint az **utasítások ugyanabban a memóriában vannak, mint az adatok** (Stallings, 2018). Az első gép, amely tárolt programot futtatott, a manchesteri „Baby” volt 1948 júniusában, a cambridge-i EDSAC (1949) pedig elsőként kínálta ezt szolgáltatásként a felhasználóinak. A következmények ennek a történetnek minden későbbi lépéséig elérnek. Mivel a program csupán adat a memóriában, egy program **megírhat vagy betölthet egy másikat**: a betöltők, a fordítóprogramok és maga az operációs rendszer is erre épül. És mivel az utasítások ugyanúgy módosíthatók, mint az adatok, egy program akár **a saját kódját is átírhatja**; a korai, indexregiszter nélküli gépek pontosan így lépkedtek végig egy tömbön. Ugyanez a tulajdonság biztonsági rés, ha az „adat” egy támadótól származik – ezért tudják a mai processzorok a memóriát nem végrehajthatónak (NX) jelölni, ahogy az [utasítás-végrehajtási ciklusról szóló előadás](../04-fetch-execute-cycle/#a-neumann-elv) bemutatja.
+
+**Az 1940-es és az 1950-es évek elején** operációs rendszer egyáltalán nem létezett. A programozó egy időszakra lefoglalta az egész gépet, és közvetlenül kezelte az előlapján lévő **kapcsolókkal, nyomógombokkal és lámpasorokkal**, vagy a **kapcsolótáblák** átkábelezésével. A gép interaktív volt, de egyszerre csak egy felhasználó számára, és a felhasználói felület maga a nyers hardver *volt*. Ez a történet kiindulópontja, a **0. lépés**: egyetlen felhasználó, a programozó a konzolnál, interaktív hibakeresés, és egy drága gép, amely tétlenül állt, amíg a programozó gondolkodott. Egy híres epizód ebből a korból: 1947 szeptemberében a Harvard Mark II relés számítógép kezelői egy relébe szorult molylepkét találtak, és beragasztották a naplóba ezzel a megjegyzéssel: „first actual case of bug being found” (az első eset, amikor tényleg bogarat találtak). A hibát jelentő *bug* (bogár) szó régebbi (Edison már az 1870-es években használta); a tréfa az volt, hogy ezúttal valódi rovarról volt szó.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> abakusz, memória, népszámlálás, lyukkártya, tabulátorgép, előlap, kapcsolótábla, Colossus, ENIAC, relé, bug</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> abakusz, memória, népszámlálás, lyukkártya, tabulátorgép, előlap, kapcsolótábla, Colossus, ENIAC, tárolt program, EDVAC, Manchester Baby, EDSAC, önmódosító kód, indexregiszter, NX, relé, bug</summary>
 
 - **Abakusz:** rudakra fűzött golyókból álló keret, amelyet évezredek óta használnak számolásra.
 - **Memória:** a számítógép azon része, amely számokat tárol, hogy később fel lehessen használni őket.
@@ -81,6 +130,11 @@ A gépek a statisztika kedvéért kezdtek tömegesen adatot feldolgozni. Az **18
 - **Előlap** (front panel): a korai számítógépek kezelőtáblája, tele kapcsolókkal a számok bevitelére és lámpákkal, amelyek mutatták, mi van a gépben tárolva.
 - **Kapcsolótábla** (plugboard): kábelekkel összekötött aljzatokból álló tábla; a kábelek átdugásával megváltozott, mit csinál a gép – vezetékekből álló program.
 - **Colossus, ENIAC:** az első elektronikus számítógépek közül kettő. A Colossus német rejtjelek feltörésében segített (kódfejtés: titkos üzenetek elolvasása kulcs nélkül); az ENIAC lőtáblázatokat számolt, amelyek alapján a tüzérek a lövegeket irányozták.
+- **Tárolt program:** a program utasításait számokként a számítógép memóriájában tárolják, az adatok mellett, ahelyett hogy kábelekkel és kapcsolókkal állítanák be őket. A program megváltoztatása így olyan egyszerű, mint új számokat betölteni.
+- **EDVAC, Manchester Baby, EDSAC:** az 1940-es évek végének korai, tárolt programú számítógépei az Egyesült Államokban és Angliában (Manchesterben és Cambridge-ben).
+- **Önmódosító kód:** olyan program, amely futás közben megváltoztatja a saját utasításait.
+- **Indexregiszter:** olyan regiszter, amely egy címhez hozzáadandó számot tárol, így ugyanaz az utasítás elérheti egy lista 1., 2., 3. … elemét.
+- **NX** (No eXecute, „ne hajtsd végre”): egy memóriaterület jelölése, amely azt mondja: „csak adat, soha ne futtasd utasításként”.
 - **Relé:** elektromosan működtetett kapcsoló mozgó fém érintkezővel. A korai számítógépek több ezer reléből épültek, és egy lepke beszorulhatott az érintkezők közé.
 - **Bug:** hiba egy programban vagy gépben. A **debuggolás** (hibakeresés) a hibák megtalálása és kijavítása.
 
@@ -88,7 +142,7 @@ A gépek a statisztika kedvéért kezdtek tömegesen adatot feldolgozni. Az **18
 
 ## Tizennégy lépés, egy operációs rendszer
 
-Innentől a történet problémák sorozataként olvasható. Minden lépés az előző szűk keresztmetszetét oldja meg, és a megoldás az operációs rendszer állandó részévé válik. A sorrend inkább logikai, mint szigorúan időrendi: ezen ötletek közül sok szinte egyszerre jelent meg, az 1950-es évek végén és az 1960-as évek elején.
+Innentől a történet problémák sorozataként olvasható, a 0. lépéstől, a konzolnál ülő egyetlen programozótól kezdve. Minden lépés az előző szűk keresztmetszetét oldja meg, és a megoldás az operációs rendszer állandó részévé válik; sok lépés ugyanakkor új költséget is teremt, amelyet egy későbbi lépésnek kell visszafizetnie. A sorrend inkább logikai, mint szigorúan időrendi: ezen ötletek közül sok szinte egyszerre jelent meg, az 1950-es évek végén és az 1960-as évek elején.
 
 ![Minden korszak új OS-ötletet hozott; az ötletek túlélték a gépeket](os-timeline.svg)
 
@@ -147,7 +201,7 @@ Ez a közös, rezidens eszközrutin-gyűjtemény az operációs rendszer csírá
 
 ### III. Drága hardver, lassú előkészítés: szakosodott személyzet
 
-A hardver, különösen a CPU-idő, nagyon drága volt, és a gép előkészítése minden munkához lassan ment. A számítóközpontok ezért **szakosodott személyzetet** alkalmaztak: programozókat, akik megírták a programokat, de a géphez nem nyúltak; **operátorokat**, akik előkészítették a gépet, betöltötték a munkákat és cserélték a szalagokat; karbantartó mérnököket; sőt még a kártyaolvasók tisztítására is külön embereket. A programozó leadott egy kártyacsomagot, és órákkal (vagy egy nappal) később jött vissza a nyomatért.
+A hardver, különösen a CPU-idő, nagyon drága volt, és a gép előkészítése minden munkához lassan ment. A számítóközpontok ezért **szakosodott személyzetet** alkalmaztak: programozókat, akik megírták a programokat, de a géphez nem nyúltak; **operátorokat**, akik előkészítették a gépet, betöltötték a munkákat és cserélték a szalagokat; karbantartó mérnököket; sőt még a kártyaolvasók tisztítására is külön embereket. Az operátorok, akik egész nap semmi mást nem csináltak, gyorsabban és kevesebb hibával készítették elő és üzemeltették a gépet, mint az alkalmanként odaülő programozók. A programozó leadott egy kártyacsomagot, és órákkal (vagy egy nappal) később jött vissza a nyomatért.
 
 ### IV. Gyorsabb CPU-k: a kötegelt monitor
 
@@ -184,10 +238,18 @@ Egy kötegelt monitor csak akkor biztonságos, ha az általa futtatott programok
 
 Ezek a szolgáltatások együtt két működési módot igényelnek: a programok számára egy korlátozott **felhasználói módot** (user mode), a monitor számára pedig egy privilegizált **monitormódot** (ma: kernelmód).
 
-A monitornak azt is tudnia kellett, mit kezdjen a csomag egyes részeivel. Ezt különleges **vezérlőkártyák** (control card) mondták meg neki, amelyeket egy **munkavezérlő nyelven** (job control language, JCL) írtak. Stallings példájában egy FORTRAN-munka így néz ki: a `$JOB` indítja a munkát, a `$FTN` meghívja a FORTRAN-fordítót az utána következő kártyákra, a `$LOAD` betölti az eredményt, a `$RUN` elindítja a mögötte lévő adatkártyákon, a `$END` pedig lezárja a munkát. A JCL a mai shellszkriptek őse volt.
+A monitornak azt is tudnia kellett, mit kezdjen a csomag egyes részeivel. Ezt különleges **vezérlőkártyák** (control card) mondták meg neki, amelyeket egy **munkavezérlő nyelven** (job control language, JCL) írtak. Stallings példájában egy FORTRAN-munka így néz ki: a `$JOB` indítja a munkát, a `$FTN` meghívja a FORTRAN-fordítót az utána következő kártyákra, a `$LOAD` betölti az eredményt, a `$RUN` elindítja a mögötte lévő adatkártyákon, a `$END` pedig lezárja a munkát. A JCL a mai shellszkriptek őse volt. Több ilyen csomag, egyik munka a másik után, alkotott egy köteget (batch):
+
+![Egy munkacsomag: a vezérlőkártyák keretbe foglalják a programot és az adatait; a munkák köteggé rakódnak](card-deck.svg)
+
+### A kötegelt feldolgozás ára: hibakeresés a gépen kívül
+
+A kötegelt feldolgozás a gépet hatékonnyá, a programozót viszont hatékonytalanná tette. A 0. lépésben a konzolnál ülő programozó megállíthatta a programot, megnézhette a lámpákat, átírhatott egy értéket, és perceken belül újra próbálkozhatott. Most a programozó soha nem nyúlt a géphez: egyetlen hibás kártya egy teljes **átfutási időbe** (turnaround) került – órákba vagy egy napba, amíg a nyomat visszaérkezett, gyakran csupán egy hibaüzenettel vagy egy **memóriakiírással** (memory dump), vagyis oldalnyi számokkal, amelyek a memória tartalmát mutatták az összeomlás pillanatában. A programozók leadás előtt az íróasztaluknál, kézzel ellenőrizték a kódjukat, és egy hiba, amelynek kijavításához öt próbálkozás kellett, egy hétbe telt. A hibakeresés **a gépen kívülre** (offline) került.
+
+Amíg a gép sokkal drágább volt a programozóknál, ez volt a helyes kompromisszum. Ez egyben az a költség, amelyet egy későbbi lépés visszafizetett: amikor az emberek ideje vált drága erőforrássá, az időosztás (VIII. lépés) visszaadta a programozónak az interaktív munkát. A CTSS tervezői éppen ezt – a kötegelt munka hosszú átfutási idejét és az ezen keresztüli hibakeresés nehézségét – nevezték meg rendszerük indokaként (Corbató et al., 1962).
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> memóriavédelem, időzítő, privilegizált utasítás, felhasználói mód, monitormód, vezérlőkártya, JCL, shellszkript</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> memóriavédelem, időzítő, privilegizált utasítás, felhasználói mód, monitormód, vezérlőkártya, JCL, shellszkript, átfutási idő, memóriakiírás, offline</summary>
 
 - **Memóriavédelem:** hardveres ellenőrzés, amely megakadályozza, hogy egy program olyan memóriához nyúljon, amely nem az övé.
 - **Időzítő** (timer): hardveres óra, amely beállított idő után meg tudja szakítani a processzort – mint egy konyhai időzítő.
@@ -195,6 +257,9 @@ A monitornak azt is tudnia kellett, mit kezdjen a csomag egyes részeivel. Ezt k
 - **Felhasználói mód / monitormód:** a processzor két üzemmódja. Felhasználói módban a veszélyes utasítások tiltottak; monitor- (kernel)módban minden megengedett.
 - **Vezérlőkártya, JCL** (Job Control Language, munkavezérlő nyelv): különleges lyukkártyák, amelyek nem programot vagy adatot tartalmaztak, hanem utasításokat a monitornak: „fordítsd le ezt”, „most futtasd”.
 - **Shellszkript:** parancsok listáját tartalmazó szövegfájl, amelyet a shell egymás után végrehajt – a régi munkacsomag mai megfelelője.
+- **Átfutási idő** (turnaround): a munka leadásától az eredmény visszakapásáig eltelt idő.
+- **Memóriakiírás** (memory dump): a memória tartalmának kinyomtatása, általában egy program összeomlásakor, hogy utólag meg lehessen keresni a hibát.
+- **Offline:** itt: a gépen kívül – a programozó papíron dolgozott, nem a számítógépnél.
 
 </details>
 
@@ -273,7 +338,7 @@ A kötegelt rendszereket az érdekelte, hány munka készül el naponta (**átbo
 
 ### X. Prioritásos ütemezés
 
-Nem minden munka egyformán sürgős: a terminálnál váró felhasználónak meg kell előznie egy hosszú háttérszámítást. A **prioritásos ütemezés** minden programhoz prioritást rendel, és az ütemező a fontosabbakat részesíti előnyben. A Linux ma is ezt teszi, ahogy az alábbi `nice`-bemutató mutatja.
+Nem minden munka egyformán sürgős: a terminálnál váró felhasználónak meg kell előznie egy hosszú háttérszámítást. A **prioritásos ütemezés** minden programhoz prioritást rendel, és az ütemező a fontosabbakat részesíti előnyben. A felhasználók sem egyenrangúak: ha a tanszékvezető gyors választ akar, az ő munkái ne álljanak sorban a hallgatók házi feladatai mögött. A prioritások mellett a közös használatú rendszerek ezért **kvótákat** is bevezettek: korlátokat arra, hogy egy felhasználó vagy egy munka mennyi CPU-időt, lemezterületet vagy nyomtatópapírt használhat el, így senki sem merítheti ki a közös erőforrásokat. A Linux ma is mindkettőt alkalmazza: a prioritásokat, ahogy az alábbi `nice`-bemutató mutatja, és a kvótákat, lemezkvóták és folyamatonkénti erőforrás-korlátok (`ulimit`) formájában.
 
 ### XI. Tartós adatok: fájlrendszerek
 
@@ -286,7 +351,7 @@ A legnagyratörőbb időosztásos projekt a **Multics** volt, amelyet 1965-ben i
 A Bell Labsnél ezután Ken Thompson és Dennis Ritchie egy sokkal **egyszerűbb** rendszert írt, eleinte egy kicsi PDP-7 számítógépre: a **Unixot** (a neve szójáték a Multics nevére). A Unix a lényeget (időosztás, hierarchikus fájlrendszer, folyamatok) egy kicsi **kernelben** tartotta, minden mást – még a parancsértelmezőt (a shellt) is – közönséges programokba tett ki. 1973-ban átírták az új C programozási nyelvre, így könnyen át lehetett vinni más számítógépekre (Ritchie & Thompson, 1974). Az egyszerűség szándékos volt. Tom Van Vleck, a Multics egyik fejlesztője úgy emlékszik, hogy az ő Multics-kódjának fele hibakezelés volt, Ritchie pedig azt mondta neki, hogy a Unix mindezt elhagyta: súlyos hiba esetén egy `panic()` nevű rutin egyszerűen leállította a gépet, és valaki újraindította (Van Vleck, n.d.). A Linux „kernel panic” üzenete ma is ezt a nevet viseli.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> többfelhasználós, gazdagép, CTSS, időosztás, átbocsátóképesség, válaszidő, preemptív, időszelet, prioritás, perzisztens, könyvtár (mappa), kernel, shell, Unix, C, MIT, Bell Labs, PDP-7, Multics, hierarchikus fájlrendszer, védelmi gyűrűk, kernel panic</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> többfelhasználós, gazdagép, CTSS, időosztás, átbocsátóképesség, válaszidő, preemptív, időszelet, prioritás, kvóta, perzisztens, könyvtár (mappa), kernel, shell, Unix, C, MIT, Bell Labs, PDP-7, Multics, hierarchikus fájlrendszer, védelmi gyűrűk, kernel panic</summary>
 
 - **Többfelhasználós** (multi-user): sok ember használja egyszerre ugyanazt a számítógépet, mindenki a saját felhasználói fiókjával.
 - **Gazdagép** (host): az a központi számítógép, amelyhez sok terminál kapcsolódik.
@@ -296,6 +361,7 @@ A Bell Labsnél ezután Ken Thompson és Dennis Ritchie egy sokkal **egyszerűbb
 - **Preemptív** (kiszorításos): az OS bármikor elveheti a processzort egy programtól, anélkül hogy megkérdezné.
 - **Időszelet** (time slice): az a rövid idő, amíg egy program futhat, mielőtt a következő sorra kerül; jellemzően néhány ezredmásodperc.
 - **Prioritás:** mennyire sürgős valami. A mentőautónak elsőbbsége van egy szállítókocsival szemben.
+- **Kvóta:** rögzített keret, amelyet nem szabad túllépni – mint a havi adatkeret egy mobilelőfizetésben.
 - **Perzisztens** (tartós): a program befejeződése vagy a számítógép kikapcsolása után is megmarad.
 - **Könyvtár** (directory): mappa, amely fájlokat és más mappákat tartalmaz.
 - **Kernel:** az operációs rendszer magja, az a része, amely teljes irányítással rendelkezik a hardver felett.
@@ -414,6 +480,42 @@ E történet fővonala mellett speciális operációsrendszer-fajták is kifejl�
 
 </details>
 
+## A megoldások újrahasznosítása
+
+A személyi számítógépek megmutatták, hogy a történet nem csak előre halad: az MS-DOS visszaesett a II. lépésre, és a régi szolgáltatások egyenként tértek vissza. Ez általános minta. Az operációsrendszer-technikákat ritkán dobják el végleg; kivárják, amíg azok a feltételek, amelyekre kitalálták őket, újra előállnak – gyakran egy újfajta eszközben. Három erő dönti el, melyik megoldás illik egy adott időszakhoz: a **gazdaság** (mi olcsó és mi drága), a **technológia** (mit lehet megépíteni) és az **igények** (mire van szükségük a felhasználóknak és a programoknak). Ha ezek közül valamelyik megváltozik, egy régi megoldás ismét a helyes választássá válhat.
+
+![A megoldások újrahasznosítása: a régi technikák visszatérnek, amikor a gazdaság, a technológia vagy az igények megváltoznak](recycling.svg)
+
+- **FAT a memóriakártyákon.** A hajlékonylemezek és az MS-DOS File Allocation Table (fájlfoglalási tábla) fájlrendszere mai mércével primitív, de elég egyszerű egy fényképezőgép, egy autórádió vagy egy tévé apró vezérlője számára, és minden OS el tudja olvasni. Leszármazottai, a FAT32 és az exFAT ezért az USB-kulcsok és az SD-kártyák szabványos fájlrendszerei, és az EFI rendszerpartíció, amelyről egy PC elindul, szintén FAT. A [fájlrendszerekről szóló előadás](../09-file-systems/) bemutatja, hogyan működik a FAT.
+- **Folytonos tárolás CD-ROM-on.** Minden fájlt egyetlen megszakítás nélküli blokksorozatban tárolni volt a legegyszerűbb korai helyfoglalási módszer, és a lemezeken azért hagytak fel vele, mert a fájlok nőnek, a szabad hely pedig feldarabolódik. Egy CD-ROM-ot egyszer írnak, és soha nem változik, így egyik probléma sem létezik, és az ISO 9660 fájlrendszere minden fájlt folytonosan tárol: ez a leggyorsabban olvasható elrendezés.
+- **Dinamikus linkelés.** A Multics futási időben, az első használatkor kapcsolta össze a programot az általa hívott rutinokkal, és egy rutin egyetlen példányát osztotta meg az összes felhasználó között (Daley & Dennis, 1968). A Unix rendszerek kezdetben statikus linkelést használtak, amely minden programba bemásolta a könyvtárakat. Amikor a grafikus környezetek, például az X Window System, nagyon nagy könyvtárakat hoztak, az 1980-as évek végén visszatértek a megosztott könyvtárak, és ma szinte minden program ezeket használja (lásd az [`ldd`-bemutatót](#a-ii-lépés-ma-a-megosztott-könyvtár) a Linuxos szakaszban).
+- **Mikroprogramozott vagy huzalozott vezérlés.** Az IBM System/360 (1964) a legtöbb modelljében mikrokódot, a CPU-n belüli kis értelmezőt használt, hogy ugyanaz az utasításkészlet olcsó és drága gépeken egyaránt fusson, és az 1970-es éveket a mikroprogramozott, összetett utasításkészletek (CISC) uralták. Amikor a fordítóprogramok fejlődtek, és a chipekre több minden fért, az 1980-as évek RISC-tervei visszatértek az egyszerű, huzalozott utasításokhoz (Patterson & Ditzel, 1980). A mai x86-os processzorok a kettőt ötvözik: CISC-utasításaikat a chipen belül egyszerű mikroműveletekre fordítják.
+- **Értelmezők és virtuális utasításkészletek.** Ugyanez az ötlet egy szinttel feljebb: a Java virtuális gép (1995) hordozható bájtkódot futtat bármely processzoron, ahogy a mikrokód is ugyanazt az utasításkészletet futtatja különböző hardvereken.
+- **Virtuális gépek.** Az IBM CP-67 és VM/370 (1972) rendszere minden felhasználónak a nagygép egy teljes virtuális másolatát adta; Popek és Goldberg (1974) megfogalmazta azokat a feltételeket, amelyeknek egy processzornak ehhez meg kell felelnie. A PC-k nem feleltek meg nekik, és a virtuális gépek eltűntek a szem elől, amíg a VMware (1999) és a Xen (2003) szoftveres technikákkal vissza nem hozta őket; ezután megjelent a hardveres támogatás magukban a processzorokban (Intel VT-x, AMD-V, 2005–2006), és a KVM (2007) erre épül. Ma ezek hordozzák a felhőt.
+- **Időosztás és a számítástechnikai közmű.** Az 1960-as évek álma, a villamos energiához hasonlóan, egy központi gépről sok felhasználónak árusított számítási kapacitás elhalványult, amikor mindenkinek lett PC-je; felhőszámítástechnikaként tért vissza, ahol a processzoridőért és a tárhelyért a használat arányában fizetünk.
+- **Kötegelt feldolgozás.** A szuperszámítógép-központok kötegelt munkákként, sorokban futtatják a feladataikat, amelyeket olyan munkaütemezők kezelnek, mint a Slurm, a cégek pedig éjszakai kötegelt munkákat futtatnak a számlázáshoz és a biztonsági mentésekhez, mert a hosszú, nem interaktív munkánál ismét a kihasználtság számít.
+
+Egy mérnök számára a tanulság gyakorlati: mielőtt egy technikát elavultnak nyilvánítanánk, kérdezzük meg, melyik feltétele nem áll már fenn, és nem állhat-e fenn újra valahol máshol.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> FAT, exFAT, SD-kártya, EFI rendszerpartíció, folytonos tárolás, ISO 9660, dinamikus és statikus linkelés, X Window System, mikrokód, CISC, RISC, mikroművelet, bájtkód, Java VM, hipervizor, VT-x, AMD-V, Slurm</summary>
+
+- **FAT, FAT32, exFAT:** a hajlékonylemezek korából származó egyszerű fájlrendszerek családja, amelyet ma is használnak a memóriakártyákon, mert minden eszköz érti.
+- **SD-kártya:** a fényképezőgépekben és egyes telefonokban használt kis memóriakártya.
+- **EFI rendszerpartíció:** egy kis terület a PC lemezén, amely az operációs rendszert elindító programokat tárolja.
+- **Folytonos tárolás:** egy fájl tárolása egyetlen megszakítás nélküli blokksorozatban – mint amikor egy csoport minden tagja ugyanabban a sorban kap helyet.
+- **ISO 9660:** a CD-ROM-ok szabványos fájlrendszere.
+- **Statikus / dinamikus linkelés:** statikus linkelésnél a könyvtári rutinokat minden programba bemásolják; dinamikus linkelésnél a programok futáskor megkeresik a könyvtár egyetlen példányát, és osztoznak rajta.
+- **X Window System:** a Unix klasszikus grafikus rendszere, amely ablakokat rajzol a képernyőre.
+- **Mikrokód:** apró programok a processzoron belül, amelyek lépésről lépésre végrehajtják a bonyolultabb utasításait.
+- **CISC / RISC:** Complex / Reduced Instruction Set Computer (összetett / csökkentett utasításkészletű számítógép). A CISC processzornak sok, erős utasítása van; a RISC processzornak kevesebb és egyszerűbb, de ezek nagyon gyorsan futnak.
+- **Mikroművelet:** azon egyszerű belső lépések egyike, amelyekre egy modern x86-os processzor minden utasítást felbont.
+- **Bájtkód, Java VM:** a bájtkód kitalált gépi nyelv, amelyet egyetlen valódi processzor sem futtat; a Java virtuális gép az a program, amely bármely valódi számítógépen futtatja.
+- **Hipervizor:** az a szoftver, amely virtuális gépeket futtat, mindegyiket a saját operációs rendszerével. **VT-x, AMD-V:** a processzorok ezt segítő funkciói.
+- **Slurm:** széles körben használt program, amely sorba állítja és ütemezi a munkákat a szuperszámítógépeken.
+
+</details>
+
 ## Az előadás és a tankönyvek
 
 Ez az előadás problémák és megoldások láncolataként meséli el a történetet. A szokásos tankönyvek ugyanezt a történetet más keretben mondják el; aki párhuzamosan olvassa őket, ezt a megfeleltetést használhatja:
@@ -452,7 +554,7 @@ Visszatekintve a tizennégy lépésre, az operációs rendszer négy szerepet j�
 | **Gyorsétteremlánc** | ugyanazt az élményt adja különböző környezetekben: az OS-re írt program nagyon különböző hardvereken is fut, ahogy a hamburger is ugyanolyan ízű minden étteremben | II, a Unix hordozhatósága |
 | **Biztonsági őr** | védi a közös erőforrásokat: megakadályozza, hogy a programok és felhasználók kárt tegyenek egymásban (security), és működésben tartja a rendszert, ha valami meghibásodik (safety) | VII, VIII, XIII, XIV |
 
-Egy széles körben használt tankönyv ugyanezeket a feladatokat három szereppel írja le: az OS mint **illuzionista** (a mi bűvészünk), **játékvezető** (a mi karmesterünk és biztonsági őrünk) és **ragasztó** (a közös szolgáltatások, amelyek minden programnak ugyanazt az élményt adják) (Anderson & Dahlin, 2014).
+A bűvész az előadás elején adott definíció első fele (egy gépből egy másik gép lesz), a karmester a második (egy gépből sok gép lesz). Egy széles körben használt tankönyv ugyanezeket a feladatokat három szereppel írja le: az OS mint **illuzionista** (a mi bűvészünk), **játékvezető** (a mi karmesterünk és biztonsági őrünk) és **ragasztó** (a közös szolgáltatások, amelyek minden programnak ugyanazt az élményt adják) (Anderson & Dahlin, 2014).
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> erőforrás, elosztás, virtuális gép, hordozhatóság, safety</summary>
@@ -484,6 +586,44 @@ Hogy pontosan hol ér véget az operációs rendszer, az definíció kérdése. 
 - **Rendszerhívás** (system call): egy program kérése a kernelhez, hogy tegyen meg valamit, amit ő maga nem tehet meg, például „olvasd be ezt a fájlt” vagy „küldd el ezt a hálózaton”.
 - **Firmware:** egy hardvereszközbe tartósan beépített szoftver, például az a program, amely bekapcsoláskor elindítja a számítógépet.
 - **Segédprogram** (utility): kis kisegítő program, például olyan, amely fájlokat másol, vagy megmutatja a szabad lemezterületet.
+
+</details>
+
+## Az operációs rendszerek osztályozása
+
+Az operációs rendszerek több, egymástól független szempont szerint csoportosíthatók:
+
+- **Licenc:** nyílt forráskódú (Linux, FreeBSD, az Android Open Source Project), amelynek forráskódját bárki elolvashatja, módosíthatja és továbbadhatja, vagy zárt, szabadalmaztatott (Windows, iOS), amelynek forrását a gyártó titokban tartja. Vegyes esetek is vannak: a macOS magja (Darwin) nyílt forráskódú, a többi része nem.
+- **Platform:** nagygép, szerver, asztali gép, mobil eszköz, beágyazott vagy valós idejű rendszer; a platform dönti el, mi a legfontosabb, a szerver átbocsátóképességétől a telefon akkumulátor-üzemidején át az autóban garantált határidőkig.
+- **Felület:** parancssoros (CLI) vagy grafikus (GUI). A legtöbb rendszer mindkettőt kínálja; a szervereket általában parancssorból kezelik.
+- **Felhasználók és feladatok:** dolgozhat-e egyszerre több felhasználó, és futhat-e egyszerre több program.
+- **A kernel felépítése:** monolitikus, mikrokernel vagy hibrid (lásd alább).
+
+A két „hány” szempont egy kis táblázatot ad, amelynek egyik sarka gyakorlatilag üres:
+
+| | egyszerre egy feladat | egyszerre több feladat |
+| --- | --- | --- |
+| **egy felhasználó** | CP/M, MS-DOS | Windows 95/98, klasszikus Mac OS, egy telefon a mindennapi használatban |
+| **egyszerre több felhasználó** | (gyakorlatilag üres) | Unix, Linux, a Windows NT család |
+
+Az egyszerre dolgozó több felhasználónak egyszerre futó több programra van szüksége, mindegyiküknek legalább egyre, így egy többfelhasználós, de egyfeladatos rendszernek kevés értelme van; az a kötegelt monitor, amely sok felhasználó munkáit egymás után futtatja, minden egyes pillanatban egyfelhasználós. Figyeljük meg, hogy az „egyfelhasználós” azt írja le, hogyan használnak egy rendszert, nem azt, mire képes: az Android és az iOS sok folyamatot futtat, és külön felhasználói azonosítókkal választja el egymástól az alkalmazásokat, de egyszerre egy embert szolgál ki.
+
+**A kernel felépítése.** **Monolitikus kernelben** az összes OS-szolgáltatás (folyamat- és memóriakezelés, fájlrendszerek, a hálózati protokollkészlet, eszközmeghajtók) együtt fut kernelmódban, egyetlen címtartományban. A köztük lévő hívások közönséges függvényhívások, így gyors, de bármelyik meghajtó hibája összeomlaszthatja az egész rendszert. A Unix és a Linux monolitikus; a Linux ehhez **betölthető modulokat** ad, így a meghajtók a rendszer futása közben betölthetők és eltávolíthatók, de egy betöltött modul továbbra is a kernelen belül fut. A **mikrokernel** csak a legszükségesebbet tartja kernelmódban (címtartományok, szálak, üzenetküldés a folyamatok között), a meghajtókat és a fájlrendszereket pedig közönséges, felhasználói módú folyamatokként futtatja. Egy összeomlott meghajtó így újraindítható, és a kis kernelt könnyebb ellenőrizni, cserébe több üzenet és környezetváltás kell. A Minix 3, a QNX (amely autókban és ipari eszközökben gyakori) és a seL4, amelynek helyességét formálisan bebizonyították (Klein et al., 2009), mikrokernelek. A **hibrid kernelek** mikrokernel-tervből indulnak ki, de a sebesség kedvéért a legtöbb szolgáltatást kernelmódban futtatják: ilyen a Windows NT kernele és az XNU, a macOS és az iOS kernele, amely a Mach mikrokernelt és a BSD Unix egyes részeit egyesíti egyetlen címtartományban (Tanenbaum & Bos, 2015).
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> nyílt forráskód, zárt (szabadalmaztatott) szoftver, platform, beágyazott, monolitikus kernel, betölthető modul, mikrokernel, hibrid kernel, címtartomány, üzenetküldés, formális verifikáció, Minix, QNX, seL4, XNU, Mach, BSD</summary>
+
+- **Nyílt forráskód:** olyan szoftver, amelynek forráskódja nyilvános, és bárki tanulmányozhatja, módosíthatja és megoszthatja. **Zárt (szabadalmaztatott, proprietary) szoftver:** egy cég tulajdona, amely titokban tartja a forráskódot.
+- **Platform:** az a géptípus, amelyre egy OS készül: szerver, asztali gép, telefon, mosógép.
+- **Monolitikus kernel:** az OS teljes magja egyetlen nagy program, amely teljes jogokkal fut. Gyors, de egyetlen hibás része mindent magával ránthat.
+- **Betölthető modul:** a kernel egy darabja, általában egy meghajtó, amely a rendszer futása közben hozzáadható vagy eltávolítható, mint egy bővítmény.
+- **Mikrokernel:** nagyon kicsi kernel, amely csak a legszükségesebbet végzi; minden más külön programként fut, és ezek üzeneteket küldenek egymásnak. Mint egy vezető, aki szinte mindent delegál.
+- **Hibrid kernel:** a kettő keveréke.
+- **Címtartomány:** azoknak a memóriacímeknek a köre, amelyeket egy program használhat.
+- **Üzenetküldés:** a programok úgy működnek együtt, hogy üzeneteket küldenek egymásnak, ahelyett hogy közvetlenül egymás kódját hívnák.
+- **Formális verifikáció:** matematikai bizonyítás arra, hogy egy program pontosan azt csinálja, amit a specifikációja előír.
+- **Minix, QNX, seL4:** mikrokernelű operációs rendszerek: a Minix oktatásra (a Linux fejlesztése ezen indult), a QNX autókba és gépekbe, a seL4 olyan rendszerekbe, amelyeknek bizonyíthatóan biztonságosnak kell lenniük.
+- **XNU, Mach, BSD:** az XNU az Apple kernele; a Mach a Carnegie Mellon Egyetem mikrokernele; a BSD a Unix egy változata a Kaliforniai Egyetemről (Berkeley).
 
 </details>
 
@@ -697,6 +837,35 @@ Még az `ls`-nek is 76 rendszerhívásra van szüksége: a programkönyvtárai b
 
 </details>
 
+### Egy monolitikus kernel, megmérve
+
+A Linux monolitikus kernel: a fájlrendszerek, a hálózati protokollkészlet és a meghajtók mind a részei. Sok kernel a `/proc/config.gz` fájlban teszi elérhetővé azt a konfigurációt, amellyel lefordították. Minden opció vagy be van fordítva a kernelbe (`=y`), vagy betölthető modulként készült (`=m`), vagy kimaradt:
+
+```console
+$ uname -sr
+Linux 6.18.44-fc-v77
+$ zcat /proc/config.gz | grep 'CONFIG_MODULES[= ]'
+# CONFIG_MODULES is not set
+$ zcat /proc/config.gz | grep -c '=y$'
+1635
+$ zcat /proc/config.gz | grep -c '=m$'
+0
+$ grep -w ext4 /proc/filesystems
+	ext4
+```
+
+Ez a kis felhőbeli virtuális gépre készült kernel a legszigorúbb értelemben monolitikus: a modultámogatás ki van kapcsolva, és mind az 1635 engedélyezett funkció egyetlen kernelképbe van befordítva, köztük az ext4 fájlrendszer is, amelyet a `/proc/filesystems` azok között sorol fel, amelyeket a kernel maga tud csatolni. Egy általános célú disztribúciós kernel (Ubuntu, Fedora) éppen fordítva készül: több ezer meghajtót tartalmaz `=m` modulként, amelyeket csak akkor tölt be, ha megfelelő hardvert talál; az `lsmod` kilistázza a betöltötteket (8. laborfeladat). A modul mindkét esetben kernelmódban fut: a modul a monolitikus kernel bővítménye, nem pedig különálló folyamat, mint egy mikrokernelben.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> kernelkonfiguráció, /proc/config.gz, zcat, grep, kernelkép, lsmod</summary>
+
+- **Kernelkonfiguráció:** a kernel fordításakor hozott döntések listája: mely funkciókat és meghajtókat tartalmazza, és milyen módon.
+- **`/proc/config.gz`:** ennek a listának tömörített másolata, amelyet maga a futó kernel biztosít. A **`zcat`** kiír egy tömörített fájlt; a **`grep`** megtartja azokat a sorokat, amelyek illeszkednek egy mintára (a `-c` csak megszámolja őket).
+- **Kernelkép:** az az egyetlen fájl, amely a lefordított kernelt tartalmazza, és a számítógép indulásakor betöltődik.
+- **`lsmod`:** parancs, amely kilistázza az éppen betöltött kernelmodulokat.
+
+</details>
+
 ## Laborfeladatok
 
 1. **Megosztott könyvtárak.** Futtasd le az `ldd`-t három programra (`/bin/ls`, `/bin/bash`, `python3` vagy egy másik). Melyik könyvtár szerepel mindegyikben? Ezután számold meg, hány futó folyamat használja: `sudo sh -c 'grep -l libc.so.6 /proc/[0-9]*/maps 2>/dev/null | wc -l'` (`sudo` nélkül csak a saját folyamataidat látod).
@@ -706,6 +875,8 @@ Még az `ls`-nek is 76 rendszerhívásra van szüksége: a programkönyvtárai b
 5. **Virtuális memória.** Futtasd le a `vm.c`-t. Ezután módosítsd úgy, hogy a gyerek még egyszer kiírja `x`-et, *mielőtt* beállítja az `x = 2` értéket. Magyarázd meg, miért látja a gyerek először az `x = 1` értéket, és miért nem jut el a változtatása a szülőhöz. Szorgalmi: tegyél a szülőbe egy `printf`-et a `fork()` elé, újsor és `fflush(stdout)` nélkül, és futtasd így: `./vm | cat`. Miért jelenik meg kétszer ez a szöveg?
 6. **Többletterhelés.** Ismételd meg a `dd`-kísérletet 1, 16, 512, 4096 és 1M bájtos blokkmérettel (az összesen 10 MB maradjon: igazítsd a `count` értékét). Ábrázold a teljes CPU-időt (`user` + `sys`) a blokkméret függvényében. Melyik blokkmérettől nem számít már a rendszerhívások költsége, és miért?
 7. **Rendszerhívások.** Futtasd le a `strace -c`-t az `ls`-re, a `cat /etc/os-release`-re és a `python3 -c 'print(1)'`-re. Melyiknek kell a legtöbb rendszerhívás, és miért?
+8. **Monolitikus, de moduláris.** Egy saját Linux-telepítésen (laptopon vagy disztribúciós kernelt futtató virtuális gépen) számold meg a beépített és a modulként fordított opciókat: `grep -c '=y$' /boot/config-$(uname -r)` és `grep -c '=m$' /boot/config-$(uname -r)` (vagy használd a `/proc/config.gz`-t, ha létezik). Ezután futtasd le az `lsmod | wc -l` és az `lsmod | head` parancsot. Mely meghajtók vannak betöltve, és milyen hardverhez tartoznak (`modinfo <name>`)? Hasonlítsd össze az eredményt a Linuxos szakasz számaival, és magyarázd el, miért van szüksége egy disztribúciós kernelnek modulokra, és miért nincs egy olyan kernelnek, amely egyetlen ismert virtuális gépre készült.
+9. **Újrahasznosított megoldások.** A saját számítógépeden listázd ki a fájlrendszereket az `lsblk -f` (Linux), a `diskutil list` (macOS) paranccsal vagy a Lemezkezelővel (Windows), miközben egy USB-kulcs vagy SD-kártya csatlakoztatva van. Mely partíciók használnak FAT-ot vagy exFAT-ot, és miért éppen ott? Keress még egy, ebben az előadásban nem szereplő példát egy újrahasznosított megoldásra, és nevezd meg a gazdaságban, a technológiában vagy az igényekben bekövetkezett változást, amely visszahozta.
 
 ## Ellenőrző kérdések
 
@@ -724,6 +895,12 @@ Még az `ls`-nek is 76 rendszerhívásra van szüksége: a programkönyvtárai b
 13. Melyik négy hardveres szolgáltatásra volt szükségük a kötegelt monitoroknak, és mi romlana el mindegyik nélkül?
 14. Miért az MS-DOS lett az IBM PC és klónjai operációs rendszere, és nem a CP/M? Válaszd szét a dokumentált tényeket és a legendát!
 15. „Az Apple ellopta a grafikus felületet a Xeroxtól, a Microsoft pedig az Apple-től.” Mi pontos ebben a mondatban, és mi nem? Mit döntöttek a bíróságok a GUI-ról, és miért fontos ez az operációs rendszerek szempontjából?
+16. „Az operációs rendszer a gépből egy másik gépet csinál, egy gépből pedig sokat.” Magyarázd el mindkét felét egy-egy példával, és adj meg négy okot, amiért nehéz operációs rendszert építeni.
+17. Adj példát a kényelem, a biztonság és a hatásfok közül bármely két cél közötti ütközésre, mindhárom párra. Melyik szempont volt meghatározó a kötegelt korszakban, az időosztás korszakában és az első személyi számítógépek korszakában, és miért?
+18. Mit veszítettek a programozók, amikor a kötegelt feldolgozás felváltotta a 0. lépést, miért volt ez akkor elfogadható, és melyik lépés adta vissza?
+19. Töltsd ki az egy- és többfelhasználós, valamint az egy- és többfeladatos rendszerek táblázatát, minden lehetséges cellába egy-egy példával. Miért gyakorlatilag üres az egyik cella?
+20. Hasonlítsd össze a monolitikus kerneleket, a mikrokerneleket és a hibrid kerneleket: hol fut egy eszközmeghajtó mindegyikben, mi történik, ha összeomlik, és mely rendszerek példák az egyes típusokra? Mikrokernel-e egy betölthető modulokkal dolgozó Linux-kernel?
+21. Adj három példát újrahasznosított operációsrendszer-megoldásra. Mindegyiknél nevezd meg a gazdaságban, a technológiában vagy az igényekben bekövetkezett változást, amely visszahozta.
 
 <details>
 <summary><strong>Megoldókulcs (oktatóknak)</strong></summary>
@@ -743,6 +920,12 @@ Még az `ls`-nek is 76 rendszerhívásra van szüksége: a programkönyvtárai b
 13. Memóriavédelem (különben egy munka felülírhatná a monitort), időzítő (különben egy végtelen ciklusba került munka soha nem adná vissza az irányítást), privilegizált utasítások (különben egy munka maga végezhetne I/O-t, például beolvashatná a következő munka kártyáit) és megszakítások (különben a monitor nem tudná visszaszerezni az irányítást, és nem tudná átlapolni az I/O-t a számolással). Ezek felhasználói módot és privilegizált monitor- (kernel)módot igényelnek.
 14. Dokumentált: az IBM először a Digital Researchet kereste meg (1980 augusztusában); az IBM titoktartási megállapodása körüli vita késleltette az első megbeszélést, a tárgyalások pedig azon buktak meg, hogy a DRI egyszeri díj helyett jogdíjat akart, és hogy a CP/M-86 késett. A Microsoft licencelte, majd megvette a 86-DOS-t (QDOS) a Seattle Computer Productstól, és leszállította az IBM-nek; a PC DOS 40 dollárba, a CP/M-86 később 240 dollárba került; és a Microsoft megtartotta a jogot, hogy az MS-DOS-t a klóngyártóknak is licencelje. Legenda: hogy Kildall egyszerűen „elment repülni” ahelyett, hogy az IBM-mel tárgyalt volna, és figyelmetlenségből vesztette el az üzletet; aznap valóban repült, de üzleti ügyben, és az okok szerződésesek és üzletiek voltak. Az az állítás, hogy a DOS kódját lemásolták, nem igazolható: a DOS szándékosan lemásolta a CP/M rendszerhívási interfészét (ezt kifogásolta Kildall), de a kódja és a belső felépítése eltért.
 15. Pontos: a GUI ötletei a Xerox PARC-tól származtak, az Apple Jobs látogatásai után fejlesztette tovább őket, a Microsoft pedig a Mac megismerése után építette meg a Windowst. Nem pontos: a „lopás” az Apple esetében (a látogatások egy részvényüzlet részei voltak, kódot nem vittek el, az ötleteket széles körben bemutatták, és a Lisa-projekt korábban indult a látogatásoknál), és a Microsoft esetében (az Apple 1985-ben licencet adott a Microsoftnak a Mac egyes elemeire, és elvesztette a pert). A bíróságok megállapították (1992, 1994), hogy a vitatott elemek többségére kiterjedt a licenc, és hogy a GUI alapötletei nem védhetők, csak konkrét tervek szoros lemásolása sérthet jogot; így a GUI minden operációs rendszer közös részévé vált.
+16. Gép → másik gép: az OS a valódi hardvert egy másik, kényelmesebb gép mögé rejti, például sorszámozott lemezblokkok helyett elnevezett, növekedni képes fájlokat ad, vagy a 0. címtől kezdődő saját virtuális memóriát. Egy → sok: a valódi gépet multiplexeli sok program és felhasználó között, időben (CPU-időszeletek) és térben (memória, lemez), így mindegyiknek úgy tűnik, mintha saját gépe volna. Okok, amiért nehéz (bármelyik négy): túl nagy egyetlen embernek (több millió sor), évtizedes élettartam kompatibilitási követelményekkel, aszinkron események (bármikor érkező megszakítások, időzítésfüggő hibák), általános célú, ismeretlen és esetleg ártó szándékú programok számára, ha leáll, minden leáll, ez kezeli a legtöbb és egymásnak leginkább ellentmondó erőforrást, és egyes problémáinak csak kompromisszumos, nem tökéletes megoldása van.
+17. Kényelem és hatásfok: egy grafikus asztal vagy az animációk CPU-időt és memóriát használnak. Biztonság és hatásfok: a memóriavédelem, a jogosultság-ellenőrzés és a titkosítás időbe kerül. Kényelem és biztonság: a jelszavak, a megerősítések és az engedélykérések lassítják a felhasználókat, az automatikus bejelentkezés kényelmes, de nem biztonságos. Kötegelt korszak: a kihasználtság, mert a gép volt a drága rész. Időosztás: az interaktivitás (válaszidő, a programozók termelékenysége), mert az emberek ideje vált drágává. Első PC-k: az alacsony ár és a gyors piacra jutás, mert egyetlen embernek kellett megfizetnie az egész gépet.
+18. Az interaktív hibakeresést a konzolnál: egy hiba most egy teljes, órákig vagy egy napig tartó átfutási időbe került, és a hibakeresés a gépen kívül, nyomatokból és memóriakiírásokból folyt. Elfogadható volt, mert a gép sokkal drágább volt a programozók idejénél, és a kötegelt feldolgozás folyamatosan dolgoztatta. Az időosztás (VIII. lépés) adta vissza az interaktivitást, amikor az emberek ideje vált drága erőforrássá.
+19. Egy felhasználó, egy feladat: CP/M, MS-DOS. Egy felhasználó, több feladat: Windows 95/98, klasszikus Mac OS, egy telefon a mindennapi használatban. Több felhasználó, több feladat: Unix, Linux, a Windows NT család. Az egyszerre több felhasználó, de egyszerre csak egy feladat cella gyakorlatilag üres: minden egyszerre dolgozó felhasználónak legalább egy futó programra van szüksége, így több felhasználó egyidejű kiszolgálásához több programot kell futtatni; az a rendszer, amely a felhasználókat egymás után szolgálja ki, minden pillanatban egyfelhasználós.
+20. Monolitikus: a meghajtók kernelmódban, a kernel címtartományán belül futnak; egy összeomló meghajtó az egész rendszert magával ránthatja; Unix, Linux. Mikrokernel: a meghajtók felhasználói módú folyamatokként futnak, és üzenetekkel kommunikálnak; egy összeomlott meghajtó újraindítható, miközben a többi rész tovább fut, cserébe több környezetváltás kell; Minix 3, QNX, seL4. Hibrid: mikrokernel-stílusú terv, a legtöbb szolgáltatással kernelmódban a sebesség kedvéért; Windows NT, XNU (macOS, iOS). A betölthető modulokkal dolgozó Linux továbbra is monolitikus: egy modul betöltés után kernelmódban, a kernel részeként fut.
+21. Például: FAT az USB-kulcsokon és SD-kártyákon (igények: egyszerű formátum, amelyet az apró vezérlők és minden OS el tud olvasni; gazdaság: olcsó vezérlők); folytonos tárolás CD-ROM-on (technológia: egyszer írható adathordozó, így a fájlok soha nem nőnek, és a hely soha nem darabolódik fel); megosztott könyvtárak (igények: a nagy grafikus könyvtárakat, például az X-ét, különben minden programba be kellene másolni); RISC (technológia: a jobb fordítóprogramok és a nagyobb chipek az egyszerű, huzalozott utasításokat gyorsabbá tették); virtuális gépek és hipervizorok (gazdaság: sok, kihasználatlan szervert kellett összevonni, majd jött a processzortámogatás); felhőszámítástechnika (gazdaság: sokaknak olcsóbb használat szerint bérelni, mint birtokolni); kötegelt munkaütemezők (igények: hosszú, nem interaktív munka, ahol ismét a kihasználtság számít).
 
 </details>
 
@@ -755,6 +938,8 @@ Apple Computer, Inc. v. Microsoft Corp. (n.d.). In *Wikipedia*. Retrieved Octobe
 Computer History Museum Software Preservation Group. (n.d.). *Operating systems at conception*. Retrieved October 6, 2026, from https://softwarepreservation.computerhistory.org/os/gm.html
 
 Corbató, F. J., Merwin-Daggett, M., & Daley, R. C. (1962). An experimental time-sharing system. In *Proceedings of the May 1–3, 1962, Spring Joint Computer Conference* (pp. 335–344). Association for Computing Machinery. https://doi.org/10.1145/1460833.1460871
+
+Daley, R. C., & Dennis, J. B. (1968). Virtual memory, processes, and sharing in MULTICS. *Communications of the ACM, 11*(5), 306–312. https://doi.org/10.1145/363095.363139
 
 Gary Kildall. (n.d.). In *Wikipedia*. Retrieved October 6, 2026, from https://en.wikipedia.org/wiki/Gary_Kildall
 
@@ -770,11 +955,17 @@ Information Processing Society of Japan. (n.d.). *Minicomputers: Brief history*.
 
 Kilburn, T., Edwards, D. B. G., Lanigan, M. J., & Sumner, F. H. (1962). One-level storage system. *IRE Transactions on Electronic Computers, EC-11*(2), 223–235. https://doi.org/10.1109/TEC.1962.5219356
 
+Klein, G., Elphinstone, K., Heiser, G., Andronick, J., Cock, D., Derrin, P., Elkaduwe, D., Engelhardt, K., Kolanski, R., Norrish, M., Sewell, T., Tuch, H., & Winwood, S. (2009). seL4: Formal verification of an OS kernel. In *Proceedings of the ACM SIGOPS 22nd Symposium on Operating Systems Principles* (pp. 207–220). Association for Computing Machinery. https://doi.org/10.1145/1629575.1629596
+
 Living Computers: Museum + Labs. (2020, April 9). *What really happened: Steve Jobs @ Xerox PARC '79*. https://www.livingcomputers.org/Blog/What-Really-Happened-Steve-Jobs-@-Xerox-PARC-79.aspx
 
 Multicians. (n.d.). *Multics history*. Retrieved October 6, 2026, from https://multicians.org/history.html
 
 Necasek, M. (n.d.). *DOS 1.0 and 1.1*. OS/2 Museum. Retrieved October 6, 2026, from https://www.os2museum.com/wp/dos/dos-1-0-and-1-1/
+
+Patterson, D. A., & Ditzel, D. R. (1980). The case for the reduced instruction set computer. *ACM SIGARCH Computer Architecture News, 8*(6), 25–33. https://doi.org/10.1145/641914.641917
+
+Popek, G. J., & Goldberg, R. P. (1974). Formal requirements for virtualizable third generation architectures. *Communications of the ACM, 17*(7), 412–421. https://doi.org/10.1145/361011.361073
 
 Ritchie, D. M., & Thompson, K. (1974). The UNIX time-sharing system. *Communications of the ACM, 17*(7), 365–375. https://doi.org/10.1145/361011.361061
 

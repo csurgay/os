@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 404" width="760" height="404" role="img" aria-label="Egy egyszerű rendszersín cím-, adat- és vezérlővonalai">
+<title>Egy egyszerű rendszersín cím-, adat- és vezérlővonalai</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}
+  }
+</style>
+<defs><marker id="sb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Egy egyszerű rendszersín cím-, adat- és vezérlővonalai</text>
+<path d="M140 190V166H340V190" fill="none" class="edge" stroke-width="1.25" marker-end="url(#sb)" stroke-dasharray="5 4"/>
+<text x="232" y="161" font-size="11.5" font-weight="400" class="ink" text-anchor="start">MR  memóriaolvasás</text>
+<path d="M120 190V142H380V190" fill="none" class="edge" stroke-width="1.25" marker-end="url(#sb)" stroke-dasharray="5 4"/>
+<text x="232" y="137" font-size="11.5" font-weight="400" class="ink" text-anchor="start">MW  memóriaírás</text>
+<path d="M100 190V118H590V190" fill="none" class="edge" stroke-width="1.25" marker-end="url(#sb)" stroke-dasharray="5 4"/>
+<text x="232" y="113" font-size="11.5" font-weight="400" class="ink" text-anchor="start">IOR  I/O-olvasás</text>
+<path d="M80 190V94H630V190" fill="none" class="edge" stroke-width="1.25" marker-end="url(#sb)" stroke-dasharray="5 4"/>
+<text x="232" y="89" font-size="11.5" font-weight="400" class="ink" text-anchor="start">IOW  I/O-írás</text>
+<path d="M670 190V70H60V190" fill="none" class="edge" stroke-width="1.25" marker-end="url(#sb)" stroke-dasharray="5 4"/>
+<text x="232" y="65" font-size="11.5" font-weight="600" class="ink" text-anchor="start">IRQ  megszakításkérés</text>
+<text x="684" y="110" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">vezérlő-</text>
+<text x="684" y="126" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">vonalak</text>
+<rect x="40" y="190" width="160" height="64" rx="8" class="accf"/><rect x="40" y="190" width="160" height="64" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="120.0" y="216" font-size="13" font-weight="600" class="ink" text-anchor="middle">CPU</text>
+<text x="120.0" y="236" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">hajtja a címsínt</text>
+<rect x="300" y="190" width="160" height="64" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="380.0" y="216" font-size="13" font-weight="600" class="ink" text-anchor="middle">Memória</text>
+<text x="380.0" y="236" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">válaszol: MR, MW</text>
+<rect x="560" y="190" width="160" height="64" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="640.0" y="216" font-size="13" font-weight="600" class="ink" text-anchor="middle">I/O-eszköz</text>
+<text x="640.0" y="236" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">válaszol: IOR, IOW</text>
+<path d="M90 254V292H630" fill="none" class="edge" stroke-width="2.5"/>
+<path d="M350 292V254" fill="none" class="edge" stroke-width="1.25" marker-end="url(#sb)"/>
+<path d="M610 292V254" fill="none" class="edge" stroke-width="1.25" marker-end="url(#sb)"/>
+<path d="M150 326H680" fill="none" class="edge" stroke-width="2.5"/>
+<path d="M150 326V254" fill="none" class="edge" stroke-width="1.25" marker-end="url(#sb)" marker-start="url(#sb)"/>
+<path d="M410 326V254" fill="none" class="edge" stroke-width="1.25" marker-end="url(#sb)" marker-start="url(#sb)"/>
+<path d="M670 326V254" fill="none" class="edge" stroke-width="1.25" marker-end="url(#sb)" marker-start="url(#sb)"/>
+<text x="36" y="296" font-size="11.5" font-weight="600" class="ink" text-anchor="start">cím</text>
+<text x="36" y="330" font-size="11.5" font-weight="600" class="ink" text-anchor="start">adat</text>
+<text x="638" y="296" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">CPU → memória, I/O</text>
+<text x="688" y="330" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">kétirányú</text>
+<text x="24" y="370" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Portleképezett I/O: az IOR/IOW jelzi az eszköznek, hogy a cím portszám, nem memóriarekesz.</text>
+<text x="24" y="388" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Memórialeképezett I/O: az eszköz a saját címtartományában válaszol az MR/MW jelre, mint a memória.</text>
+</svg>

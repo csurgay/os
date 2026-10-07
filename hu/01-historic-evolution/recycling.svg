@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 384" width="760" height="384" role="img" aria-label="A megoldások újrahasznosítása: a régi technikák visszatérnek, amikor a gazdaság, a technológia vagy az igények megváltoznak">
+<title>A megoldások újrahasznosítása: a régi technikák visszatérnek, amikor a gazdaság, a technológia vagy az igények megváltoznak</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+  }
+</style>
+<defs><marker id="rc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Régi technikák visszatérnek, ha változik a gazdaság, a technológia vagy az igények</text>
+<path d="M150 88L58 242L242 242Z" fill="none" class="edge" stroke-width="1.25"/>
+<circle cx="150" cy="88" r="44" class="tint"/><circle cx="150" cy="88" r="44" class="accf"/><circle cx="150" cy="88" r="44" fill="none" class="acc" stroke-width="1.5"/>
+<text x="150" y="86" font-size="12" font-weight="600" class="ink" text-anchor="middle">gazdaság</text>
+<text x="150" y="101" font-size="10" font-weight="400" class="quiet" text-anchor="middle">mi olcsó</text>
+<circle cx="58" cy="242" r="44" class="tint"/><circle cx="58" cy="242" r="44" class="accf"/><circle cx="58" cy="242" r="44" fill="none" class="acc" stroke-width="1.5"/>
+<text x="58" y="240" font-size="12" font-weight="600" class="ink" text-anchor="middle">technológia</text>
+<text x="58" y="255" font-size="10" font-weight="400" class="quiet" text-anchor="middle">mi lehetséges</text>
+<circle cx="242" cy="242" r="44" class="tint"/><circle cx="242" cy="242" r="44" class="accf"/><circle cx="242" cy="242" r="44" fill="none" class="acc" stroke-width="1.5"/>
+<text x="242" y="240" font-size="12" font-weight="600" class="ink" text-anchor="middle">igények</text>
+<text x="242" y="255" font-size="10" font-weight="400" class="quiet" text-anchor="middle">mit kérnek</text>
+<text x="150" y="182" font-size="11" font-weight="400" class="quiet" text-anchor="middle">melyik megoldás</text>
+<text x="150" y="196" font-size="11" font-weight="400" class="quiet" text-anchor="middle">illik most?</text>
+<text x="290" y="74" font-size="12.5" font-weight="600" class="ink" text-anchor="start">Korábbi megoldás</text>
+<text x="524" y="74" font-size="12.5" font-weight="600" class="ink" text-anchor="start">Ahol visszatért</text>
+<line x1="290" y1="82" x2="740" y2="82" class="grid"/>
+<text x="290" y="100" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Folytonos fájlelhelyezés</text>
+<path d="M500 96H516" fill="none" class="edge" stroke-width="1.25" marker-end="url(#rc)"/>
+<text x="524" y="100" font-size="11.5" font-weight="400" class="ink" text-anchor="start">CD-ROM (ISO 9660): egyszer írják</text>
+<line x1="290" y1="112" x2="740" y2="112" class="grid"/>
+<text x="290" y="130" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">FAT (hajlékonylemez, MS-DOS)</text>
+<path d="M500 126H516" fill="none" class="edge" stroke-width="1.25" marker-end="url(#rc)"/>
+<text x="524" y="130" font-size="11.5" font-weight="400" class="ink" text-anchor="start">USB-kulcs, SD-kártya, EFI-partíció</text>
+<line x1="290" y1="142" x2="740" y2="142" class="grid"/>
+<text x="290" y="160" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Dinamikus linkelés (Multics)</text>
+<path d="M500 156H516" fill="none" class="edge" stroke-width="1.25" marker-end="url(#rc)"/>
+<text x="524" y="160" font-size="11.5" font-weight="400" class="ink" text-anchor="start">megosztott könyvtárak (.so, .dll)</text>
+<line x1="290" y1="172" x2="740" y2="172" class="grid"/>
+<text x="290" y="190" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Huzalozott vezérlés (S/360 előtt)</text>
+<path d="M500 186H516" fill="none" class="edge" stroke-width="1.25" marker-end="url(#rc)"/>
+<text x="524" y="190" font-size="11.5" font-weight="400" class="ink" text-anchor="start">RISC; egyszerű x86-mikroműveletek</text>
+<line x1="290" y1="202" x2="740" y2="202" class="grid"/>
+<text x="290" y="220" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Értelmezett virtuális utasítások</text>
+<path d="M500 216H516" fill="none" class="edge" stroke-width="1.25" marker-end="url(#rc)"/>
+<text x="524" y="220" font-size="11.5" font-weight="400" class="ink" text-anchor="start">Java VM bájtkód</text>
+<line x1="290" y1="232" x2="740" y2="232" class="grid"/>
+<text x="290" y="250" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Virtuális gépek (IBM VM/370)</text>
+<path d="M500 246H516" fill="none" class="edge" stroke-width="1.25" marker-end="url(#rc)"/>
+<text x="524" y="250" font-size="11.5" font-weight="400" class="ink" text-anchor="start">hipervizorok: VMware, Xen, KVM</text>
+<line x1="290" y1="262" x2="740" y2="262" class="grid"/>
+<text x="290" y="280" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Időosztás, számítási közmű</text>
+<path d="M500 276H516" fill="none" class="edge" stroke-width="1.25" marker-end="url(#rc)"/>
+<text x="524" y="280" font-size="11.5" font-weight="400" class="ink" text-anchor="start">felhő, használat szerinti díjjal</text>
+<line x1="290" y1="292" x2="740" y2="292" class="grid"/>
+<text x="290" y="310" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Kötegelt feldolgozás</text>
+<path d="M500 306H516" fill="none" class="edge" stroke-width="1.25" marker-end="url(#rc)"/>
+<text x="524" y="310" font-size="11.5" font-weight="400" class="ink" text-anchor="start">HPC-ütemezők, éjszakai munkák</text>
+<text x="24" y="350" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Egy technika nem elavult, csak vár: ha azok a feltételek, amelyekre kitalálták, új helyen újra előállnak,</text>
+<text x="24" y="366" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">például egy fényképezőgép vagy egy USB-kulcs kicsi, olcsó vezérlőjében, a régi megoldás ismét beválik.</text>
+</svg>

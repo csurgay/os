@@ -15,11 +15,14 @@ By the end, students will be able to:
 - list the quality criteria of an operating system and relate them to the ISO/IEC 25010 quality model;
 - define MTTF, MTTR, MTBF and availability, and calculate availability and allowed downtime;
 - calculate the availability of components in series and in parallel, and explain why redundancy helps;
+- assess risks by likelihood and impact in a risk matrix, and use it to decide where to spend on availability;
 - explain the difference between SLI, SLO and SLA, and measure a simple SLI;
+- compare owning servers (capex) with renting cloud capacity (opex), and explain when each is cheaper;
 - use the vocabulary of code lines: branch, merge, fork, upstream, downstream, patch, backport, update;
 - describe how Fedora, CentOS Stream, RHEL, AlmaLinux, Rocky Linux and Oracle Linux relate to each other, and what changed in 2020 and 2023;
 - explain why an enterprise distribution backports fixes instead of upgrading, and why a version number alone says little about security;
 - explain what a container image is (layers, registries, OCI), why a container shares the host's kernel, and what follows for compatibility and support;
+- distinguish an image, a container and a volume, build an image from a Containerfile, and explain why a container's main process must run in the foreground;
 - compare the base images of the family (UBI and its variants, Fedora, CentOS Stream, AlmaLinux, Rocky Linux) and their terms, and name the roles of Podman, Buildah, Skopeo and image mode.
 
 <details>
@@ -78,6 +81,14 @@ Some of these pull against each other. "Powerful" pulls towards more features, "
 
 A quality that cannot be measured cannot be promised. Organisations therefore track **key performance indicators** (KPIs): a few numbers that show whether a system does what it should. For an operating system or a service running on it, the most important KPIs measure **reliability** (how rarely it fails) and **availability** (what share of the time it works).
 
+They are not the only ones. The KPIs of an operating system and of the services on it fall into three groups:
+
+- **performance:** **throughput** (requests or transactions per second), **latency** (response time, usually given as a **percentile**, such as "99% of requests are answered within 200 ms", because an average hides the slow minority that users notice), and the **utilisation** of CPU, memory, disk and network;
+- **efficiency:** the overhead of the OS itself (the $\eta_{OS}$ of the [history lecture](../01-historic-evolution/)), energy used per request, boot time;
+- **operations:** the time from the publication of a security fix until it is installed on every server, the share of servers that are fully up to date, the number of incidents per month, and MTTR.
+
+A good KPI is measured automatically, has a target, and leads to an action when it is missed. The rest of this section deals with the two most important ones, reliability and availability.
+
 ### MTTF, MTTR and MTBF
 
 ![A system alternates between working and being repaired](mtbf-mttr.svg)
@@ -128,6 +139,10 @@ Two ordinary machines of two nines each give four nines together, provided that 
 <summary><b>Explained simply:</b> KPI, reliability, availability, MTTF, MTTR, MTBF, downtime, redundancy, series, parallel, single point of failure, load balancer, bathtub curve, planned downtime, degraded, RTO, RPO, fault tolerance</summary>
 
 - **KPI** (Key Performance Indicator): one of the few most important numbers that show how well something is going, like a student's grade average.
+- **Throughput, latency:** throughput is how much work gets done per second, like the number of cars crossing a bridge per minute; latency is how long one piece of work takes, like the time one car needs to cross.
+- **Percentile:** "the 99th percentile is 200 ms" means 99 out of 100 requests took at most 200 ms. It shows the slow cases that an average hides.
+- **Utilisation:** what share of the time a resource is busy, like how many hours a day a washing machine is running.
+- **Incident:** an unplanned event that disturbs a service, such as an outage or a security breach.
 - **Reliability:** how rarely something breaks. **Availability:** how much of the time it is ready to use. A car that breaks down once a year but takes a month to repair is reliable but not very available.
 - **MTTF, MTTR, MTBF:** mean (average) time to failure, to repair, and between failures.
 - **Downtime:** the time a system is not working.
@@ -140,6 +155,30 @@ Two ordinary machines of two nines each give four nines together, provided that 
 - **Degraded:** working, but worse than normal, for example slowly or only for some users.
 - **RTO, RPO** (Recovery Time / Point Objective): how quickly a service must be back after a disaster, and how much of the most recent data may be lost.
 - **Fault tolerance, recoverability:** the ability to keep working despite a fault, and to get back to normal after one.
+
+</details>
+
+### Where to spend on availability: the risk matrix
+
+Every extra nine costs money, so it should be spent where it removes the most risk. Risk assessment rates each threat by two factors: its **likelihood** (how often it is expected to happen) and its **impact** (the damage when it does); the risk is their combination (Joint Task Force Transformation Initiative, 2012). When both can be estimated in numbers, the product is the expected loss per year: a failure expected once in five years that costs 50,000 euros in lost business and repairs is a risk of 10,000 euros a year, so a measure that removes it is worth up to about that much a year. More often both are estimated on a coarse scale and the threats are placed in a **risk matrix**:
+
+![A risk matrix: likelihood against impact, with example threats to a server](risk-matrix.svg)
+
+The colour of a cell suggests the response. A low risk is **accepted** and monitored. A higher one is **reduced**, either by making it less likely (testing, maintenance, monitoring that spots a problem before it becomes a failure) or by making it less harmful (redundancy, backups, fast recovery). It can also be **transferred** to someone else, by insurance or by an outsourcing contract with an SLA, although service credits rarely cover the customer's whole loss. And it can be **avoided**, by not doing the risky thing at all.
+
+The quantities of this lecture are the tools for both axes. The failure rate (1/MTTF) is the likelihood of a failure; MTTR, RTO and RPO set its impact: how long the service is down and how much data is lost. Redundancy mostly cuts the impact: a disk in a RAID 1 mirror fails as often as before, but its failure costs a disk replacement instead of an outage. The matrix also shows that the worst risks are often not single components. A configuration error copied to every server defeats all redundancy at once (the shared single point of failure above), and against ransomware or a fire in the data centre only backups kept elsewhere help, since redundant copies in the same place are encrypted or burnt together.
+
+<details>
+<summary><b>Explained simply:</b> risk, likelihood, impact, expected loss, risk matrix, accept, reduce (mitigate), transfer, avoid, RAID 1, ransomware, backup</summary>
+
+- **Risk:** something bad that might happen, judged by how likely it is and how much harm it would do.
+- **Likelihood, impact:** how often something is expected to happen, and how much damage it does when it happens. A flat tyre is likely but cheap; a house fire is unlikely but terrible.
+- **Expected loss:** the damage of one event multiplied by how often it happens. A 500-euro repair expected every two years "costs" 250 euros a year on average.
+- **Risk matrix:** a table with likelihood on one side and impact on the other; every threat gets a cell, and the dangerous corner is where both are high.
+- **Accept, reduce (mitigate), transfer, avoid:** the four things you can do with a risk: live with it, make it smaller, let someone else carry it (like insurance), or stop doing what causes it.
+- **RAID 1** (mirroring): two disks that always hold the same data, so one can break without losing anything.
+- **Ransomware:** malicious software that encrypts a victim's files and demands money for the key.
+- **Backup:** a separate copy of the data from which it can be restored, ideally kept in another place, so that one disaster cannot destroy both.
 
 </details>
 
@@ -201,6 +240,34 @@ For the customer, the price of the subscription is only one part of the **total 
 
 </details>
 
+### Owning or renting: capex, opex and the cloud
+
+A large part of the TCO is decided by whether an organisation runs its own servers at all. The two options have different cost structures:
+
+- **Own data centre (on-premises).** Servers, storage and network equipment are bought in blocks, as **capital expenditure** (**capex**): an investment paid up front and written off over several years. Running them adds **operating expenditure** (**opex**): staff, power, cooling, space and support subscriptions. Because new hardware takes weeks to order and install, it must be bought *ahead* of demand. After each purchase there is idle capacity that has been paid for but is not used; if demand grows faster than forecast, there is a shortage until the next block arrives (panel A below).
+- **Cloud.** Computing capacity is rented by the hour or second and storage by the gigabyte and month, as pure opex. Capacity can follow demand within minutes (**elasticity**), so neither idle capacity nor shortages have to be planned for: the risk of a wrong forecast moves from the customer to the provider (Armbrust et al., 2010).
+
+![Panel A: owned capacity grows in steps ahead of demand; panel B: owned cost has a high fixed part and steps, cloud cost rises in proportion to load](cloud-vs-own.svg)
+
+Panel B compares the monthly costs against the load. Owning has a large fixed part (at least one block of servers and a minimum of staff, even with little load) and then grows in steps; renting starts near zero and grows in proportion to use, but more steeply, because the provider's price covers its own hardware, staff, the spare capacity it keeps for all its customers, and its profit. Hence the rule of thumb: the cloud is cheaper for a new or small service, for spiky or seasonal load (a webshop before Christmas, a university's course registration in the first week of term) and for experiments that may be stopped next month; at a large, steady and predictable load, owning is usually cheaper. Several large companies have moved services back from the public cloud to their own data centres for this reason; Dropbox, for example, reported savings of nearly 75 million dollars over two years after moving most of its workloads from the public cloud to its own custom-built infrastructure in rented data-centre space (Wang & Casado, 2021). Many organisations therefore combine the two: their own servers for the steady base load and the cloud for the peaks.
+
+Price is not the only factor. The law may require some data to be stored in a given country; moving data *out* of a cloud is charged separately (egress fees); the services of one provider are hard to move to another (vendor lock-in); and the staff need different skills. In the terms of this lecture, the cloud turns a capex decision into an opex one and makes cost *proportional* to use, the same criterion as energy proportionality in the first section.
+
+<details>
+<summary><b>Explained simply:</b> on-premises, capex, opex, write off, cloud, elasticity, break-even, egress fee, vendor lock-in</summary>
+
+- **On-premises:** the servers stand in the organisation's own building or rented server room, and it owns and runs them.
+- **Capex** (capital expenditure): money paid at once for something that is used for years, like buying a car.
+- **Opex** (operating expenditure): money paid continuously for running things, like fuel, or renting a car by the day.
+- **Write off** (depreciation): spreading the price of a long-lived purchase over the years it is used, so a 4000-euro server used for four years "costs" 1000 euros a year.
+- **Cloud:** computers in a provider's data centres that customers rent over the internet and pay for as they use them.
+- **Elasticity:** the ability to get more capacity in minutes when the load grows, and to give it back when it falls.
+- **Break-even:** the point where two options cost the same; on one side of it the first is cheaper, on the other side the second.
+- **Egress fee:** the charge a cloud provider makes for data sent out of its data centres.
+- **Vendor lock-in:** depending so much on one supplier's special services that moving to another becomes very expensive.
+
+</details>
+
 ## The vocabulary of code lines
 
 An operating system is not one piece of code but thousands of projects, each developed along lines of history that split and join. The words for this come from software development and operations; the first ones from version control systems such as Git:
@@ -219,7 +286,7 @@ An operating system is not one piece of code but thousands of projects, each dev
 | **dependency** | another package that a program needs in order to work; a patch may also depend on other patches being applied first |
 | **backport** | taking a fix made in a newer version and adapting it to an older version that is still supported |
 | **install** | putting a release onto a machine |
-| **update** (patch deployment) | applying fixes to systems that are already installed and in use, without reinstalling them |
+| **update** (patch deployment, retrofit) | applying fixes to systems that are already installed and in use, without reinstalling them |
 
 **Patch dependencies in practice.** Suppose a security fix is written for the newest kernel. To backport it to a kernel that is five years older, the maintainers often find that the fix relies on helper functions or structure changes added in between. They must then first backport those earlier patches too (the fix's dependencies), each adapted to the old code, and test that none of them changes the stable interfaces. One upstream patch can become a series of a dozen downstream ones.
 
@@ -240,7 +307,7 @@ Two working rules follow from this vocabulary:
 - **Patch:** a description of exactly which lines to change, like a correction slip for a printed book.
 - **Dependency:** something a program needs to work, like batteries for a remote control.
 - **Backport:** taking a repair designed for the new model and adapting it to fit the old model that customers still use.
-- **Update (patch deployment):** fitting an improvement to something already in use, like adding seat belts to old cars.
+- **Update (patch deployment, retrofit):** fitting an improvement to something already in use, like adding seat belts to old cars; "retrofit" is the general engineering word for exactly this.
 - **Live patching:** fixing the running kernel in memory, without a reboot (Red Hat's tool is called kpatch, Oracle's Ksplice): an update that avoids planned downtime.
 
 </details>
@@ -334,6 +401,80 @@ A virtual machine simulates a whole computer, so each one boots its own kernel. 
 A **container image** is the packaged file system a container starts from. It is a stack of read-only **layers**, each identified by a cryptographic hash of its contents: a base layer with a distribution's user space, then a layer per build step that adds packages or the application. Images built on the same base share that layer, which is stored and downloaded only once. Images are kept in **registries**, servers from which they are pulled by name, such as `registry.access.redhat.com/ubi9/ubi-minimal`.
 
 The isolation itself is older than the word "container" suggests: FreeBSD jails (2000), Solaris Zones (2004), and Linux cgroups and LXC (2008) came first. Docker, from 2013, made it popular by adding a simple image format and workflow: build an image once, push it to a registry, run it anywhere. So that images would not depend on one company's tools, Docker, CoreOS and others founded the **Open Container Initiative (OCI)** under the Linux Foundation on 22 June 2015. It maintains three specifications: the *runtime* specification (how to run a container), the *image* specification (the format of images and layers), and the *distribution* specification (how registries serve them) (Open Container Initiative, n.d.). An image built with one OCI tool can be pulled and run by any other (on the same CPU architecture), which is what makes an image ecosystem across vendors possible.
+
+### Image, container, volume
+
+An image and a container relate as a blueprint and the things built from it, or as a class and its objects in programming: `podman run` *instantiates* an image, and any number of containers can run from the same image at the same time. The image itself never changes; it is **immutable**. Each container gets its own thin **writable layer** on top of the image's read-only layers. When a process in the container creates or changes a file, the change goes into this layer (a changed file is first copied up from the read-only layer below, **copy-on-write**; a deleted one is only hidden). The writable layer belongs to the container and is deleted together with it (Docker Inc., n.d.-c).
+
+![A Containerfile's steps become the image's layers and configuration; each container adds its own writable layer; a volume lives outside the containers](image-container-volume.svg)
+
+Data that must survive therefore does not belong in the container. A **volume** is storage managed by the container engine (or, as a *bind mount*, a directory of the host) that is mounted into the container at a path such as `/data` or `/var/lib/mysql`. It lives independently of every container, so a container can be removed and replaced by one from a newer image (the "rebuild and redeploy" below) while the database files stay where they are. Containers are thus disposable, and the state of a service lives in its volumes; the measured demonstration is in the section [Container, writable layer and volume](#container-writable-layer-and-volume).
+
+A container also lives exactly as long as its **main process**. The command given to `podman run`, or the image's default `CMD`, runs as process 1 in the container's own process namespace; when it exits, the container stops and every other process in it is killed. A traditional Unix server **daemonises**: the process that was started forks a child to do the work in the background and exits at once, which in a container would stop the container immediately. Servers are therefore started in the foreground in containers, for example Apache with `httpd -D FOREGROUND` or nginx with `-g 'daemon off;'`. The engine also collects the main process's standard output and error as the container's log (`podman logs`).
+
+### Building an image: by hand or from a Containerfile
+
+An image can be made by hand, much as one would set up a server:
+
+```bash
+podman pull registry.access.redhat.com/ubi9/ubi
+podman run -it --name work registry.access.redhat.com/ubi9/ubi /bin/bash
+#   inside the container: dnf install -y httpd, edit /etc/httpd/conf/httpd.conf, then exit
+podman commit work registry.example.com/web/httpd:1.0
+podman push registry.example.com/web/httpd:1.0
+```
+
+Leaving the shell ends the container's main process, so the container stops (a container started in the background with `-d` is stopped with `podman stop`). `podman commit` turns the stopped container's writable layer into a new image layer, and `podman push` uploads the image to a registry. This works, but it is an anti-pattern for anything that will be used for real. Nobody can tell later exactly what was done: the image records only the command that the container ran, not the commands typed in the shell. The work cannot be repeated automatically when the base image receives a security fix, which defeats "rebuild and redeploy". Everything left in the container ends up in the image: package caches, temporary files, the shell history. And the container's settings become the image's settings, as the demonstration below shows.
+
+The reproducible way is a **Containerfile** (Docker's name: Dockerfile), a text file of build steps kept in version control next to the application, and one command that builds it:
+
+```dockerfile
+FROM registry.access.redhat.com/ubi9/ubi
+RUN dnf install -y httpd && dnf clean all
+COPY httpd.conf /etc/httpd/conf/httpd.conf
+EXPOSE 8080
+USER apache
+CMD ["httpd", "-D", "FOREGROUND"]
+```
+
+```bash
+podman build -t registry.example.com/web/httpd:1.0 .
+```
+
+(A sketch: the configuration file makes httpd listen on port 8080, because ports below 1024 need root; a production image also adjusts the ownership of the log and run directories for the non-root user.) The final `.` is the **build context**, the directory whose files `COPY` may use. Each instruction becomes either a layer or a line of configuration (Docker Inc., n.d.-a):
+
+| Instruction | What it does | In the image |
+| --- | --- | --- |
+| `FROM` | names the base image to build on | the base image's layers, reused unchanged |
+| `RUN` | runs a command in a temporary container during the build | a new layer with the files the command changed |
+| `COPY` | copies files from the build context into the image | a new layer |
+| `EXPOSE` | documents the port the service listens on | configuration only |
+| `USER` | the user that later `RUN` steps and the container's main process run as | configuration only |
+| `WORKDIR` | the current directory for later steps and for the container | configuration (the directory is created if missing) |
+| `CMD` | the default command: the container's main process | configuration only |
+
+Two consequences follow from the layers. A file deleted in a later step still takes up space in the earlier layer, so `dnf install` and `dnf clean all` are run in *one* `RUN` step. And the builder reuses the layers of unchanged steps from earlier builds, so steps that rarely change (installing packages) come before those that change often (copying the application).
+
+**Image names.** A full image name has the form `registry/namespace/name:tag`, for example `registry.example.com/web/httpd:1.0` or `registry.access.redhat.com/ubi9/ubi-minimal:latest`: the registry's host name (optionally with a port), a namespace (a user, organisation or project), the repository name, and a **tag** (Docker Inc., n.d.-b). Without a registry, Docker assumes Docker Hub (`docker.io`), while Podman searches the registries listed in `/etc/containers/registries.conf`, which is why full names are safer. Without a tag, the tag `latest` is used. Despite its name, `latest` is just a default label, not a guarantee of the newest version: it points to whatever was last pushed with that tag, and it moves. Version tags such as `:1.0` can also be moved by whoever pushes, so a deployment that must be exactly reproducible names the image by its **digest** (`name@sha256:…`), the hash of its content. The price is the one discussed under "rebuild and redeploy" below: an image pinned to a digest receives no fixes until someone rebuilds it and changes the pin deliberately.
+
+<details>
+<summary><b>Explained simply:</b> blueprint, instance, immutable, writable layer, copy-on-write, volume, bind mount, main process, process 1, daemonise, foreground, commit, push, anti-pattern, Containerfile, build context, EXPOSE, tag, latest, digest</summary>
+
+- **Blueprint, instance:** a blueprint is the plan of a house; each house built from it is an instance. The image is the plan, each container a house.
+- **Immutable:** cannot be changed after it is made. To change an image, you build a new one.
+- **Writable layer:** a container's private scratch sheet laid over the image; everything the container writes goes there, and it is thrown away with the container.
+- **Copy-on-write:** a file is copied only at the moment someone wants to change it, like photocopying a library book's page before writing on it.
+- **Volume, bind mount:** a storage area that lives outside the container and is plugged into it at a folder; a bind mount plugs in a folder of the host itself. What is written there stays when the container is deleted.
+- **Main process, process 1:** the first program started in the container; when it ends, the container ends.
+- **Daemonise, foreground:** a daemonising program starts a copy of itself in the background and quits; a program in the foreground keeps running itself. In a container, quitting the first program stops everything.
+- **Commit, push:** commit saves a container's changes as a new image; push uploads an image to a registry.
+- **Anti-pattern:** a way of doing something that seems to work but causes problems later.
+- **Containerfile, build context:** the recipe of an image, step by step, and the folder from which the recipe may take files.
+- **EXPOSE:** a note in the image saying which network port the program listens on.
+- **Tag, latest:** a tag is a label on an image version, like "1.0"; "latest" is the label used when none is given, and it does not have to mean the newest.
+- **Digest:** the fingerprint (hash) of an image's exact content; the same digest always means exactly the same image.
+
+</details>
 
 ### Base images and registries
 
@@ -624,6 +765,128 @@ The same mechanism, at a larger scale, is what lets hundreds of images built on 
 
 </details>
 
+### Container, writable layer and volume
+
+The folder `container-lifecycle/` holds a second minimal image. Its only program, `tool.c` (statically linked again), can append a line to a file (`tool write FILE TEXT`), print a file (`tool cat FILE`), create a directory for a given owner (`tool mkdir DIR UID`, used during the build) and pretend to be a server (`tool serve`), either in the foreground or, with `--daemon`, by forking a background child and exiting like a classic daemon. The `Containerfile` uses most of the instructions of the table above:
+
+```dockerfile
+# Each instruction below adds either a file-system layer or only metadata.
+FROM scratch
+COPY --chmod=755 tool /bin/tool
+RUN ["/bin/tool", "mkdir", "/data", "1000"]
+COPY app.conf /etc/app.conf
+EXPOSE 8080
+USER 1000
+WORKDIR /data
+CMD ["/bin/tool", "serve"]
+```
+
+(`--chmod=755` sets the program's mode in the image whatever its mode in the build directory; `RUN` uses the exec form, a list of arguments, because an image built `FROM scratch` has no shell.) Built with `docker build -f Containerfile -t course/app:1.0 .`, the history shows which steps added files:
+
+```console
+$ docker history course/app:1.0
+IMAGE          CREATED                  CREATED BY                                   SIZE      COMMENT
+cfe360c7eca9   Less than a second ago   CMD ["/bin/tool" "serve"]                    0B        buildkit.dockerfile.v0
+<missing>      Less than a second ago   WORKDIR /data                                4.1kB     buildkit.dockerfile.v0
+<missing>      Less than a second ago   USER 1000                                    0B        buildkit.dockerfile.v0
+<missing>      Less than a second ago   EXPOSE [8080/tcp]                            0B        buildkit.dockerfile.v0
+<missing>      Less than a second ago   COPY app.conf /etc/app.conf # buildkit       12.3kB    buildkit.dockerfile.v0
+<missing>      Less than a second ago   RUN /bin/tool mkdir /data 1000 # buildkit    20.5kB    buildkit.dockerfile.v0
+<missing>      Less than a second ago   COPY --chmod=755 tool /bin/tool # buildkit   836kB     buildkit.dockerfile.v0
+```
+
+`COPY` and `RUN` added layers; `EXPOSE`, `USER` and `CMD` added none. This builder recorded `WORKDIR` as a tiny layer of its own although `/data` already existed: exactly which steps produce a layer is a detail of the builder, but only file changes take real space. The commands below are in `container-lifecycle/demo.sh`, and the outputs come from the same run as the build above.
+
+**The writable layer disappears with the container.** A file written in container `c1` is not visible in a second container started from the same image, and `docker diff` lists what `c1` has in its writable layer (`A` added, `C` changed):
+
+```console
+$ docker run --name c1 course/app:1.0 tool write notes.txt "written in container c1"
+$ docker run --rm course/app:1.0 tool cat notes.txt
+notes.txt: No such file or directory
+$ docker diff c1
+C /data
+A /data/notes.txt
+```
+
+When `c1` is removed (`docker rm c1`), its writable layer and `notes.txt` are gone for good. With a **volume** mounted at `/data`, the file outlives the container that wrote it (`--rm` deletes each container as soon as it ends):
+
+```console
+$ docker volume create appdata
+appdata
+$ docker run --rm -v appdata:/data course/app:1.0 tool write notes.txt "kept in the volume"
+$ docker run --rm -v appdata:/data course/app:1.0 tool cat notes.txt
+kept in the volume
+```
+
+**A container lives as long as its main process.** Two containers are started in the background (`-d`): one with the default command, a server in the foreground, and one with the daemonising variant:
+
+```console
+$ docker run -d --name fg course/app:1.0
+99bc7b3683c32bc58b2b3da0125a485e8fee2cc6d538ea50ff51fd33bb4862eb
+$ docker run -d --name bg course/app:1.0 tool serve --daemon
+094ad61fdc11042a1030a98a782e2e2161018ea26e22e583af6edfaab25dd416
+$ docker ps -a --filter name=fg --filter name=bg --format 'table {{.Names}}\t{{.Command}}\t{{.Status}}'
+NAMES     COMMAND                 STATUS
+bg        "tool serve --daemon"   Exited (0) 2 seconds ago
+fg        "/bin/tool serve"       Up 2 seconds
+$ docker logs bg
+server: started in the background as pid 7, parent (pid 1) exits
+```
+
+The daemonising server was process 1 of its container. It started its background child (process 7) and exited "successfully", and the container stopped with it, taking the child along. This is what `httpd -D FOREGROUND` prevents.
+
+**What `commit` records.** A container started as root (`--user 0`) changes `/etc/app.conf`, and the container is committed as a new image:
+
+```console
+$ docker run --user 0 --name edit course/app:1.0 tool write /etc/app.conf "colour=blue"
+$ docker commit edit course/app:1.1-manual
+sha256:12301fc7ca5bdbdff31c89804bbee167642a8e77e1c38dc7eff60dc1c9ec0e06
+$ docker history course/app:1.1-manual
+IMAGE          CREATED                  CREATED BY                                   SIZE      COMMENT
+12301fc7ca5b   Less than a second ago   tool write /etc/app.conf colour=blue         12.3kB    
+cfe360c7eca9   4 seconds ago            CMD ["/bin/tool" "serve"]                    0B        buildkit.dockerfile.v0
+<missing>      4 seconds ago            WORKDIR /data                                4.1kB     buildkit.dockerfile.v0
+<missing>      4 seconds ago            USER 1000                                    0B        buildkit.dockerfile.v0
+<missing>      4 seconds ago            EXPOSE [8080/tcp]                            0B        buildkit.dockerfile.v0
+<missing>      4 seconds ago            COPY app.conf /etc/app.conf # buildkit       12.3kB    buildkit.dockerfile.v0
+<missing>      4 seconds ago            RUN /bin/tool mkdir /data 1000 # buildkit    20.5kB    buildkit.dockerfile.v0
+<missing>      4 seconds ago            COPY --chmod=755 tool /bin/tool # buildkit   836kB     buildkit.dockerfile.v0
+$ docker image inspect -f 'Cmd={{.Config.Cmd}} User={{.Config.User}}' course/app:1.0 course/app:1.1-manual
+Cmd=[/bin/tool serve] User=1000
+Cmd=[tool write /etc/app.conf colour=blue] User=0
+```
+
+The new layer is there, but the history says only which command the container ran, not why or what else was typed. Worse, the committed image took over the editing container's settings: its default command is now the one-off edit, and it runs as root instead of user 1000. A container started from it would append the same line to the configuration file once more and exit, instead of starting the server. Fixing such an image means doing the work again by hand; with a Containerfile, the change is one more reviewed line and a rebuild.
+
+**Names and tags.** A tag is only a name pointing at an image: tagging creates no copy, and leaving the tag out means `latest`:
+
+```console
+$ docker tag course/app:1.0 registry.example.com/course/app:1.0
+$ docker tag course/app:1.0 course/app
+$ docker image ls --format 'table {{.Repository}}\t{{.Tag}}\t{{.ID}}' --filter reference='*/app' --filter reference='*/*/app'
+REPOSITORY                        TAG          IMAGE ID
+course/app                        1.1-manual   12301fc7ca5b
+registry.example.com/course/app   1.0          cfe360c7eca9
+course/app                        1.0          cfe360c7eca9
+course/app                        latest       cfe360c7eca9
+```
+
+Three names, one image ID. Note that `course/app:latest` points to version 1.0, not to the newer `1.1-manual`: `latest` is whatever was last tagged so. The full name with a registry host is what `push` needs; no registry could be reached from the measuring environment, so pushing is left to lab exercise 10.
+
+<details>
+<summary><b>Explained simply:</b> exec form, docker diff, docker volume, -d, docker ps, docker logs, docker commit, docker tag</summary>
+
+- **Exec form:** writing a command as a list (`["/bin/tool", "mkdir", ...]`), so that it is started directly, without a shell to interpret it.
+- **`docker diff`:** lists the files a container has added (A), changed (C) or deleted (D) compared with its image.
+- **`docker volume create`, `-v appdata:/data`:** make a named volume, and plug it into a container at the folder `/data`.
+- **`-d`** (detached): start the container in the background and give the prompt back.
+- **`docker ps -a`:** list containers, including stopped ones, with their state.
+- **`docker logs`:** show what a container's main process printed.
+- **`docker commit`:** save a container's writable layer and settings as a new image.
+- **`docker tag`:** give an existing image another name; nothing is copied.
+
+</details>
+
 ### Why the version number lies: backporting in practice
 
 An enterprise kernel keeps its version number for the whole life of a major release, while thousands of fixes and features are backported into it. RHEL 8 ships a kernel numbered 4.18; RHEL 10.1 ships 6.12.0-124.8.1, where 6.12.0 is the upstream base and the rest is Red Hat's own build number (Red Hat, 2025).
@@ -656,6 +919,8 @@ The lesson goes both ways: a security scanner that judges by version numbers alo
 7. **Kernel versus distribution in containers.** On a Fedora, AlmaLinux or Rocky Linux machine with Podman, run `uname -r` and `cat /etc/os-release` on the host, then `podman run --rm registry.access.redhat.com/ubi9/ubi-minimal cat /etc/os-release` and `podman run --rm registry.access.redhat.com/ubi9/ubi-minimal uname -r`. Repeat with `quay.io/centos/centos:stream9`, `quay.io/almalinuxorg/almalinux:9` and `docker.io/rockylinux/rockylinux:9` (full names, so that Podman does not have to ask which registry to use). Which lines change, which stay the same, and why? Then build the two-file image in `container-demo/`: compile with `gcc -static -O2 -o whoami-os whoami-os.c` (this needs the `glibc-static` package; on AlmaLinux and Rocky Linux it is in the CRB repository: `sudo dnf --enablerepo=crb install glibc-static`), then `podman build -f Containerfile -t demo-os:1.0 .` and compare its output with the UBI container's.
 8. **Images without downloading.** Run `skopeo inspect docker://registry.access.redhat.com/ubi9/ubi-minimal` and `skopeo inspect docker://registry.access.redhat.com/ubi9/ubi`. Compare the layers and their sizes (`LayersData`) and the labels (look for the version and release). Then `podman pull` both and compare their sizes with `podman images`. Then try `dnf install -y bzip2` and `microdnf install -y bzip2` in containers of `ubi`, `ubi-minimal` and `ubi-micro` (for example `podman run --rm registry.access.redhat.com/ubi9/ubi-minimal microdnf install -y bzip2`). Which commands exist in which image, and why would anyone choose the image that has none?
 9. **Layer sharing.** Change only `os-release` in `container-demo/`, rebuild as `demo-os:1.1`, and compare the layer hashes of the two images with `podman image inspect -f '{{range .RootFS.Layers}}{{println .}}{{end}}' demo-os:1.0 demo-os:1.1` (do not recompile or `touch` `whoami-os` in between: a new timestamp alone gives a new hash). Then write a `Containerfile` that starts `FROM registry.access.redhat.com/ubi9/ubi-minimal` and adds one package, build it, and check with `podman history` which layers come from UBI.
+10. **Container life cycle.** In `container-lifecycle/`, compile `tool.c` with `gcc -static -O2 -o tool tool.c`, build with `podman build -f Containerfile -t course/app:1.0 .`, and run `D=podman bash demo.sh writable`, then `volume`, `foreground`, `commit` and `tags` (and `clean` at the end). Compare your outputs with the ones in this lecture. After `podman rm c1`, where is `notes.txt`? Why did the `bg` container stop, although its server process never exited? Then start a local registry (`podman run -d -p 5000:5000 --name registry docker.io/library/registry:2`), tag the image as `localhost:5000/course/app:1.0`, push it with `podman push --tls-verify=false localhost:5000/course/app:1.0`, remove the local copy and pull it back.
+11. **Own or rent?** A server costs 6000 euros and is written off over four years; power, space and its share of staff time cost a further 100 euros a month. A comparable cloud instance costs 0.40 euros per hour. What does each cost per month if the service runs around the clock (730 hours a month)? Above what share of the hours does owning become cheaper? What does the cloud cost if the service is needed only 10 hours a day on 22 working days? Which factors left out of this calculation could change the decision?
 
 ## Review questions
 
@@ -676,6 +941,10 @@ The lesson goes both ways: a security scanner that judges by version numbers alo
 15. Why does one updated base layer fix a vulnerability in many images, and why must the images still be rebuilt and the containers replaced?
 16. Name two design differences between Podman and Docker, and relate each to a quality criterion of this lecture.
 17. How does image mode for RHEL change updating a server, and which KPI does its rollback improve?
+18. A start-up expects its traffic to grow tenfold within a year, with peaks at weekends. Should it buy servers or rent cloud capacity? Explain with capex, opex and idle capacity, and say when the answer would change.
+19. Place two threats in a risk matrix: (a) the only copy of a database is on a single disk; (b) a worker process crashes about once a day and is restarted automatically within a second. Which response fits each, and which quantity of this lecture (MTTF, MTTR, RPO) does each response improve?
+20. What is the difference between an image, a container and a volume? A database runs in a container without a volume; what happens to its data when the container is replaced by one from an updated image?
+21. Why is `podman commit` a poor way to make images for production, and what does a Containerfile give instead? Why does a web server's image use `CMD ["httpd", "-D", "FOREGROUND"]`, and what is the risk of deploying an image by the tag `latest`?
 
 <details>
 <summary><strong>Answer key (for instructors)</strong></summary>
@@ -697,14 +966,20 @@ The lesson goes both ways: a security scanner that judges by version numbers alo
 15. Layers are identified by hash and shared, so one updated base is pulled once and used by every image built on it. But an image's layers are read-only and a container is started from a fixed image, so the fix reaches an application only when its image is rebuilt on the new base and new containers replace the old ones.
 16. No daemon: no central root service, so no single point of failure for all containers, and containers can run as ordinary systemd services (robustness). Rootless operation: ordinary users run containers without administrator rights, so a container escape gains only that user's rights (security); Docker offers a rootless mode too, but its usual setup is a root daemon.
 17. The whole OS, kernel included, is a bootable OCI image; an update switches atomically to the new image at reboot, and a failed update is undone by rolling back to the previous image. This shortens MTTR after a bad update, and identical images make a fleet more consistent.
+18. Rent at first. There is no up-front capex, and the capacity follows both the growth and the weekend peaks (elasticity), so the start-up neither pays for idle servers bought ahead of demand nor suffers a shortage if growth beats the forecast: the forecasting risk moves to the provider. The answer changes when the load becomes large, steady and predictable: then owned hardware is cheaper per unit of work (beyond the break-even point), and a combination (own servers for the base load, the cloud for peaks) is common. Legal data location, egress fees and vendor lock-in also count.
+19. (a) Disks do fail, and the impact is catastrophic (all data lost): a high risk, to be reduced. A mirror (RAID 1) cuts the impact of a disk failure to a disk swap without an outage (in effect a much shorter MTTR), and regular backups kept elsewhere bound the data loss (RPO) even if the whole server is lost. (b) Frequent but negligible: the corner cell of the matrix, a medium risk at most, and the cheap reduction is already in place: the automatic restart keeps MTTR at a second, so what remains is accepted and monitored. If the crashes become more frequent, fixing the bug would lengthen MTTF.
+20. An image is the read-only, immutable blueprint made of shared layers; a container is a running instance of it: the image's layers plus its own thin writable layer and its processes; a volume is storage mounted into a container that lives independently of any container. Without a volume, the database files are in the container's writable layer; when the container is removed and replaced, they are deleted with it. With a volume, the new container mounts the same volume and finds the data.
+21. A committed image does not record what was done (only the command the container ran), cannot be rebuilt automatically when the base image is fixed, carries leftovers (caches, temporary files, shell history) and takes over the container's settings (in the demonstration, the default command and the user changed). A Containerfile is a reviewable text in version control, gives the same result every time with `podman build`, makes rebuilding on an updated base trivial, and uses the layer cache. A container lives as long as its main process; `httpd` without `-D FOREGROUND` would daemonise, its first process would exit and the container would stop at once; in the foreground it also leaves its output to the engine's log. `latest` is a moving label: different servers may run different images under the same name, an upgrade can happen unnoticed at the next pull, and rolling back is unclear; pin a version tag or a digest and update deliberately.
 
-**Lab answers.** Lab 1: 1000 / 1008 ≈ 99.21%; with MTTR 4 h, 1000 / 1004 ≈ 99.60%, the same as doubling the MTTF to 2000 h (2000 / 2008). Lab 2: all three needed: 0.995³ ≈ 98.51%; any one enough: 1 − 0.005³ ≈ 99.99999%. Lab 3: a missing page answers 404; `urlopen` raises an error for it, so the probe counts every request as failed, although the server is fine; most SLIs count only server errors (5xx) and timeouts against the service. Lab 7: `/etc/os-release` shows the image's distribution in each container, while `uname -r` shows the host's kernel everywhere. Lab 8: the standard ubi image has `dnf`, ubi-minimal only `microdnf`, and ubi-micro neither, so both commands fail there; ubi-micro is chosen because it is the smallest and contains the least software that could have vulnerabilities, with packages added at build time from outside the image. Lab 9: the layer holding the unchanged program keeps its hash; only the `os-release` layer is new.
+**Lab answers.** Lab 1: 1000 / 1008 ≈ 99.21%; with MTTR 4 h, 1000 / 1004 ≈ 99.60%, the same as doubling the MTTF to 2000 h (2000 / 2008). Lab 2: all three needed: 0.995³ ≈ 98.51%; any one enough: 1 − 0.005³ ≈ 99.99999%. Lab 3: a missing page answers 404; `urlopen` raises an error for it, so the probe counts every request as failed, although the server is fine; most SLIs count only server errors (5xx) and timeouts against the service. Lab 7: `/etc/os-release` shows the image's distribution in each container, while `uname -r` shows the host's kernel everywhere. Lab 8: the standard ubi image has `dnf`, ubi-minimal only `microdnf`, and ubi-micro neither, so both commands fail there; ubi-micro is chosen because it is the smallest and contains the least software that could have vulnerabilities, with packages added at build time from outside the image. Lab 9: the layer holding the unchanged program keeps its hash; only the `os-release` layer is new. Lab 10: `notes.txt` was only in `c1`'s writable layer, so after `podman rm c1` it no longer exists anywhere, while the file in the volume remains; the `bg` container stopped because its process 1 exited after forking, and the child was killed with the container. Lab 11: owning costs 6000 / 48 + 100 = 225 euros a month; the cloud around the clock 0.40 × 730 = 292 euros; break-even at 225 / 292 ≈ 77% of the hours; 10 × 22 = 220 hours cost 88 euros. Left out: staff time for buying and installing, spare capacity for peaks and growth, data-transfer fees, discounts for reserved cloud capacity, legal requirements, and the residual value of the hardware.
 
 </details>
 
 ## References
 
 AlmaLinux OS Foundation. (2023, July 13). *The future of AlmaLinux is bright*. https://almalinux.org/blog/future-of-almalinux/
+
+Armbrust, M., Fox, A., Griffith, R., Joseph, A. D., Katz, R., Konwinski, A., Lee, G., Patterson, D., Rabkin, A., Stoica, I., & Zaharia, M. (2010). A view of cloud computing. *Communications of the ACM, 53*(4), 50–58. https://doi.org/10.1145/1721654.1721672
 
 Avižienis, A., Laprie, J.-C., Randell, B., & Landwehr, C. (2004). Basic concepts and taxonomy of dependable and secure computing. *IEEE Transactions on Dependable and Secure Computing, 1*(1), 11–33. https://doi.org/10.1109/TDSC.2004.2
 
@@ -716,6 +991,12 @@ Breard, B. (2025, May 20). *Image mode for Red Hat Enterprise Linux is generally
 
 CentOS. (n.d.). In *Wikipedia*. Retrieved October 6, 2026, from https://en.wikipedia.org/wiki/CentOS
 
+Docker Inc. (n.d.-a). *Dockerfile reference*. Docker Docs. Retrieved October 7, 2026, from https://docs.docker.com/reference/dockerfile/
+
+Docker Inc. (n.d.-b). *docker image tag*. Docker Docs. Retrieved October 7, 2026, from https://docs.docker.com/reference/cli/docker/image/tag/
+
+Docker Inc. (n.d.-c). *Storage*. Docker Docs. Retrieved October 7, 2026, from https://docs.docker.com/engine/storage/
+
 Free Software Foundation. (1991). *GNU General Public License, version 2*. https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
 Hennessy, J. L., & Patterson, D. A. (2019). *Computer architecture: A quantitative approach* (6th ed.). Morgan Kaufmann.
@@ -723,6 +1004,8 @@ Hennessy, J. L., & Patterson, D. A. (2019). *Computer architecture: A quantitati
 International Organization for Standardization. (2023). *Systems and software engineering — Systems and software Quality Requirements and Evaluation (SQuaRE) — Product quality model* (ISO/IEC Standard No. 25010:2023). https://www.iso.org/standard/78176.html
 
 Itechtics. (n.d.). *Fedora Linux lifecycle: End of life and support status*. Retrieved October 6, 2026, from https://itechtics.com/eol/fedora-linux/
+
+Joint Task Force Transformation Initiative. (2012). *Guide for conducting risk assessments* (NIST Special Publication 800-30, Rev. 1). National Institute of Standards and Technology. https://doi.org/10.6028/NIST.SP.800-30r1
 
 Kellermann, M. (2022). *The Dirty Pipe vulnerability*. CM4all. https://dirtypipe.cm4all.com/
 
@@ -759,6 +1042,8 @@ Red Hat. (2025). *Red Hat Enterprise Linux 10: 10.1 release notes*. https://linu
 Rocky Enterprise Software Foundation. (n.d.). *About Rocky Linux*. Retrieved October 6, 2026, from https://rockylinux.org/about
 
 Rocky Linux. (2023, June 29). *Keeping open source open*. https://rockylinux.org/news/keeping-open-source-open/
+
+Wang, S., & Casado, M. (2021, May 27). *The cost of cloud, a trillion dollar paradox*. Andreessen Horowitz. https://a16z.com/the-cost-of-cloud-a-trillion-dollar-paradox/
 
 ## Further reading
 

@@ -22,6 +22,7 @@ Az előadás végére a hallgatók képesek lesznek:
 - bemutatni az affektív számítástechnikát, alkalmazásait és kockázatait (hírfolyamok, FOMO, sötét minták), valamint az erre válaszoló szabályozást;
 - megmagyarázni a kölcsönös tekintet szerepét, a tekintetkorrekciót és mellékhatásait, a hátborzongató völgy (uncanny valley) hipotézisét és a robotok etológiai megközelítését;
 - megmagyarázni a visszajelzés és a válaszidő határait, a hibamegelőzést és a visszavonást, a félbeszakítások árát, valamint az operációs rendszer akadálymentesítési szolgáltatásait;
+- personát és elfogadási kritériumokkal ellátott felhasználói történeteket írni egy operációsrendszer-funkcióhoz, és összekapcsolni őket az előadás használhatósági elveivel;
 - Linuxon alkalmazni Fitts törvényét és a Hick–Hyman-törvényt, valamint a színkontraszt-számításokat.
 
 <details>
@@ -47,7 +48,7 @@ Két érv teszi ezt operációsrendszer-témává, nem csupán tervezési kérd�
 - **A felhasználó a rendszer része.** Az [előző előadás](../02-quality-and-enterprise-linux/#mitől-jó-egy-operációs-rendszer) minőségi szempontjai közül több is az emberről szól: következetes (ugyanaz mindenhol ugyanúgy működik), megbocsátó (a hibák visszavonhatók), kényelmes (könnyű telepíteni, megtanulni és használni). Egy hibás parancs, egy félreolvasott figyelmeztetés vagy egy zavaros párbeszédablak ugyanúgy leállíthat egy rendszert, mint egy meghibásodott lemez; az a felület, amely valószínűvé teszi a hibákat, rontja a rendelkezésre állást.
 - **Az operációs rendszer szabja meg a konvenciókat.** Az alkalmazások az operációs rendszertől és annak tervezési irányelveitől öröklik a megjelenést, a billentyűparancsokat, a párbeszédablakokat, az értesítési rendszert és az akadálymentesítési funkciókat. Ha egy platform ezeken változtat, egyszerre programok milliói viselkednek másképp; ezért van akkora súlya az Apple, a Google, a Microsoft és a GNOME tervezési irányelveinek.
 
-Az előadás további része – egy rövid áttekintés után arról, hogyan „beszéltek” az emberek az operációs rendszerekkel – kilenc témát tárgyal, majd három olyan témával zárul, amelyet minden OS-felületnek kezelnie kell: a visszajelzés és a válaszidő, a hibák és a félbeszakítások, valamint az akadálymentesség.
+Az előadás további része – egy rövid áttekintés után arról, hogyan „beszéltek” az emberek az operációs rendszerekkel – kilenc témát tárgyal, majd három olyan témával zárul, amelyet minden OS-felületnek kezelnie kell: a visszajelzés és a válaszidő, a hibák és a félbeszakítások, valamint az akadálymentesség. Végül bemutat két eszközt, amellyel a tervezőcsapatok a valódi felhasználókat szem előtt tartják: a personákat és a felhasználói történeteket.
 
 ## A távgépírótól a szemüvegig: hogyan fejlődtek az OS-felületek
 
@@ -362,6 +363,38 @@ Három további téma tartozik minden operációs rendszer felületéhez, és mi
 
 </details>
 
+## Tervezés valódi felhasználóknak: personák és felhasználói történetek
+
+A fenti elvek általában írják le az embereket. Egy tervezőcsapatnak azonban azt is el kell döntenie, **kiknek** tervez, és mit kell ezeknek az embereknek elvégezniük; különben minden fejlesztő csendben annak a felhasználónak tervez, akit a legjobban ismer: saját magának. Két egyszerű eszköz – az egyik az interakciótervezésből, a másik az agilis szoftverfejlesztésből – segít a valódi felhasználókat szem előtt tartani.
+
+**Personák.** A persona egy tipikus felhasználó kitalált, de kutatáson alapuló portréja: név, rövid háttér, célok, készségek, munkakörülmények és frusztrációk. Alan Cooper azért vezette be a personákat, hogy a „rugalmas felhasználót” (elastic user) – aki mindig éppen úgy nyúlik, ahogy a fejlesztőknek kényelmes – egyetlen konkrét emberrel váltsa fel, akit a tervnek ki kell elégítenie (Cooper, 1999). A persona valódi felhasználókkal készített interjúkból és megfigyelésükből épül fel, nem íróasztal mellett születik; egy terméknek általában néhány personája van, és egy **elsődleges personája** (primary persona), akinek az igényei ütközés esetén elsőbbséget kapnak (Cooper et al., 2014). Két persona egy operációs rendszer frissítési funkciójához:
+
+> **Kata, 52 éves, könyvelő egy kis cégnél.** Napi nyolc órát dolgozik laptopon: táblázatok, e-mail, a cég könyvelőprogramja. A számítógépek nem érdeklik; a fájljait az általa adott mappanevek alapján találja meg. Egeret, Ctrl+C-t, Ctrl+V-t és Ctrl+S-t használ, nagyobb szövegmérettel. *Céljai:* soha ne veszítsen el egy napnyi munkát; időben végezzen a hó végi zárással. *Frusztrációi:* újraindítások és frissítési kérdések a legrosszabb pillanatban; olyan párbeszédablakok, amelyeket nem ért („Engedélyezi, hogy ez az alkalmazás módosításokat hajtson végre az eszközön?”).
+>
+> **Bence, 24 éves, rendszergazda.** 200 linuxos szervert üzemeltet SSH-n keresztül, terminálból. *Céljai:* ugyanaz a megismételhető konfiguráció minden gépen; semmi ne változzon a tudta nélkül. *Frusztrációi:* olyan beállítások, amelyek csak grafikus eszközben módosíthatók; olyan parancsok, amelyeknek az opciói eszközről eszközre mások.
+
+**Felhasználói történetek.** A felhasználói történet (user story) egyetlen követelményt fogalmaz meg a felhasználó szemszögéből, egy mondatban: „‹Szerepkör›-ként ‹képességet› szeretnék, hogy ‹haszon›.” A forma a 2000-es évek elejének agilis csapataitól származik, és Cohn (2004) tette népszerűvé. A mondat szándékosan rövid: emlékeztető arra, hogy beszélni kell a felhasználókkal, és **elfogadási kritériumok** (acceptance criteria) egészítik ki – ellenőrizhető feltételek, amelyek eldöntik, mikor kész a történet. A két personához:
+
+- *Irodai dolgozóként (Kata) azt szeretném, hogy a frissítések akkor települjenek, amikor nem dolgozom, és a megnyitott dokumentumaim ne vesszenek el, hogy egy frissítés soha ne kerüljön nekem mentetlen munkába.* Elfogadási kritériumok: a rendszer frissítés miatt csak a felhasználó által beállított aktív órákon kívül indul újra; naponta legfeljebb egyszer kérdez; az újraindítás előtt megnyitott dokumentumok utána újra megnyílnak; a frissítés legalább egy héttel elhalasztható.
+- *Szerveradminisztrátorként (Bence) parancssorból szeretném beállítani a frissítési szabályokat, hogy egyetlen szkripttel mind a 200 szerverre ugyanazt a szabályt alkalmazhassam.* Elfogadási kritériumok: a grafikus párbeszédablak minden beállításának van parancssori megfelelője; hiba esetén a parancs nem nulla kilépési kóddal tér vissza; ugyanazok az opciók működnek minden támogatott kiadáson.
+
+A két eszköz összeköti az előadás elveit a konkrét döntésekkel. Kata personája azt mondja, hogy a felismerésnek felül kell múlnia a felidézést (IV. szakasz), hogy a hibáknak megbocsáthatóknak, a félbeszakításoknak ritkáknak kell lenniük (az előző szakasz), és hogy a színek és a szövegméret számítanak (I. szakasz). Bence personája az V. szakasz szakértői útjait kéri, és egy következetes, szkriptelhető parancssort. Az elfogadási kritériumokban válnak az előadás számai követelményekké: 0,1 s-on belüli válasz, legalább 4,5:1 kontraszt, legalább 44 pontos érintési célpontok. Két hiba gyakori: a kutatás nélkül kitalált personák, amelyekből sztereotípiák lesznek, és azok a történetek, amelyek igény helyett megoldást írnak elő („kék gombot szeretnék”).
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> persona, rugalmas felhasználó, elsődleges persona, felhasználói történet, agilis, elfogadási kritériumok, követelmény, SSH, kilépési kód</summary>
+
+- **Persona:** egy elképzelt, de valószerű ember, akit valódi felhasználók mondásai és tettei alapján írnak le, és aki a felhasználók egy egész csoportját képviseli. A tervezők azt kérdezik: „Megértené ezt Kata?”, és nem azt, hogy „Megértené ezt egy felhasználó?”.
+- **Rugalmas felhasználó (elastic user):** egy homályos „felhasználó”, akit bármelyik tervezési döntéshez hozzá lehet igazítani, hogy egyetértsen vele.
+- **Elsődleges persona:** az a persona, akinek az igényei előbbre valók, ha két persona mást szeretne.
+- **Követelmény:** valami, amit egy terméknek tudnia kell, vagy egy tulajdonság, amellyel rendelkeznie kell.
+- **Felhasználói történet:** egyetlen követelmény rövid mondatként, a felhasználó szemszögéből megírva: ki mit szeretne, és miért.
+- **Agilis:** a szoftverfejlesztés olyan módja, amely egyetlen hosszú terv helyett rövid lépésekben halad, a felhasználók gyakori visszajelzéseivel.
+- **Elfogadási kritériumok:** ellenőrizhető feltételek, amelyek megmondják, mikor teljesül egy követelmény – olyanok, mint a tanár ellenőrzőlistája, amellyel a házi feladatot értékeli.
+- **SSH** (Secure Shell, biztonságos shell): módszer arra, hogy a hálózaton keresztül bejelentkezzünk egy távoli számítógépre, és ott parancsokat gépeljünk.
+- **Kilépési kód (exit status):** egy szám, amelyet a parancs a végén visszaad: a 0 sikert jelent, minden más hibát, így egy szkript ellenőrizni tudja.
+
+</details>
+
 ## Ugyanezek az elvek Linuxon (x86-64)
 
 Az alábbi kimenetek valós rendszerből származnak: egy felhőalapú adatközpontban futó Ubuntu 24.04 környezetből, `bash` 5.2-vel. Grafikus asztali környezet nincs rajta, ezért a bemutatók a parancssort és az asztali alkalmazásokat leíró fájlokat mutatják be.
@@ -550,6 +583,7 @@ $ python3 hci_laws.py menu
 6. **Fitts a gyakorlatban.** A `hci_laws.py fitts` segítségével hasonlíts össze egy 24 képpontos bezárógombot egy teljes méretű ablak sarkában (a sarok miatt gyakorlatilag nagy célpont) ugyanezzel a gombbal egy olyan ablakban, amely nem éri el a képernyő szélét. Mi változik, ha jobbra egy második monitort helyezünk el? Ezután mérd meg egy alkalmazás érintési célpontjait a telefonodon (képernyőképek és a kijelző pixelsűrűsége alapján): elérik-e a 44 pontot vagy a 48 dp-t?
 7. **Billentyűparancsok.** Egy naponta használt alkalmazásban sorolj fel három műveletet, amelyet menüből végzel. Keresd meg a billentyűparancsaikat, egy hétig csak ezeket használd, és jegyezd fel, mikor váltak gyorsabbá a menünél.
 8. **Figyelemaudit.** Nyisd meg a telefonodon a Képernyőidőt (iOS) vagy a Digitális jólétet (Android). Melyik három alkalmazás küldi a legtöbb értesítést? Mindegyiknél határozd meg, melyik érzelemre (kíváncsiság, összetartozás, irigység, FOMO, sürgetés) apellálnak az értesítései, és módosítsd az értesítési beállításaikat. Számolj be arról, mi változott egy hét után.
+9. **Personák és történetek.** Készíts 15-15 perces interjút két olyan emberrel, akik nagyon különbözőképpen használják a számítógépet (például egy rokonoddal és egy évfolyamtársaddal) arról, hogyan telepítenek szoftvert, hogyan találják meg a fájljaikat, és hogyan reagálnak az értesítésekre. Írj mindkettőjükről egy personát, majd három felhasználói történetet elfogadási kritériumokkal egy OS-funkcióhoz (fájlkeresés, értesítések vagy biztonsági mentés). Jelöld meg, hogy az egyes elfogadási kritériumok az előadás melyik elvét ellenőrzik, és ahol a két persona ütközik, döntsd el, melyik az elsődleges, és miért.
 
 ## Ellenőrző kérdések
 
@@ -568,6 +602,7 @@ $ python3 hci_laws.py menu
 13. Miért fontos a kölcsönös tekintet, miért vész el a videohívásokban, és mik a korrekciójának mellékhatásai?
 14. Írd le Mori hátborzongató völgyét. Mi a hipotézis mai helyzete, és milyen tervezési tanács következik belőle?
 15. Mit javasol az etorobotika az egyre emberszerűbb robotok építése helyett, és miért a kutya a mintája?
+16. Mi a persona, hogyan készül, és a tervezőcsapatok melyik problémáját oldja meg? Írj egy felhasználói történetet két elfogadási kritériummal egy operációsrendszer-funkcióhoz, és nevezd meg, hogy az egyes kritériumok az előadás melyik elvét ellenőrzik.
 
 <details>
 <summary><strong>Megoldókulcs (oktatóknak)</strong></summary>
@@ -587,6 +622,7 @@ $ python3 hci_laws.py menu
 13. Figyelmet jelez, bizalmat és elköteleződést épít, növeli az arousalt és a közeledési motivációt. A kamera a képernyő fölött van, így a partner arcának nézése félrenézésnek látszik. A korrekció állandó bámulást eredményez, hátborzongatónak hathat, olyan figyelmet mutathat, amely nincs ott, és hitelességi és beleegyezési kérdéseket vet fel.
 14. A rokonszenv az emberszerűséggel nő, majd a majdnem emberi alakoknál élesen esik, és a valódi embereknél ismét emelkedik; a mozgás felerősíti a hatást. Intuíció volt; a kísérletek (pl. Mathur & Reichling, 2016) bizonyos ingereknél alátámasztják a mélyedést, de az alakja és az okai vitatottak. Tanács: mérsékelt emberszerűségre (az első csúcsra) kell törekedni.
 15. A robotokat a funkciójukra és a fülkéjükre kell tervezni, azzal a szociális kompetenciával, amelyre ez a funkció igényt tart (figyelem, jelzés, kötődés, együttműködés), és a funkcióhoz illő testtel, nem emberutánzattal. A kutyák megmutatják, hogy egy egészen másként kinéző faj a szociális kompetenciája révén kiváló társas partner lehet.
+16. Egy tipikus felhasználó kitalált, de kutatáson alapuló portréja (háttér, célok, készségek, környezet, frusztrációk), amely interjúkból és megfigyelésből épül fel; egy terméknek néhány personája van, köztük egy elsődleges. A homályos „rugalmas felhasználót” (és az önmagunknak való tervezést) egy konkrét emberrel váltja fel, akit a tervnek ki kell elégítenie (Cooper). Példatörténet: „Laptophasználóként olyan figyelmeztetést szeretnék az alacsony töltöttségről, amelyet nem lehet elnézni, de nem szakítja meg a gépelést, hogy menthessem a munkámat, mielőtt a gép kikapcsol.” Kritériumok: a figyelmeztetés 10%-nál és újra 5%-nál jelenik meg (visszajelzés); nem veszi át a billentyűzetfókuszt (félbeszakítások); legalább 4,5:1 kontraszttal olvasható, és a képernyőolvasó felolvassa (szín, akadálymentesség). Bármely „…-ként szeretnék …, hogy …” formájú, ellenőrizhető kritériumokkal ellátott történet elfogadható.
 
 **A laborfeladatok megoldásai.** 2. labor: a protanópia-mátrixszal a piros elveszíti világosságának nagy részét (#6d5f00, L* körülbelül 40), a zöld pedig élénksárgává válik (L* körülbelül 90), így az archívum és a futtatható fájl a világosság révén elkülönül (delta E 65,7); az igazi vesztes a könyvtár és a kép párosa (kék #5c5cff és bíbor #ff00ff), amelynek távolsága 55,4-ről 4,1-re zsugorodik, vagyis gyakorlatilag azonossá válnak. Deuteranópiában a legközelebbi pár az archívum és a futtatható fájl (28,0). 3. labor: a tipikus válaszok `df -h`, `ps aux` vagy `top`, `ip addr`; sok hallgató az `ifconfig`-ot idézi fel, amely elavult, és a minimális rendszerekről hiányzik. 5. labor: a tengelymetszet néhány száz milliszekundum (több, mert a választ be kell gépelni és Enterrel meg kell erősíteni). Mivel a látott számjegy begépelése nagyon kompatibilis megfeleltetés, a meredekség általában kicsi, gyakran csak bitenként néhány tíz milliszekundum, és a gyakorlás tovább csökkenti. A 8 lehetőség közüli választás tehát nem tart 3,17-szer annyi ideig, mint az egyetlen lehetőségé: az idő $a + b \cdot \text{bitek}$, és az $a$ tengelymetszet dominál. 6. labor: a sarokban lévő gomb nagyon nagy célpontként viselkedik (ID 0–1 bit körül); a lebegő ablaké $\log_2(D/24+1)$. Ha jobbra egy második monitor van, a jobb szél már nem akadály, és a jobb felső bezárógomb elveszíti előnyének nagy részét.
 
@@ -611,6 +647,12 @@ AppleInsider. (2020, June 22). *FaceTime eye contact correction feature to launc
 Birch, J. (2012). Worldwide prevalence of red-green color deficiency. *Journal of the Optical Society of America A, 29*(3), 313–320. https://doi.org/10.1364/JOSAA.29.000313
 
 Clover, J. (2025, February 18). *Humane's $700 Ai Pin discontinued and defunct after less than 1 year*. MacRumors. https://www.macrumors.com/2025/02/18/humane-ai-pin-discontinued/
+
+Cohn, M. (2004). *User stories applied: For agile software development*. Addison-Wesley.
+
+Cooper, A. (1999). *The inmates are running the asylum: Why high-tech products drive us crazy and how to restore the sanity*. Sams.
+
+Cooper, A., Reimann, R., Cronin, D., & Noessel, C. (2014). *About face: The essentials of interaction design* (4th ed.). Wiley.
 
 Cowan, N. (2001). The magical number 4 in short-term memory: A reconsideration of mental storage capacity. *Behavioral and Brain Sciences, 24*(1), 87–114. https://doi.org/10.1017/S0140525X01003922
 

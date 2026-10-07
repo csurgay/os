@@ -25,10 +25,12 @@ Az előadás végére a hallgatók képesek lesznek:
 - megnevezni a megszakítások négy osztályát, és mindegyikre példát adni;
 - elmagyarázni a felhasználói és a kernelmódot, és azt, miért privilegizáltak egyes utasítások;
 - felsorolni a megszakítás-feldolgozás lépéseit, és megmondani, melyiket végzi a hardver és melyiket a kezelő;
+- elmagyarázni a vektortáblában való keresést, azt, hogy mit tartalmaz a PSW, és hogyan gyorsítják a regiszterbankok a kezelőbe való belépést;
 - elmagyarázni, hogyan működnek az egymásba ágyazott megszakítások és a prioritások, és miért alkotnak vermet a mentett állapotok;
 - leírni, mit csinál a megszakításvezérlő, és mi a különbség az él- és a szintvezérelt megszakítás között;
 - definiálni a megszakítási késleltetést, megnevezni összetevőit, és megmagyarázni, miért a legrosszabb eset számít;
 - összehasonlítani a programozott I/O-t, a megszakításos I/O-t és a DMA-t, és megbecsülni a processzorra rótt terhüket;
+- végigkövetni egy lemezolvasást igénylő laphibát a kivételen, a DMA-n, az ütemezésen és a megszakításon keresztül;
 - megmagyarázni, miért okoznak a megszakítások versenyhelyzetet, és hogyan biztosítja a kölcsönös kizárást a test-and-set utasítás és a szemafor;
 - megtalálni ezeket a mechanizmusokat egy futó Linux rendszeren (`/proc/interrupts`, `/proc/softirqs`, szignálok, szálak, késleltetésmérés).
 
@@ -61,6 +63,8 @@ Külső megszakítások (időzítő, I/O) esetén az utasításlehívás, a dek�
 - az utasításszámláló (PC) már a következő utasításra mutat (a lehíváskor már továbblépett), tehát pontosan oda kell majd visszatérni.
 
 Ha nincs függő megszakítás, azonnal a következő lehívás jön. Ha van, a következő lehívás már a megszakításkezelő első utasítása.
+
+Pontosabban: a megszakítás-ellenőrzés lépése két feltételt vizsgál együtt: **a megszakítások engedélyezve vannak ÉS van függő megszakítás**. Az a kérés, amely letiltott (maszkolt) megszakítások mellett érkezik, nem vész el: függőben marad, és a processzor a megszakítások újbóli engedélyezése utáni első utasításhatáron fogadja el. Mivel az ellenőrzés csak utasításhatáron történik, egy processzormagon belül minden egyes utasítás önmagában atomi a megszakításokkal szemben: sem egy kezelő, sem egy másik folyamat, amelyre a kezelő esetleg átvált, soha nem láthat félig végrehajtott utasítást. Az atomi test-and-set utasítás pontosan erre épít (lásd [Megszakítások és párhuzamosság](#megszakítások-és-párhuzamosság)).
 
 Az utasítás által kiváltott megszakítások kicsit másképp működnek, mert ezek az utasítás lehívása vagy végrehajtása közben keletkeznek (lásd a következő szakaszt). A **fault** (hiba jellegű kivétel), például a laphiba, megszakítja az utasítást, mielőtt annak bármilyen hatása lenne, és a mentett PC a *hibát okozó* utasításra mutat, így az újra végrehajtható, miután a kezelő elhárította a problémát (például betöltötte a hiányzó lapot). A **trap** (csapda jellegű kivétel), például a rendszerhívás utasítása, előbb befejeződik, és a mentett PC a következő utasításra mutat. (Néhány hosszú x86-utasítás, például a `rep movs`, az ismétlései között is megszakítható, és később folytatódik.)
 
@@ -148,6 +152,39 @@ A munka megoszlik a hardver és a szoftver között (Stallings, 2018):
 9. **Egy speciális visszatérő utasítás visszaállítja a PC-t és a PSW-t** (x86-on `iret`). A következő lehívással a megszakított program folytatódik.
 
 A hardver csak azt menti, amit muszáj (a PC-t és a PSW-t), mert ezek abban a pillanatban megváltoznak, amikor a kezelő elindul. Minden más a kezelő dolga. Így a hardver egyszerű maradhat. Az operációs rendszerek belépési kódja (a Linuxé is) általában az összes általános célú regisztert elmenti, mert a megszakítás végződhet egy másik folyamatra való váltással, és ekkor a megszakított folyamat teljes állapotát meg kell őrizni.
+
+**Egy vektortábla-keresés számokkal.** Vegyünk egy egyszerű gépet, amelynek vektortáblája bejegyzésenként egy 16 bites kezelőcímet tárol. A 17-es megszakításforrás kérést küld; az 5. lépésben a processzor kiolvassa a tábla 17-es bejegyzését, FBCAh-t talál benne, és betölti a PC-be. A következő lehívás már a kezelő első utasítása az FBCAh címen.
+
+![A 17-es megszakításszám a vektortábla 17-es bejegyzését választja ki, amelyben FBCAh, a kezelő memóriabeli kezdőcíme áll](vector-table.svg)
+
+A tábla egy további közvetett szintet (indirekciót) jelent: a hardver csak annyit tud, hogy „17-es megszakítás → 17-es bejegyzés”, azt pedig, hogy hol van a kezelő, az operációs rendszer dönti el a bejegyzés kitöltésével. A Z80 a 2-es megszakítási üzemmódjában így működik: az eszköz a tábla címének alsó bájtját teszi az adatsínre, a felső bájtot a processzor I regisztere adja, és a processzor ebből a táblabejegyzésből olvassa ki a 16 bites kezelőcímet (Zilog, 2016). x86-64-en a tábla neve IDT (interrupt descriptor table, megszakításleíró-tábla), helyét az IDTR regiszter adja meg; bejegyzései 16 bájtosak, mert mindegyik a kódszegmenst és a jogosultsági beállításokat is tartalmazza, a 0–31. vektor pedig a kivételeknek van fenntartva, így az eszközmegszakítások a 32–255. vektort kapják.
+
+**Mit tartalmaz a PSW?** A programállapotszó a processzorállapotnak azt a részét gyűjti össze, amely nincs az általános célú regiszterekben, de túl kell élnie a kezelő futását:
+
+- az utolsó művelet **feltételkódjai** (jelzőbitjei): nulla, előjel, átvitel, túlcsordulás;
+- a **megszakítás-engedélyező bit vagy megszakítási maszk**: mely megszakításokat lehet most elfogadni;
+- az **üzemmódbit**: kernel- vagy felhasználói mód;
+- egyes gépeken **memóriavédelmi információ**.
+
+A név az IBM System/360-ból (1964) származik, amelynek 64 bites PSW-je mindezt tartalmazta (megszakítási maszkbitek, tárvédelmi kulcs, a felhasználói módot jelző „problem state” bit, feltételkód), sőt magát az utasításcímet is, így ezen a gépen a „PSW mentése” valóban egyetlen lépésben jelentette „a PC és az állapot mentését”. x86-64-en nincs PSW nevű regiszter. Szerepét az RFLAGS (a jelzőbitek, az IF és az I/O-jogosultsági szint) tölti be az aktuális jogosultsági szinttel együtt, amelyet a CS regiszter legalsó két bitje tárol. Ezért teszi verembe egy x86-64-es megszakítás az RIP-et, a CS-t és az RFLAGS-et (és a megszakított veremmutatót is: az SS-t és az RSP-t).
+
+**Gyorsabb állapotmentés: regiszterbankok.** A regiszterek memóriába mentése időbe telik, és ez az idő hozzáadódik a megszakítási késleltetéshez. Egyes processzorok ezért hardverben tartják bizonyos regiszterek tartalék másolatát. A Z80-nak van egy A′, F′, B′, C′, D′, E′, H′, L′ alternatív regiszterkészlete: az `EX AF,AF'` utasítás az A-t és az F-et cseréli fel a másolatával, az `EXX` pedig a BC-t, a DE-t és a HL-t a sajátjaival (Zilog, 2016). Egy kezelő, amely egyedül használja az alternatív készletet, ezzel a két utasítással kezd és fejeződik be, így mind a nyolc regisztert egyetlen memória-hozzáférés nélkül „menti” és „állítja vissza”. A 32 bites ARM processzorok ugyanezt teszik a gyors megszakításuknál (**FIQ**): FIQ módba lépéskor az R8–R14 regisztereket bankolt másolataik váltják fel, a visszatérési cím a bankolt R14-be, az állapotregiszter pedig a bankolt SPSR-be kerül, így egy rövid FIQ-kezelő anélkül végezheti el a dolgát, hogy bármit a memóriába mentene (Arm Limited, 2018). A korlát az, hogy csak egy tartalék készlet van: ez egyetlen megszakítási szintet (vagy egy megszakítási osztályt) szolgálhat ki, az egymásba ágyazott megszakításokhoz továbbra is verem kell.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> indirekció, IDT, IDTR, feltételkódok, megszakítási maszk, üzemmódbit, IBM System/360, RFLAGS, CS, jogosultsági szint, regiszterbank, alternatív regiszterkészlet, FIQ, SPSR</summary>
+
+- **Indirekció (közvetett elérés):** valamit egy listából keresünk ki ahelyett, hogy közvetlenül tudnánk – mint amikor az ajtó melletti listáról tárcsázod a „17-es segélyhívó számot”, ahelyett hogy minden számot fejben tartanál. Aki a listát frissíti, megváltoztathatja, hová szól a hívás.
+- **IDT** (Interrupt Descriptor Table, megszakításleíró-tábla): a vektortábla neve x86-on. Az **IDTR** az a processzorregiszter, amely a tábla címét tárolja.
+- **Feltételkódok:** a jelzőbitek (nulla, negatív, átvitel, túlcsordulás), amelyek az utolsó számítás eredményét írják le.
+- **Megszakítási maszk:** be/ki bitek sora, amely megmondja, mely megszakítások juthatnak át éppen most.
+- **Üzemmódbit:** egyetlen bit, amely megmondja, hogy a processzor kernelmódban vagy felhasználói módban van-e.
+- **IBM System/360:** az IBM nagy hatású nagyszámítógép-családja 1964-ből; az operációs rendszerek sok fogalma innen ered.
+- **RFLAGS, CS:** az RFLAGS az x86-64 jelzőbitregisztere. A CS (code segment, kódszegmens) olyan regiszter, amelynek legalsó két bitje az aktuális jogosultsági szintet, a „gyűrűt” mutatja (0 = kernel, 3 = felhasználó).
+- **Regiszterbank, alternatív regiszterkészlet:** egyes regiszterek második, rejtett másolata. Átváltani rá olyan, mint megfordítani egy fehértáblát: a másik oldala tiszta, a régi jegyzetek pedig még ott vannak, ha visszafordítod.
+- **FIQ** (Fast Interrupt reQuest, gyors megszakításkérés): az ARM különleges megszakítása a legsürgősebb eszköz számára, saját regiszterbankkal, hogy a kezelője azonnal indulhasson.
+- **SPSR** (Saved Program Status Register, mentett programállapot-regiszter): az az ARM-regiszter, amely megszakításkor megkapja az állapotregiszter (az ARM PSW-je) másolatát.
+
+</details>
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> IRQ, nyugtázás, PSW, jelzőbitek, verem, vektortábla, IF jelzőbit, folyamat, folyamatállapot</summary>
@@ -280,6 +317,14 @@ Egy adatblokk (például egy lemezszektor) átvitele egy eszköz és a memória 
 
 DMA esetén a processzor csak megadja a DMA-vezérlőnek az eszközt, a memóriacímet, az adatmennyiséget és az irányt. A DMA-vezérlő ezután önállóan elvégzi az átvitelt a rendszersínen, és a végén egyszer megszakítja a processzort. Mivel a processzor és a DMA-vezérlő ugyanazon a sínen osztozik, a processzornak az átvitel alatt esetleg várnia kell a sínre. Mivel a DMA-vezérlő sínciklusokat vesz el a processzortól, ezt gyakran **ciklusellopásnak** (cycle stealing) nevezik.
 
+**Egy-egy mondatban:**
+
+- **programozott I/O:** a processzor vár az eszközre, „nagy erővel semmit sem csinál”;
+- **megszakításos I/O:** a processzor szabad, amíg az eszköz dolgozik, de minden szót továbbra is maga mozgat;
+- **DMA:** a processzor csak elindítja az átvitelt és lekezeli a végét; az adat nélküle mozog, így a terhelés a sínre esik, nem a processzorra.
+
+Ez azért működik, mert a DMA-vezérlő egy második **sínmester** (bus master): olyan eszköz, amely magától is indíthat sínátvitelt, nem csak válaszolhat rá. Mivel a processzor és a DMA-vezérlő osztozik a sínen, felváltva kell használniuk, és a **sínarbitráció** (bus arbitration) dönti el, ki kapja meg: a DMA-vezérlő kéri a sínt, a processzor pedig egy sínciklus végén átadja. A mai PC-kben a legtöbb gyors eszköz (a lemez- és a hálózati vezérlők) maga is sínmester a PCI Express-en ([sínhierarchia](../04-fetch-execute-cycle/#egy-sínről-a-sínek-hierarchiájáig)); átviteleik már nem egyetlen közös sínre várnak, de a memória-sávszélességért továbbra is versenyeznek a processzormagokkal.
+
 **Egy kidolgozott példa.** Mennyi processzoridőbe kerülnek az egyes technikák? Vegyünk egy eszközt, amely 10 µs-onként ad egy bájtot, és egy 4 KiB-os (4096 bájtos) blokkot; az átvitel így, bármit teszünk is, 40,96 ms-ig tart. A lenti többi szám kerek, feltételezett érték, amelyet az egyszerű számolás kedvéért választottunk; a valódiak a hardvertől függenek, de az arányok jellemzőek.
 
 | Technika | Feltételezések | Felhasznált processzoridő | A 40,96 ms hányada |
@@ -303,6 +348,34 @@ Az eszköz mind a négy esetben ugyanolyan lassú. Az változik, hogy ebből az 
 - **DMA** (Direct Memory Access, közvetlen memória-hozzáférés): segédchip, amely önállóan másol adatot egy eszköz és a memória között, így a processzornak nem kell. Olyan, mint amikor költöztetőket fogadsz, ahelyett hogy minden dobozt magad cipelnél: csak megmondod nekik, mit hová vigyenek, és ők szólnak, ha végeztek.
 - **Sín (bus):** a processzort, a memóriát és az eszközöket összekötő közös vezetékköteg. Egyszerre csak egyikük használhatja.
 - **Ciklusellopás (cycle stealing):** amíg a DMA használja a sínt, a processzornak időnként várnia kell rá: a DMA „ellop” néhány alkalmat, amikor a processzor használhatná a sínt.
+- **Sínmester (bus master):** olyan eszköz, amely magától is indíthat átvitelt a sínen. A processzor ilyen, a DMA-vezérlő is ilyen. A többi eszköz csak akkor válaszol, ha megszólítják.
+- **Sínarbitráció (bus arbitration):** annak eldöntése, ki használhatja legközelebb a sínt, ha több sínmester is akarja – mint a játékvezető, aki egyszerre mindig csak egy játékosnak adja a labdát.
+- **Memória-sávszélesség (memory bandwidth):** mennyi adatot tud a memória másodpercenként szállítani. Ezen az összes mag és eszköz osztozik.
+
+</details>
+
+## Összerakva: egy laphiba, amelyhez a lemez kell
+
+Az előadás mechanizmusai ritkán működnek egymagukban. Egyetlen laphiba, amelynek a lemezre kell várnia, megmutatja, hogyan dolgoznak együtt, és összeköti ezt az előadást a folyamatállapotokkal és az ütemezéssel ([6. előadás](../06-concurrency-deadlocks-scheduling/)), valamint a virtuális memóriával ([8. előadás](../08-virtual-memory/)):
+
+![Idővonal: az A folyamat laphibát okoz, a kernel DMA-olvasást indít és a B folyamatot futtatja, a lemez megszakítása után A ismét futásra kész](page-fault-chain.svg)
+
+1. Az A folyamat olyan utasítást hajt végre, amely egy éppen nem a memóriában lévő laphoz nyúl. Az MMU **laphibát** vált ki: ez kivétel, szinkron, A saját utasítása okozza.
+2. A laphibakezelő ellenőrzi, hogy a hozzáférés megengedett-e, keres egy szabad lapkeretet (ha kell, előbb kiszorít egy lapot, és ha az módosult, visszaírja a lemezre), majd utasítja a lemezvezérlőt, hogy **DMA**-val olvassa be a hiányzó lapot ebbe a keretbe. A nem folytatódhat, amíg a lap meg nem érkezik, ezért a kernel **várakozónak** (blokkoltnak) jelöli.
+3. Az ütemező egy másik folyamatot, B-t futtatja. A processzor hasznos munkát végez, miközben a lemez és a DMA-vezérlő átviszi a lapot.
+4. Amikor az átvitel befejeződött, a lemez **megszakítást** kér: ez aszinkron, kívülről jön. B-t szakítja meg, bár B-nek semmi köze hozzá.
+5. A megszakításkezelő frissíti A laptábla-bejegyzését, és A-t **futásra késszé** teszi. Amikor az ütemező legközelebb A-t futtatja, a hibát okozó utasítás újra végrehajtódik (a laphiba *fault*, ezért a mentett PC erre az utasításra mutat), és ezúttal sikerül.
+
+Ugyanazt az eseményt tehát kétszer kezeli a megszakítási mechanizmus, egyszer kivételként, egyszer megszakításként, közöttük DMA-val, és mindkét oldalon folyamatváltással. Az [Egy laphiba, amely a lemezre vár](#egy-laphiba-amely-a-lemezre-vár) alszakasz ezt a láncot méri meg Linuxon.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> MMU, lapkeret, kiszorítás, laptábla-bejegyzés, várakozó (blokkolt), futásra kész</summary>
+
+- **MMU** (Memory Management Unit, memóriakezelő egység): a processzornak az a része, amely a program által használt címeket valódi memóriacímekre fordítja, és laphibát vált ki, ha erre nem képes.
+- **Lapkeret (frame):** lapnyi méretű hely a valódi memóriában, ahová egy lap betölthető.
+- **Kiszorítás (evict):** egy lap kidobása a memóriából, hogy helyet csináljunk – mint amikor egy tele polcról leveszünk egy könyvet.
+- **Laptábla-bejegyzés (page table entry):** a folyamat laptáblájának az a sora, amely megmondja, hol van a folyamat egyik lapja (melyik lapkeretben, vagy hogy „nincs a memóriában”).
+- **Várakozó (blokkolt), futásra kész:** a várakozó folyamat vár valamire (itt a lapra), és nem használhatja a processzort; a futásra kész folyamat futhatna, csak a sorára vár.
 
 </details>
 
@@ -321,7 +394,7 @@ A programnak a közös adatokon dolgozó részét **kritikus szakasznak** (criti
 **Megoldások:**
 
 - **A megszakítások letiltása** a kritikus szakasz idejére. Megszakítás nélkül nincs váltás, így a szakasz egyedül fut. Ez csak egyetlen processzoron működik, és csak a kernelben: egy felhasználói program nem kapcsolhatja ki az időzítőt, hogy örökre megtartsa a processzort – éppen ezért privilegizált utasítás a `cli`.
-- **Atomi test-and-set utasítás.** A processzor egyetlen, oszthatatlan utasításban olvassa ki a régi értéket és írja be az újat, így sem megszakítás, sem másik mag nem kerülhet a tesztelés és a beállítás közé. x86-on ez az `xchg` utasítás (regiszter és memória cseréje), amely automatikusan zárolt. Az erre épülő zár, amelynél a várakozó folyamat ciklusban újra és újra próbálkozik, a **spinlock** („pörgő zár”).
+- **Atomi test-and-set utasítás.** A processzor egyetlen, oszthatatlan utasításban olvassa ki a régi értéket és írja be az újat, így sem megszakítás, sem másik mag nem kerülhet a tesztelés és a beállítás közé. A megszakításokkal szemben ez magától teljesül, mert a processzor megszakítást csak két utasítás között fogad el (lásd [az utasításciklust](#a-megszakítás-helye-az-utasításciklusban)); a többi maggal szemben viszont a processzornak az utasítás idejére a memóriahelyet is zárolnia kell. x86-on ez az `xchg` utasítás (regiszter és memória cseréje), amely automatikusan zárolt. Az erre épülő zár, amelynél a várakozó folyamat ciklusban újra és újra próbálkozik, a **spinlock** („pörgő zár”).
 - **Szemafor**, amelyet az operációs rendszer biztosít (Silberschatz et al., 2018; Stallings, 2018). Kölcsönös kizáráshoz S kezdőértéke 1. A `wait(S)` csökkenti S-et, és ha az eredmény negatív, a folyamat blokkolódik (elalszik) ahelyett, hogy tevékenyen várakozna. A `signal(S)` növeli S-et, és ha folyamatok várakoznak, felébreszti egyiküket. Az operációs rendszer a fenti két technikával a kernelen belül teszi mindkét műveletet atomivá. (Dijkstra eredeti, P-nek és V-nek nevezett definíciójában S sosem megy nulla alá: a P egyszerűen vár, amíg S > 0. Mindkét változat használatos.)
 
 <details>
@@ -523,6 +596,59 @@ A modern lemezek és hálózati kártyák **DMA**-t használnak: közvetlenül o
 
 </details>
 
+### Egy laphiba, amely a lemezre vár
+
+A `pagefault.c` egy 16 MiB-os fájlt képez le a memóriába az `mmap` segítségével, és mind a 4096 lapjáról beolvas egy-egy bájtot, így minden lapot először érint. A laphibákat a `getrusage` függvénnyel számolja meg: a **nagyobb (major) laphiba** lemezolvasást igényelt, a **kisebb (minor) laphiba** a lapot már a memóriában (a lapgyorsítótárban, page cache) találta, és csak be kellett illesztenie a címtartományba. Alapértelmezés szerint kikapcsolja az előreolvasást (`madvise(MADV_RANDOM)`), hogy minden laphiba pontosan egy lapot olvasson be; a `readahead` argumentummal bekapcsolva hagyja. A `pagefault.sh` szkript kiüríti a lapgyorsítótárat, kétszer futtatja a programot (hidegen, majd melegen), és mindkét futtatás alatt megszámolja a lemez megszakításait (`virtio1-req.0` a `/proc/interrupts`-ban, a korábbi listában látott lemez):
+
+```c
+    if (argc < 3)                                  /* no read-ahead: one fault = one page */
+        madvise((void *)p, st.st_size, MADV_RANDOM);
+    ...
+    for (long i = 0; i < pages; i++)
+        sum += p[i * pg];                          /* first touch of each page */
+```
+
+```console
+$ gcc -O1 -o pagefault pagefault.c
+$ sudo sh ./pagefault.sh
+4096 pages touched in 161.6 ms (checksum 511876)
+major faults (needed the disk): 4096
+minor faults (page already in memory): 2
+cold run: disk interrupts (virtio1-req.0): 4102
+
+4096 pages touched in 1.4 ms (checksum 511876)
+major faults (needed the disk): 0
+minor faults (page already in memory): 258
+warm run: disk interrupts (virtio1-req.0): 0
+
+$ sudo sh ./pagefault.sh readahead
+4096 pages touched in 7.3 ms (checksum 511876)
+major faults (needed the disk): 1
+minor faults (page already in memory): 134
+cold run: disk interrupts (virtio1-req.0): 73
+...
+```
+
+- **Hidegen, előreolvasás nélkül:** 4096 nagyobb laphiba és 4102 lemezmegszakítás, beolvasott laponként egy befejezési megszakítás (a további 6 a futtatás alatti egyéb lemeztevékenységből származott). Ez az [előző szakasz](#összerakva-egy-laphiba-amelyhez-a-lemez-kell) lánca, 4096-szor egymás után: laponként mintegy 39 µs, szinte teljes egészében a lemezre való várakozással töltve – ennyi idő alatt a processzor más folyamatokat futtathatna.
+- **Melegen:** ugyanaz a ciklus 1,4 ms-ig tart, több mint százszor gyorsabban: nincs se nagyobb laphiba, se lemezmegszakítás. A 258 kisebb laphiba jóval kevesebb a 4096 lapnál, mert a Linux minden laphibánál a szomszédos, már a lapgyorsítótárban lévő lapokat is beilleszti (*fault-around*).
+- **Hidegen, előreolvasással:** csak 1 nagyobb laphiba és 73 megszakítás. Az első laphibát látva a kernel néhány tucat nagy DMA-átvitellel előre beolvasta a fájl nagy darabjait, és a későbbi hozzáférések a lapjaikat már a memóriában találták. Kevesebb, nagyobb átvitel kevesebb megszakítást jelent: ugyanaz a tanulság, mint fent a „pufferenkénti” és a „bájtonkénti megszakítás” összevetéséből.
+
+Ez egy virtuális gép, amelynek a lemezét maga a gazdagép emulálja, ezért fizikai lemezen az abszolút idők eltérnek (egy HDD olvasásonként sokkal lassabb, egy NVMe SSD valamivel gyorsabb), a számlálók azonban mindenhol ugyanazt mutatják.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> mmap, getrusage, nagyobb laphiba, kisebb laphiba, lapgyorsítótár, előreolvasás, madvise, drop_caches, fault-around</summary>
+
+- **`mmap`:** megkéri az operációs rendszert, hogy egy fájl a program memóriájának részeként jelenjen meg. Az adat csak akkor töltődik be, amikor a program először hozzányúl egy laphoz – egy laphibán keresztül.
+- **`getrusage`:** Linux-függvény, amely megmondja, mennyi erőforrást használt el eddig a program, többek között azt is, hány laphibát okozott.
+- **Nagyobb (major) / kisebb (minor) laphiba:** a nagyobb laphibánál várni kell a lemezre; a kisebb laphiba az adatot már a memóriában találja, és csak a laptáblát kell rendbe tenni.
+- **Lapgyorsítótár (page cache):** a memóriának az a része, ahol a Linux a nemrég használt fájladatok másolatát tartja, hogy ne kelljen újra a lemezről olvasni.
+- **Előreolvasás (read-ahead):** ha egy fájlt az elejétől olvasunk, az operációs rendszer arra számít, hogy hamarosan a következő részek is kellenek, és előre beolvassa őket – mint a pincér, aki kérés nélkül hozza a következő fogást.
+- **`madvise`:** függvény, amellyel a program elmondja az operációs rendszernek, hogyan fogja használni a memóriáját; a `MADV_RANDOM` azt jelenti: „össze-vissza sorrendben, ne olvass előre”.
+- **`drop_caches`:** ha a `/proc/sys/vm/drop_caches` fájlba 3-at írunk, a Linux kiüríti a lapgyorsítótárát, így a következő olvasásnak a lemezről kell jönnie.
+- **Fault-around:** laphibánál a Linux a szomszédos, már a memóriában lévő lapokat is beilleszti, így megspórolja a későbbi laphibákat.
+
+</details>
+
 ### A megszakítási késleltetés mérése
 
 A `latency.c` azt kéri, hogy ezredmásodpercenként, pontos időpontban ébresszék fel, 5000-szer, és megméri, mennyit késnek valójában az egyes ébresztések. Minden ébresztéshez szükség van egy időzítő-megszakításra, a kernel megszakításkezelésére és az ütemezőre, így ez a késleltetésről szóló szakasz teljes láncát méri: a megszakítási késleltetést, az ütemezési késleltetést, valamint még egy Linux-sajátosságot, az **időzítő-ráhagyást** (timer slack). Energiatakarékosság céljából a Linux egy közönséges programot szándékosan akár 50 µs-mal később is felébreszthet, hogy több ébresztést együtt intézhessen el; a valós idejű feladatok nem kapnak ráhagyást. A `noslack` opcióval a program arra kéri a kernelt, hogy a ráhagyást kapcsolja ki számára. (A program a `cyclictest`, az erre szolgáló szabványos Linux-eszköz egyszerűsített változata.)
@@ -713,6 +839,7 @@ Egyszer helyes, kétszer hibás. Ez teszi veszélyessé a versenyhelyzeteket: a 
 5. **A versenyhelyzet.** Futtasd a `race.c` programot mindhárom üzemmódban, mindegyiket többször. Ezután kösd egyetlen maghoz a `taskset -c 0` paranccsal. Miért sokkal ritkábbak a hibák egyetlen magon? Növeld `N` értékét, amíg meg nem jelennek.
 6. **Késleltetés.** Futtasd a `latency.c` programot terheletlen gépen, majd úgy, hogy magonként egy `yes > /dev/null` fut: változtatás nélkül, a `noslack` opcióval, és (ha van rendszergazdai jogosultságod) `sudo chrt -f 80`-nal. Tölts ki egy táblázatot a mediánnal, a 99%-os értékkel és a maximummal. Melyik beállítás változtat a mediánon, és melyik a legrosszabb eseteken? Miért fontosabb egy motorvezérlőnél a maximum, mint a medián?
 7. **Saját szemafor.** Írd át a `race.c` programot POSIX-szemaforral (`sem_t`, `sem_init`, `sem_wait`, `sem_post`). Mérd meg a `time` paranccsal a spinlockos és a szemaforos változat futási idejét. Melyik a gyorsabb itt, és miért változhatna ez, ha a kritikus szakasz hosszú lenne?
+8. **Egy laphiba, amely a lemezre vár.** Futtasd a `pagefault.sh` szkriptet (rendszergazdaként) a `readahead` argumentum nélkül és azzal is. (A saját gépeden előbb keresd meg a lemez sorát a `/proc/interrupts`-ban, és add meg a nevét a `DISK` változóban, például `sudo DISK=nvme0q1 sh ./pagefault.sh`; egy NVMe-lemeznek több várakozási sora (queue) van, ezért válassz egyet, vagy add össze őket.) Hány lemezmegszakítás jut egy nagyobb (major) laphibára? Miért csökkenti az előreolvasás a laphibák és a megszakítások számát is? Mit csinál a processzor, amíg a hideg futtatás várakozik?
 
 ## Ellenőrző kérdések
 
@@ -730,6 +857,10 @@ Egyszer helyes, kétszer hibás. Ez teszi veszélyessé a versenyhelyzeteket: a 
 12. Sorold fel a megszakítási késleltetés összetevőit. Melyiket befolyásolja a legközvetlenebbül az operációs rendszer, és hogyan tartja röviden?
 13. Egy eszköz szintvezérelt vonalat használ, és a kezelője úgy tér vissza, hogy nem szolgálta ki az eszközt. Mi történik? Mi történne élvezérelt vonalnál, ha a megszakítás akkor érkezne, amikor az a vonal maszkolva van?
 14. A kidolgozott I/O-példában az eszköz ötször gyorsabb lesz (2 µs-onként egy bájt). Számold újra a processzor terhelési hányadát bájtonkénti megszakítás és DMA esetén. Mit vonsz le ebből?
+15. A megszakítás-ellenőrzés lépése azt vizsgálja, hogy „a megszakítások engedélyezve vannak ÉS van függő megszakítás”. Mi történik azzal a kéréssel, amely letiltott megszakítások mellett érkezik? Miért teszi ez a szabály minden egyes utasítást atomivá a megszakításokkal szemben, és miért nem elég ez többmagos gépen?
+16. Egy egyszerű gépen a vektortábla a 0-s címen kezdődik, és bejegyzésenként egy 2 bájtos kezelőcímet tartalmaz. Megérkezik a 17-es megszakítás, és a bejegyzésben FBCAh áll. Melyik címen van a bejegyzés, és mennyi a PC értéke az 5. lépés után? Mit kell megváltoztatnia az operációs rendszernek, hogy új kezelőt telepítsen a 17-es megszakításhoz?
+17. Mit tartalmaz a PSW, és miért magának a hardvernek kell elmentenie a PC-vel együtt, még mielőtt a kezelő elindul? Hogyan rövidítik le a megszakításkezelést a Z80 alternatív regiszterei vagy az ARM FIQ bankolt regiszterei, és mi a korlátjuk?
+18. Egy folyamat olyan laphoz nyúl, amely a lemezen van. Sorold fel az eseményeket addig, amíg a folyamat folytatódik, és jelöld meg, melyik közülük kivétel, melyik megszakítás, és mit csinál közben a processzor.
 
 <details>
 <summary><strong>Megoldókulcs (oktatóknak)</strong></summary>
@@ -748,10 +879,16 @@ Egyszer helyes, kétszer hibás. Ez teszi veszélyessé a versenyhelyzeteket: a 
 12. Az aktuális utasítás befejezése; várakozás, amíg a megszakítások maszkolva vannak (vagy egy nagyobb prioritású kezelő fut); a hardveres belépés (nyugtázás, módváltás, a PC/PSW mentése, a vektor kikeresése); a regiszterek mentése a kezelőben. Az operációs rendszer a maszkolt időszakokat befolyásolja a legközvetlenebbül: a lehető legrövidebbre fogja őket, rövidre fogja a hardveres kezelőket, a többit halasztott munkába teszi (PREEMPT_RT esetén pedig a legtöbb kezelőt prioritással rendelkező, kiszorítható szálként futtatja).
 13. Szintvezérelt: a vonal még aktív, így a visszatérés után azonnal újra ugyanaz a megszakítás érkezik, újra és újra (megszakításvihar); a rendszer lefagyhat. (A Linux ezt észleli, „irq N: nobody cared” üzenetet ír ki, és kikapcsolja a vonalat.) Élvezérelt: az él egyetlen esemény; ha akkor érkezik, amikor a vonal maszkolva van, és a vezérlő nem tárolja el, a megszakítás elvész, és az eszköz örökké várhat.
 14. Az átvitel most 4096 × 2 µs = 8192 µs-ig tart. Bájtonkénti megszakítás: 4096 × 2 µs = 8192 µs, ami az átviteli idő 100%-a: a processzor semmi mást nem csinál, csak megszakításokat kezel, ami semmivel sem jobb a lekérdezésnél. DMA: továbbra is 3 µs, ami most 3 / 8192 ≈ 0,04%. Következtetés: minél gyorsabb az eszköz, annál többe kerülnek az átvitelhez képest a bájtonkénti megszakítások; a gyors eszközökhöz pufferelés vagy DMA kell.
+15. Függőben marad, és a processzor a megszakítások újbóli engedélyezése utáni első utasításhatáron fogadja el; nem vész el. Mivel az ellenőrzés csak két utasítás között történik, egy megszakítás (és az általa esetleg kiváltott folyamatváltás) soha nem eshet egy utasítás belsejébe, így egy magon minden utasítás – a test-and-set is – oszthatatlan. Többmagos gépen viszont egy másik mag ugyanabban az időben fut, és az utasítás közepén is hozzáférhet ugyanahhoz a memóriahelyhez, ezért a processzornak az utasítás idejére azt a helyet (a sínt vagy a gyorsítótár-sort) is zárolnia kell, ahogy az `xchg` teszi.
+16. A 17-es bejegyzés a 17 × 2 = 34 = 22h címen van. Az 5. lépés után a PC értéke FBCAh, tehát a következő lehívás a kezelő első utasítása. Új kezelő telepítéséhez az operációs rendszer az új kezelő kezdőcímét írja be a 17-es bejegyzésbe; a hardveren semmit sem kell változtatni.
+17. A feltételkódok (jelzőbitek), a megszakítás-engedélyező bit vagy maszk, a kernel/felhasználói módot jelző bit, és egyes gépeken memóriavédelmi információ. A hardver abban a pillanatban megváltoztatja az üzemmódot és a megszakítási maszkot, amikor belép a kezelőbe, a kezelő első utasításai pedig megváltoztatnák a jelzőbiteket és a PC-t, ezért a régi értékeket még a kezelő bármely utasítása előtt el kell menteni. Az alternatív vagy bankolt regiszterekkel a kezelő egy tartalék készletre vált ahelyett, hogy a regisztereket a memóriába mentené, ami időt takarít meg és csökkenti a késleltetést; tartalék készletből azonban csak egy van, így az csak egy megszakítási szintet szolgálhat ki (egyszerre egy kezelőt), az egymásba ágyazott megszakításokhoz továbbra is verem kell.
+18. (1) Az utasítás laphibát okoz: kivétel, szinkron. (2) A kernel kezelője keres egy szabad lapkeretet (ha kell, előbb kiszorít egy lapot, és visszaírja a lemezre), elindít egy DMA-olvasást a lemezről, és blokkolja a folyamatot. (3) Az ütemező egy másik folyamatot futtat, így a processzor az átvitel alatt hasznos munkát végez. (4) Amikor az átvitel kész, a lemez megszakítást kér: aszinkron. (5) A kezelő frissíti a laptáblát, és futásra késszé teszi a folyamatot; amikor az ütemező legközelebb futtatja, a folyamat újra végrehajtja a hibát okozó utasítást, amely most sikerül.
 
 </details>
 
 ## Irodalom
+
+Arm Limited. (2018). *ARM architecture reference manual: ARMv7-A and ARMv7-R edition* (ARM DDI 0406C.d). Arm Limited.
 
 Dijkstra, E. W. (1965). *Cooperating sequential processes* (EWD 123). Technological University Eindhoven.
 
@@ -760,6 +897,8 @@ Silberschatz, A., Galvin, P. B., & Gagne, G. (2018). *Operating system concepts*
 Stallings, W. (2018). *Operating systems: Internals and design principles* (9th ed.). Pearson.
 
 The kernel development community. (n.d.). *Linux generic IRQ handling*. The Linux Kernel documentation. Retrieved October 6, 2026, from https://docs.kernel.org/core-api/genericirq.html
+
+Zilog. (2016). *Z80 CPU user manual* (UM0080, Rev. 11). Zilog.
 
 ## További olvasnivaló
 

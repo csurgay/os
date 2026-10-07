@@ -2,7 +2,7 @@
 
 *Operációs rendszerek előadás: hogyan tárolják az adatokat a merevlemezek és az SSD-k, és hogyan lesz a fájlrendszer jóvoltából a számozott blokkokból névvel ellátott fájl és könyvtár: inode-ok, könyvtárak, hard és szimbolikus linkek, helyfoglalás, naplózás, valamint négy valódi fájlrendszer (FAT16, ext4, XFS és NTFS) darabjaira szedve, Linuxon*
 
-Előző: [Virtuális memória](../08-virtual-memory/).
+Előző: [Virtuális memória](../08-virtual-memory/). Következő: [Hozzáférés-szabályozás: jogosultságok, ACL-ek és SELinux](../10-access-control/).
 
 > **Hogyan olvasd ezt az előadást?** Ahol új rövidítés vagy fogalom jelenik meg, utána egy **Egyszerűen elmagyarázva** feliratú doboz következik. Kattints rá, és kinyílik egy köznapi nyelvű magyarázat. Ha már ismered a fogalmakat, nyugodtan átugorhatod ezeket a dobozokat.
 
@@ -16,9 +16,11 @@ Az előadás végére a hallgatók képesek lesznek:
 - elmagyarázni a fájl és a könyvtár absztrakcióját, a tárolási verem rétegeit és a virtuális fájlrendszer szerepét;
 - leírni, mi az inode, megmagyarázni, miért a könyvtárakban és nem az inode-okban tároljuk a neveket, és összehasonlítani a blokkmutatókat az extentekkel;
 - elmagyarázni a hard és a szimbolikus linkeket, és azt, hogyan viselkednek, ha a célt törlik, áthelyezik, vagy az egy másik fájlrendszeren van;
+- megnevezni az `ls -l` által mutatott hét Unix-fájltípust, és eligazodni a szabványos linuxos könyvtárfában (`/etc`, `/usr`, `/var`, `/run`, `/proc` …);
 - leírni, hogyan tárolódnak a könyvtárak listaként, illetve hasítófás vagy kiegyensúlyozott faként;
 - elmagyarázni a szabad terület kezelését, a fragmentációt, a késleltetett foglalást, az összeomlás-konzisztenciát és a naplózást;
 - leírni a FAT16, az ext4, az XFS és az NTFS lemezen tárolt szerkezetét, és összehasonlítani őket;
+- elmagyarázni a logikai kötetkezelést (fizikai kötetek, extentek, kötetcsoportok, logikai kötetek), és megtervezni azokat a parancsokat, amelyekkel egy fájlrendszer működés közben bővíthető, vagy egy lemez kivonható a használatból;
 - mindezt megvizsgálni Linuxon a `stat`, `ls -i`, `debugfs`, `filefrag`, `dumpe2fs`, `xfs_db` és `ntfsinfo` eszközökkel.
 
 <details>
@@ -63,10 +65,16 @@ A merevlemez a biteket apró, mágnesezett tartományokként tárolja forgó **l
 Egy szektor beolvasása három lépésből áll:
 
 1. **Fejmozgatás (seek):** a kar a megfelelő sávra áll, átlagosan néhány ezredmásodperc alatt (asztali lemezen 8–9 ms, gyors szerverlemezen kb. 4 ms).
-2. **Forgási késleltetés:** várakozás, amíg a szektor a fej alá fordul. Átlagosan fél fordulat: percenként 7200 fordulatnál egy fordulat 8,33 ms, így az átlagos várakozás 4,17 ms.
+2. **Forgási késleltetés:** várakozás, amíg a szektor a fej alá fordul. Átlagosan fél fordulat: a percenkénti 7200 fordulat másodpercenként 120, így egy fordulat 1/120 s = 8,33 ms, az átlagos várakozás pedig 4,17 ms.
 3. **Adatátvitel:** a bitek kiolvasása, miközben elhaladnak, a mai lemezeken 200–280 MB/s sebességgel; 4 KiB kb. 0,02 ms alatt.
 
 Egy véletlen 4 KiB-os olvasás tehát kb. 12–13 ms-ba kerül, és egy lemez másodpercenként kb. 80 ilyen olvasást teljesít, míg a szekvenciális olvasás, amely a fejmozgatást és a forgást csak egyszer fizeti meg, teljes átviteli sebességgel halad. A kettő közötti, több százszoros különbség minden klasszikus fájlrendszer tervezését meghatározta: **tartsd együtt az összetartozó adatokat** (Ruemmler & Wilkes, 1994; McKusick et al., 1984).
+
+A fej nem érinti a lemezt: egy **csúszkára** (slider) van szerelve, amely a forgó felület által magával ragadott vékony légpárnán siklik. A mai meghajtókban ez a rés, a **repülési magasság** (flying height), olvasás és írás közben 1–2 nanométer nagyságrendű (Matthes, 2016). Egy 2,5 µm-es finom porszem több mint ezerszer nagyobb ennél a résnél, egy kb. 70 µm vastag emberi hajszál (U.S. Environmental Protection Agency, n.d.) pedig több tízezerszer:
+
+![Balra: egy csúszka 1–2 nm-rel a lemez fölött repül, útjában egy porszemmel; jobbra: a repülési magasság, egy finom porszem és egy emberi hajszál logaritmikus skálán](head-gap.svg)
+
+Ha a fej nekiütközik egy részecskének, egy ujjlenyomat zsíros rétegének vagy magának a felületnek, megkarcolja a mágneses réteget és önmagát is: ez a **fejütközés** (head crash), amely tönkreteszi az alatta lévő adatokat, és általában a meghajtót is. Ezért szerelik a merevlemezeket tisztatérben, és ezért zárják le őket, egy kis szűrővel, amely csak a légnyomás kiegyenlítését engedi meg (a nagy kapacitású meghajtókat pedig héliummal töltik és hermetikusan lezárják); ezért nem szabad egy meghajtót tisztatéren kívül soha kinyitni; és ezért parkolják le a legtöbb mai meghajtó a fejeket egy rámpára a lemezek mellett, mielőtt a tengely leáll, illetve amikor egy laptop meghajtója esést érzékel.
 
 A modern lemezek elrejtik a geometriájukat. Az operációs rendszer **logikai blokkcímek** (LBA 0, 1, 2, …) lineáris tömbjét látja; a lemez maga képezi le ezeket cilinderekre, fejekre és szektorokra, a hosszabb külső sávokra több szektort tesz (zónás rögzítés, ami a külső, alacsony sorszámú LBA-kat gyorsabbá teszi), és csendben lecseréli a hibás szektorokat. A kapacitás olyan technikákkal nő tovább, mint a zsindelyes rögzítés (egymást átfedő sávok) és a hővel segített rögzítés (HAMR): a Seagate legfeljebb 36 TB-os HAMR-meghajtókat jelentett be (Seagate, n.d.). A merevlemez továbbra is a terabájtonként legolcsóbb tár, és az adatközpontokban ma is ez tárolja a tömeges adatokat, míg a laptopokban és mindenhol, ahol a késleltetés számít, az SSD váltotta fel.
 
@@ -84,6 +92,11 @@ A modern lemezek elrejtik a geometriájukat. Az operációs rendszer **logikai b
 - **Zónás rögzítés:** a külső gyűrűk hosszabbak, ezért több szektor fér rájuk, és gyorsabban haladnak el a fej alatt.
 - **Zsindelyes rögzítés (SMR), hővel segített rögzítés (HAMR):** trükkök, hogy a gyűrűk közelebb kerüljenek egymáshoz: úgy fedik át egymást, mint a tetőcserepek, vagy írás közben egy lézer felmelegít egy apró pontot.
 - **Hibás szektor átirányítása:** a lemez csendben egy tartalékszektort használ a sérült helyett.
+- **Csúszka, repülési magasság:** a fej egy apró „szánkón” ül, amely a lemezzel együtt mozgó levegőn lebeg, mint a vízisíző a vízen; a repülési magasság az, hogy milyen magasan lebeg a felület fölött.
+- **nm, µm:** a nanométer a milliméter milliomod része, a mikrométer a milliméter ezred része. Egy hajszál kb. 70 µm vastag.
+- **Fejütközés (head crash):** a fej hozzáér a forgó lemezhez; megkarcolja a felületet, mint a bakelitlemezen végighúzott tű, és az ott lévő adat elvész.
+- **Tisztatér:** szűrt levegőjű, szinte teljesen pormentes helyiség, ahol a lemezeket összeszerelik.
+- **Parkolórámpa:** kis rámpa a lemezek mellett, ahol a fejek pihennek, amikor a lemez leáll, hogy soha ne feküdjenek a felületen.
 
 </details>
 
@@ -143,7 +156,7 @@ E hívások és az eszköz között több réteg áll:
 - A **fájlrendszer** a fájlokat és könyvtárakat blokkokra képezi le.
 - A **blokkréteg** sorba állítja, összevonja és ütemezi a számozott blokkokra vonatkozó kéréseket, az **eszközmeghajtó** (driver) pedig az eszköz protokollját beszéli (NVMe, SATA, SCSI, virtio). A blokkréteg **I/O-ütemezője** főleg merevlemezeknél számít: az `mq-deadline` és a `bfq` rendezi és összevonja a kéréseket, hogy kevesebb legyen a fejmozgatás (a régi liftalgoritmus ötlete), a gyors NVMe SSD-k viszont általában `none` beállítással futnak.
 
-A lemezt általában **partíciókra** osztják, amelyeket egy partíciós tábla ír le (a régi **MBR** vagy a mai **GPT**), és minden partíció egy fájlrendszert tartalmaz. A partíciók és a fájlrendszerek közé a **device mapper** további rétegeket illeszthet: logikai köteteket (**LVM**), amelyek átméretezhetők és több lemezre is kiterjedhetnek, titkosítást (**dm-crypt**) és **RAID**-et, amely úgy kapcsol össze lemezeket, hogy az adat túlélje az egyik meghibásodását (a RAID 1 tükröz, a RAID 5 és 6 paritást ad hozzá), vagy hogy párhuzamosan dolgozzanak (RAID 0). A RAID nem biztonsági mentés: egy törölt fájl egyszerre minden lemezről törlődik.
+A lemezt általában **partíciókra** osztják, amelyeket egy partíciós tábla ír le (a régi **MBR** vagy a mai **GPT**), és minden partíció egy fájlrendszert tartalmaz. A partíciók és a fájlrendszerek közé a **device mapper** további rétegeket illeszthet: logikai köteteket (**LVM**), amelyek átméretezhetők és több lemezre is kiterjedhetnek ([lásd lejjebb](#logikai-kötetkezelés)), titkosítást (**dm-crypt**) és **RAID**-et, amely úgy kapcsol össze lemezeket, hogy az adat túlélje az egyik meghibásodását (a RAID 1 tükröz, a RAID 5 és 6 paritást ad hozzá), vagy hogy párhuzamosan dolgozzanak (RAID 0). A RAID nem biztonsági mentés: egy törölt fájl egyszerre minden lemezről törlődik.
 
 Végül minden fájlrendszert **csatolunk (mount)** az egyetlen linuxos könyvtárfa egy könyvtárára: a gyökér-fájlrendszert a `/`-re, a többit a `/boot/efi`, `/home`, `/mnt/usb` stb. könyvtárra. Az `/etc/fstab` sorolja fel, mit kell rendszerindításkor csatolni, a `df` vagy a `findmnt` pedig az aktuális csatolásokat mutatja.
 
@@ -185,7 +198,7 @@ Két következmény, amely sok felhasználót meglep:
 - **Ritka fájlok (sparse file):** egy fájlban lehetnek **lyukak**, olyan tartományok, amelyeket sosem írtak, és nincsenek blokkjaik. Olvasáskor nullákat adnak. A [linuxos szakasz](#ritka-fájlok-extentek-és-késleltetett-foglalás) létrehoz egy 1 GiB-os fájlt, amely 4 KiB-ot foglal.
 - **Az inode-ok száma rögzített** az ext2/3/4-ben a fájlrendszer létrehozásakor (alapértelmezésben 16 KiB területenként egy inode, 512 MiB alatti fájlrendszereken 4 KiB-onként egy). Egy fájlrendszer „megtelhet”, miközben van szabad hely, ha nagyon sok kis fájlt tárol ([linuxos szakasz](#elfogynak-az-inode-ok)). Az XFS és a Btrfs dinamikusan foglal inode-okat, így ritkán fogynak ki belőlük: a korlátjuk a terület egy hányada, nem egy előre rögzített szám.
 
-Az inode-ban tárolt jogosultságok a klasszikus Unix-**módbitek**: olvasás, írás és végrehajtás (`rwx`) a tulajdonosnak, a csoportnak és mindenki másnak, általában oktálisan írva: `0644` = `rw-r--r--`, olvasás és írás a tulajdonosnak, csak olvasás a többieknek. Könyvtárnál az „olvasás” a nevek listázását jelenti, az „írás” bejegyzések létrehozását és törlését, a „végrehajtás” pedig azt, hogy egy elérési úton át lehet haladni rajta. A hozzáférés-vezérlési listák (ACL-ek) további felhasználókra és csoportokra vonatkozó szabályokat adhatnak hozzá.
+Az inode-ban tárolt jogosultságok a klasszikus Unix-**módbitek**: olvasás, írás és végrehajtás (`rwx`) a tulajdonosnak, a csoportnak és mindenki másnak, általában oktálisan írva: `0644` = `rw-r--r--`, olvasás és írás a tulajdonosnak, csak olvasás a többieknek. A kernel ezeket az `open` hívásnál és az útvonal-feloldás minden lépésében ellenőrzi. Hogy pontosan mit jelentenek fájlokra és könyvtárakra, a különleges bitek (setuid, setgid, sticky), a hozzáférés-vezérlési listák (ACL-ek, amelyeket az inode-dal együtt, kiterjesztett attribútumként tárolunk) és a kötelező hozzáférés-szabályozás (SELinux) a [következő előadás](../10-access-control/) témája.
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> inode, inode-sorszám, blokkmutató, indirekt blokk, extent, ritka fájl, lyuk</summary>
@@ -228,11 +241,11 @@ Mivel minden könyvtár tartalmaz `..` bejegyzést, és minden alkönyvtár `..`
 
 ## Hard linkek és szimbolikus linkek
 
-Mivel a nevek és az inode-ok külön vannak, egy fájlnak több neve is lehet. A **hard link (merev link)** egyszerűen egy újabb könyvtárbejegyzés, amely ugyanarra az inode-ra mutat: `ln notes.txt hard.txt`. A két név egyenrangú; egyik sem „az eredeti”. Az inode **linkszáma** rögzíti, hány neve van, és a fájl adatai csak akkor szabadulnak fel, amikor a szám nullára csökken, és egyetlen folyamat sem tartja megnyitva a fájlt.
+Mivel a nevek és az inode-ok külön vannak, egy fájlnak több neve is lehet. A **hard link (merev link)** egyszerűen egy újabb könyvtárbejegyzés, amely ugyanarra az inode-ra mutat: `ln notes.txt hard.txt`. A két név egyenrangú; egyik sem „az eredeti”. Valójában **minden név hard link**: az a név, amelyet a `touch` vagy az `open` elsőként hozott létre, egyszerűen az inode első linkje. Az inode **linkszáma** rögzíti, hány neve van, és a fájl adatai csak akkor szabadulnak fel, amikor a szám nullára csökken, és egyetlen folyamat sem tartja megnyitva a fájlt. (Mindkét parancs szintaxisa `ln [-s] TARGET LINK_NAME`: előbb a már létező fájl, utána az új név.)
 
-A **szimbolikus link** (symlink, soft link) külön kis fájl, „symlink” típussal, amelynek tartalma egy **elérési út**: `ln -s notes.txt soft.txt`. Megnyitásakor a kernel a tárolt elérési úttal folytatja az útvonal-feloldást.
+A **szimbolikus link** (symlink, soft link) külön kis fájl, „symlink” típussal, amelynek tartalma egy **elérési út**: `ln -s notes.txt soft.txt`. A `soft.txt` név maga is közönséges hard link, csak éppen erre a második inode-ra, nem a célfájléra. Megnyitásakor a kernel a tárolt elérési úttal folytatja az útvonal-feloldást, így a szimbolikus link mindig egy **névhez** vezet vissza, sosem közvetlenül egy inode-hoz; az ábra szaggatott nyila ezt a kört zárja be.
 
-![Két könyvtárbejegyzés mutat a 12-es inode-ra, amelynek linkszáma 2; egy harmadik a 13-as inode-ra mutat, amely a notes.txt elérési utat tartalmazó szimbolikus link; egy táblázat összeveti a kétféle linket](links.svg)
+![Két könyvtárbejegyzés mutat a 12-es inode-ra, amelynek linkszáma 2; egy harmadik a 13-as inode-ra mutat, amely a notes.txt elérési utat tartalmazó szimbolikus link, és amely visszavezet a notes.txt névhez; egy táblázat összeveti a kétféle linket](links.svg)
 
 A különbségek ezekből a definíciókból következnek, és a [linuxos szakasz](#hard-és-szimbolikus-linkek-a-gyakorlatban) mindegyiket bemutatja:
 
@@ -252,6 +265,70 @@ A Windows ugyanezt a két fogalmat kínálja NTFS-en: hard linkeket (fájlonkén
 - **Lógó link:** egy tábla, amely olyan címre mutat, ahol már nincs semmi.
 - **Eszközök közötti (cross-device) link:** hard link egy másik lemezen vagy partíción lévő fájlra; lehetetlen, mert a fájlsorszámoknak csak egy fájlrendszeren belül van jelentésük.
 - **Junction:** a Windows régebbi, mappára mutató linkje.
+
+</details>
+
+## Fájltípusok
+
+Nem csak a közönséges fájloknak és a könyvtáraknak van inode-juk. A Unix sokféle objektumot helyez el az egyetlen könyvtárfában, hogy ugyanazok a hívások (`open`, `read`, `write`, `close`) és ugyanazok a jogosultságok működjenek mindegyikre (Ritchie & Thompson, 1974). Az inode rögzíti, milyen fajta egy objektum, az `ls -l` pedig minden sor első karaktereként mutatja ([linuxos szakasz](#hét-fájltípus-a-gyakorlatban)):
+
+| `ls -l` | típus | mi ez | mi hozza létre |
+|---|---|---|---|
+| `-` | közönséges fájl | bájtok sorozata a lemezen | `touch`, `open(O_CREAT)` |
+| `d` | könyvtár | (név, inode) bejegyzések listája | `mkdir` |
+| `l` | szimbolikus link | kis fájl, amely egy elérési utat tartalmaz | `ln -s` |
+| `p` | nevesített cső (FIFO) | egyirányú csatorna folyamatok között: amit az egyik beleír, azt a másik olvassa ki, az elsőként beírtat elsőként; a lemezen semmi sem tárolódik | `mkfifo` |
+| `s` | socket | kétirányú (full-duplex) csatorna ugyanazon a gépen futó folyamatok között (Unix domain socket) | egy program `bind()` hívása |
+| `b` | blokkeszköz | blokkokban, tetszőleges pozíción (közvetlen eléréssel) használt eszköz: lemezek, partíciók, loop eszközök | `mknod`, `udev` |
+| `c` | karakteres eszköz | bájtfolyamként használt eszköz: terminálok, `/dev/null`, `/dev/zero`, `/dev/random` | `mknod`, `udev` |
+
+Egy eszközfájlnak nincsenek adatblokkjai. Az inode-ja két számot tartalmaz: a **főszámot** (major number), amely a meghajtót választja ki, és az **alszámot** (minor number), amely az adott meghajtó eszközei közül választ: a `/dev/null` az 1,3-as karakteres eszköz, a `/dev/loop0` a 7,0-s blokkeszköz. A fájl megnyitása a folyamatot a meghajtóhoz kapcsolja, így a `/dev/null`-ba írt bájtok elvesznek, a `/dev/zero` olvasása pedig a végtelenségig nullákat ad. A `/dev` könyvtár általában egy `devtmpfs`, amelyet a kernel tölt fel, a `udev` szolgáltatás pedig neveket és jogosultságokat ad hozzá. A lemezek neve az interfészek történetét őrzi: `hda` a régi IDE (PATA) lemezeknél, `sda`, `sdb` a SCSI, SATA és USB lemezeknél, `nvme0n1` az NVMe SSD-knél és `vda` a virtuális gépek virtio lemezeinél.
+
+A Unixot nem érdeklik a **fájlnév-kiterjesztések**: a `report.txt` és a `report` egyszerűen nevek, a pont közönséges karakter (a `notes.v2.anything.at.all` is érvényes név). Csak a programok értelmezik a kiterjesztéseket, megállapodás alapján. A `file` parancs úgy állapítja meg, mit tartalmaz egy fájl, hogy az első bájtjait, a formátum **mágikus számát** (magic number) nézi (`\x7fELF` egy linuxos futtatható fájlnál, `PK` egy ZIP-archívumnál, `%PDF` egy PDF-nél), nem a nevét.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> fájltípus, nevesített cső, FIFO, socket, blokkeszköz, karakteres eszköz, /dev/null, /dev/zero, /dev/random, fő- és alszám, udev, devtmpfs, IDE, SATA, SCSI, NVMe, virtio, kiterjesztés, mágikus szám</summary>
+
+- **Fájltípus:** hogy egy név milyen fajta dolgot jelöl: közönséges adatot, mappát, linket, programok közötti csatornát vagy eszközt.
+- **Nevesített cső, FIFO:** egy névvel ellátott „cső”: az egyik program az egyik végén szöveget tol bele, a másik a másik végén kiveszi, ugyanabban a sorrendben (first in, first out: ami elsőként be, az elsőként ki).
+- **Socket:** kétirányú „telefonvonal” két program között.
+- **Blokkeszköz:** darabokban, tetszőleges helyen olvasott és írt eszköz, mint egy lemez. **Karakteres eszköz:** olyan eszköz, amely egymás utáni bájtok folyamát adja vagy fogadja, mint egy billentyűzet vagy egy terminál.
+- **`/dev/null`, `/dev/zero`, `/dev/random`:** egy „kuka”, amely mindent elnyel, nullabájtok kifogyhatatlan forrása, és véletlen bájtok forrása.
+- **Fő- és alszám:** az eszközfájlban lévő két szám: melyik meghajtó, és annak melyik eszköze.
+- **udev, devtmpfs:** a kernel maga hozza létre az eszközfájlokat a `/dev` alatt (devtmpfs), a udev szolgáltatás pedig barátságos neveket és jogosultságokat ad nekik.
+- **IDE, SATA, SCSI, NVMe, virtio:** régi és új lemezcsatlakozási módok; a virtio az, amelyet egy virtuális gép használ.
+- **Kiterjesztés:** a fájlnév pont utáni vége, például `.txt`; a Unix számára egyszerűen a név része.
+- **Mágikus szám:** a fájl első néhány bájtja, amely elárulja a formátumát, mint egy könyv borítója.
+
+</details>
+
+## A linuxos könyvtárfa
+
+Egy linuxos rendszer összes fájlrendszere egyetlen fába van csatolva, és a **Filesystem Hierarchy Standard** (FHS, a fájlrendszer-hierarchia szabványa) mondja meg, mi hová tartozik, hogy a programok, a rendszergazdák és a csomagok minden disztribúción ugyanott találják a dolgokat (Linux Foundation, 2015):
+
+![Egy linuxos rendszer legfelső szintű könyvtárai statikus, változó, ideiglenes és virtuális csoportokba rendezve](fhs.svg)
+
+- `/boot`: ami a rendszerbetöltőnek kell: a kernel (`vmlinuz`, tömörített képfájl), a kezdeti RAM-fájlrendszer (`initramfs`), a GRUB fájljai, UEFI-s gépeken pedig a `/boot/efi`-re csatolt EFI rendszerpartíció.
+- `/etc`: a gépre jellemző konfiguráció, szövegfájlokként: `fstab`, `passwd`, `hosts`, a szolgáltatások beállításai. A név a korai Unix „et cetera”-ja („és így tovább”), ahol minden olyasmi ide került, ami máshová nem illett; az „editable text configuration” („szerkeszthető szöveges konfiguráció”) csak későbbi emlékeztető.
+- `/usr`: a telepített szoftverek, amelyek gépek között megoszthatók, és normál működés közben csak olvashatók: `bin`, `sbin`, `lib`, `share` (dokumentáció, adatok), valamint a helyben fordított szoftvereknek a `/usr/local`. A mai disztribúciók **összevonták** (usr-merge) a `/bin`, `/sbin` és `/lib` könyvtárat a `/usr`-rel: a régi nevek a `/usr/bin`, `/usr/sbin` és `/usr/lib` könyvtárra mutató szimbolikus linkek.
+- `/opt`: harmadik féltől származó kiegészítő csomagok, mindegyik a saját `/opt/<package>` könyvtárában.
+- `/var`: változó adatok, amelyeknek túl kell élniük az újraindítást: naplók (`/var/log`), levél- és nyomtatási sorok (`/var/spool`), adatbázisok és a csomagkezelő állapota (`/var/lib`), webes tartalom (`/var/www`), gyorsítótárak. Ez az a rész, amely a rendszer futása közben nő, és ezért a klasszikus jelölt egy saját fájlrendszerre.
+- `/run`: a legutóbbi rendszerindítás óta keletkezett futásidejű adatok: folyamatazonosítók, socketek, zárolófájlok; tmpfs, minden indítás után üres. `/tmp`: bármely felhasználó ideiglenes fájljai, amelyeket a rendszer induláskor vagy néhány nap után töröl, és amely egyes disztribúciókon, például a Fedorán, szintén tmpfs; a `/var/tmp` az az ideiglenes könyvtár, amely túléli az újraindítást.
+- A `/home` a felhasználók saját könyvtárait tartalmazza, a `/root` a rendszergazda saját könyvtára (a gyökér-fájlrendszeren marad, hogy akkor is elérhető legyen, ha a `/home` nem csatolható). A `/srv` a gép által kiszolgált adatokat tartalmazza, a `/mnt` az ideiglenesen csatolt fájlrendszereké, a `/media` a cserélhető adathordozóké.
+- A `/dev`, a `/proc` és a `/sys` **virtuális**: a tartalmukat a kernel állítja elő. A `/proc` a folyamatokat (`/proc/<PID>/`) és kerneladatokat (`/proc/mounts`, `/proc/partitions`, `/proc/meminfo`) mutat, a `/sys` az eszközöket és a meghajtókat mutatja, és lehetővé teszi a rendszergazdának a kernelbeállítások módosítását.
+
+Ez a felosztás gyakorlati, nem kozmetikai: a `/usr` csatolható csak olvashatóan vagy megosztva, a `/var` és a `/home` külön (logikai) köteteken lehet, és egymástól függetlenül nőhet, a megtelt `/var/log` pedig nem akadályozza meg a felhasználókat a fájljaik mentésében. A [linuxos szakasz](#a-könyvtárfa-teteje) egy valódi rendszert vizsgál meg.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> FHS, vmlinuz, initramfs, GRUB, usr-merge, tmpfs, virtuális fájlrendszer, /proc, /sys</summary>
+
+- **FHS** (Filesystem Hierarchy Standard): egy linuxos rendszer közösen elfogadott „térképe”: melyik mappában mi van.
+- **vmlinuz:** a tömörített Linux-kernel. **initramfs:** egy kis indító fájlrendszer, amelyet a kernellel együtt tölt be a gép, és amely azt tartalmazza, ami az igazi fájlrendszer megtalálásához és csatolásához kell. **GRUB:** a rendszerbetöltő, az a program, amely elindítja a kernelt.
+- **usr-merge:** a régi `/bin`, `/sbin`, `/lib` mappák útjelző táblák (szimbolikus linkek) lettek a `/usr` felé, így minden telepített szoftver egy helyen van.
+- **Spool:** a lemezen várakozó feladatok sora, például elküldendő e-mailek vagy kinyomtatandó oldalak.
+- **tmpfs:** a RAM-ban lévő fájlrendszer; minden újraindítás után újra üres.
+- **Virtuális fájlrendszer** (itt): olyan mappa, amelynek „fájljai” egyetlen lemezen sem léteznek; a kernel akkor állítja elő őket, amikor elolvasod őket, mint egy élő kijelzőtábla.
+- **/proc, /sys:** ablakok a futó kernelre: folyamatok, memória, eszközök és beállítások.
 
 </details>
 
@@ -326,7 +403,7 @@ A **File Allocation Table** (fájlfoglalási tábla) fájlrendszert a Microsoft 
 - Nincs inode: a könyvtárbejegyzés *maga* a fájl metaadata, így a FAT nem ismeri a hard linkeket, és nincsenek benne tulajdonosok vagy jogosultságok.
 - Egy fájl **törlése** a FAT-ban szabadnak jelöli a klasztereit, a neve első bájtját pedig `0xE5`-re cseréli. Az adat a lemezen marad, amíg újra fel nem használják, ezért működnek a FAT-on a visszaállító (undelete) eszközök, és ezért lehet a törölt fájlokat igazságügyi informatikai módszerekkel visszanyerni (Carrier, 2005).
 
-A FAT16 legfeljebb 65 524 klasztert tud megcímezni. 32 KiB-os klaszterekkel (a legnagyobbal, amelyet az MS-DOS és a Windows 9x elfogad) egy kötet 2 GB-ot tárol, a Windows NT és utódai 64 KiB-os klasztereivel 4 GB-ot; a 32 bites méretmező minden FAT-fájlt 4 GiB − 1 bájtra korlátoz, ami a FAT32-nél számít (Microsoft, 2009). A hosszú fájlnevek a Windows 95-tel érkeztek (**VFAT**), `0x0F` attribútumú többlet-könyvtárbejegyzésekként, amelyeket a régi rendszerek figyelmen kívül hagynak. A FAT gyengeségei a szerkezetéből következnek: a fájlon belüli véletlen elérés klaszterről klaszterre követi a láncot; az előretekintés nélküli foglalás fragmentálja a fájlokat (a megmért `C.DAT` egy törölt fájl klasztereit használja újra); és nincs napló, így egy összeomlás után teljes ellenőrzés kell.
+A FAT16 legfeljebb 65 524 klasztert tud megcímezni: egy 16 bites bejegyzésnek 65 536 értéke van, de a 0 (szabad), az 1 (fenntartott) és a `0xFFF7`-től felfelé lévő értékek (hibás klaszter, lánc vége) nem lehetnek klaszterszámok, a Microsoft specifikációja pedig eggyel a maradék 65 525 alatt tartja a számot. A kötet mérete tehát a klaszterek száma szorozva a klaszterméretrel: 4 KiB-os klaszterekkel kb. 256 MiB, 32 KiB-os klaszterekkel (a legnagyobbal, amelyet az MS-DOS és a Windows 9x elfogad) 2 GB, a Windows NT és utódai 64 KiB-os klasztereivel 4 GB. Ahogy az 1990-es években nőttek a lemezek, a klasztereknek is velük kellett nőniük, és mivel minden fájl átlagosan fél klasztert pazarol el, egy kis fájlokkal teli 2 GB-os FAT16-lemez a területének nagy részét elvesztette. A FAT32 (28 bites klaszterszámokkal) ezt úgy oldotta meg, hogy 8 GB-os kötetekig 4 KiB-os klasztereket használ (Microsoft, 2009). A 32 bites méretmező minden FAT-fájlt 4 GiB − 1 bájtra korlátoz, ami a FAT32-nél számít (Microsoft, 2009). A hosszú fájlnevek a Windows 95-tel érkeztek (**VFAT**), `0x0F` attribútumú többlet-könyvtárbejegyzésekként, amelyeket a régi rendszerek figyelmen kívül hagynak. A FAT gyengeségei a szerkezetéből következnek: a fájlon belüli véletlen elérés klaszterről klaszterre követi a láncot; az előretekintés nélküli foglalás fragmentálja a fájlokat (a megmért `C.DAT` egy törölt fájl klasztereit használja újra); és nincs napló, így egy összeomlás után teljes ellenőrzés kell.
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> FAT, klaszter, boot szektor, BIOS paraméterblokk, lánc, 8.3-as név, VFAT, EOC, exFAT, EFI-rendszerpartíció</summary>
@@ -353,7 +430,7 @@ Az **ext** család a Linux saját fájlrendszer-családja: az ext2 (1993) a Berk
 - A lemez 32 768 blokkos **blokkcsoportokra** oszlik (4 KiB-os blokkokkal 128 MiB). Minden csoportnak van blokkbittérképe, inode-bittérképe és inode-táblája; a **szuperblokk** (méretek, darabszámok, funkciók, állapot) és a **csoportleírók** az elején vannak, egyes csoportokban biztonsági másolatokkal. A `flex_bg` funkcióval 16 csoport bittérképei és inode-táblái egymás mellé kerülnek ([linuxos szakasz](#az-ext4-lemezen-tárolt-szerkezete)).
 - Az **inode-ok** 256 bájtosak, 1-től számozva; a 2-es inode a gyökérkönyvtár, a 8-as a napló, a 11-es a `lost+found`. A fájlok adatait **extentek** írják le, a 60 bájtnál rövidebb szimbolikus linkek pedig magában az inode-ban tárolódnak („gyors szimbolikus linkek”, fast symlinks).
 - A **könyvtárak** lineáris listák, amelyek növekedéskor **htree**-vé válnak. A **napló**, egy rejtett fájl (8-as inode), amelyet az 512 MiB-os példa a 2. blokkcsoportban tart, alapértelmezésben `data=ordered` módban fut.
-- Korlátok: 4 KiB-os blokkokkal legfeljebb 1 EiB-os kötetek és 16 TiB-os fájlok; a Red Hat legfeljebb 50 TiB-os ext4 fájlrendszereket támogat (Red Hat, n.d.). Egy ext4 fájlrendszer bővíthető, és lecsatolt állapotban zsugorítható is.
+- Korlátok: 4 KiB-os blokkokkal legfeljebb 1 EiB-os kötetek és 16 TiB-os fájlok; a Red Hat legfeljebb 50 TiB-os ext4 fájlrendszereket támogat (Red Hat, n.d.-b). Egy ext4 fájlrendszer bővíthető, és lecsatolt állapotban zsugorítható is.
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> szuperblokk, csoportleíró, inode-tábla, flex_bg, gyors szimbolikus link, lost+found</summary>
@@ -380,7 +457,7 @@ Az **XFS**-t a Silicon Graphics hozta létre 1993-ban az IRIX munkaállomások �
 - **B+ fák** mindenütt: a szabad terület (kétszer indexelve, blokkszám és méret szerint), az inode-ok, a nagy könyvtárak és az erősen fragmentált fájlok extentlistái.
 - **Az inode-ok foglalása dinamikus**, 64-es darabokban, a terület egy hányadáig (`imaxpct`, kis fájlrendszereken alapértelmezésben 25%), így az XFS-ből ritkán fogynak ki az inode-ok. A kis könyvtárak és a rövid extentlisták magában az 512 bájtos inode-ban élnek.
 - **Késleltetett foglalás**, metaadatnapló, és a Linux 4.9 óta **reflinkek**: a `cp --reflink` olyan másolatot készít, amely mindaddig osztozik az adatblokkokon, amíg valamelyik fél nem ír (írásra másolás az adatokra).
-- Korlátok: 8 EiB kötetekre és fájlokra; a Red Hat legfeljebb 1 PiB-ot támogat (Red Hat, n.d.). Egy XFS fájlrendszer bővíthető, de a gyakorlatban nem zsugorítható.
+- Korlátok: 8 EiB kötetekre és fájlokra; a Red Hat legfeljebb 1 PiB-ot támogat (Red Hat, n.d.-b). Egy XFS fájlrendszer bővíthető, de a gyakorlatban nem zsugorítható.
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> allokációs csoport, B+ fa, dinamikus inode-foglalás, reflink</summary>
@@ -447,6 +524,43 @@ A választás ritkán a nyers sebességen múlik, ebben az ext4 és az XFS a leg
 - **Btrfs, ZFS:** modern, írásra másoló fájlrendszerek, amelyek sosem írják felül az adatot a helyén; tudnak pillanatképet készíteni, minden blokkot ellenőrzőösszeggel ellenőrizni, és az adatot több lemezre szétteríteni.
 - **RAID:** több lemez összekapcsolása, hogy az adat túlélje, ha az egyik meghibásodik, vagy hogy együtt gyorsabban dolgozzanak.
 - **APFS:** az Apple fájlrendszere Maceken és iPhone-okon 2017 óta, szintén írásra másoló.
+
+</details>
+
+## Logikai kötetkezelés
+
+Egy partíció a lemez particionálásakor rögzül: ha a `/var` megtelik, nem kölcsönözhet egyszerűen helyet a `/home`-tól vagy egy új lemeztől. A **Logical Volume Manager** (LVM, logikai kötetkezelő), amely a kernel device mapperére épül, egy indirekciós réteget illeszt a lemezek és a fájlrendszerek közé: ugyanazt az ötletet, mint a lapozás a folyamatok és a RAM között (Red Hat, n.d.-a):
+
+![Négy blokkeszközből 4 MiB-os extentekre vágott fizikai kötetek lesznek, amelyek egyetlen kötetcsoportot alkotnak; a logikai kötetek ebből kapnak extenteket, egy új lemez pedig bővíti a csoportot és egy megtelt logikai kötetet](lvm.svg)
+
+- A **fizikai kötet (PV**, physical volume) bármely LVM-re előkészített blokkeszköz: egy teljes lemez, egy partíció (az `lvm` jelzővel megjelölve: `parted /dev/sdb set 1 lvm on`), egy RAID-tömb vagy egy tárolóhálózatról (SAN) érkező lemez. A `pvcreate` LVM-címkét ír rá, és **fizikai extentekre** osztja, alapértelmezésben 4 MiB-osakra.
+- A **kötetcsoport (VG**, volume group) egy vagy több PV extentjeit gyűjti egy közös készletbe: `vgcreate vg1 /dev/sda2 /dev/sdb`. Egyetlen tárolókészlet, akármelyik lemezről származnak is az extentjei.
+- A **logikai kötet (LV**, logical volume) a csoport extentjeiből, bárhol legyenek is, összerakott virtuális blokkeszköz: `/dev/vg1/lv_home`. A **lineáris** LV egyszerűen egymás után fűzi az extenteket, akár több lemezről is; a **csíkozott** (striped) LV a RAID 0-hoz hasonlóan szétteríti őket a lemezeken, a **tükrözött** (mirrored) LV (`--type raid1`) pedig két példányt tart különböző PV-ken. Egy tábla minden logikai extentet egy fizikaira képez le, ahogy a laptábla a lapokat a lapkeretekre.
+- Az LV-n a szokásos módon hozunk létre fájlrendszert, és csatoljuk: `mkfs.xfs /dev/vg1/lv_home`, `mount /dev/vg1/lv_home /home`.
+
+Egy új LV méretét vagy bájtban adjuk meg, `lvcreate -n lv_home -L 20G vg1`, vagy extentekben, `-l 5120` (5120 × 4 MiB = 20 GiB); ez utóbbi százalékokat is elfogad: a `-l 100%FREE` a csoport teljes szabad területét elveszi, az `lvextend` parancsban a `-l +50%FREE` pedig a még szabad terület felét adja hozzá.
+
+Az LVM a munkafolyamatokban hozza meg a hasznát; az első kettő akkor is futtatható, amikor a fájlrendszer csatolva van és használatban van:
+
+1. **Egy megtelt fájlrendszer bővítése.** Tegyél be egy lemezt, `pvcreate /dev/sdc`, `vgextend vg1 /dev/sdc`, majd `lvextend -r -l +100%FREE /dev/vg1/lv_db`. A `-r` (`--resizefs`) kapcsoló ugyanabban a lépésben a fájlrendszert is bővíti: XFS-nél az `xfs_growfs`, ext4-nél a `resize2fs` parancsot hívja. Nélküle az LV megnő, a benne lévő fájlrendszer viszont nem.
+2. **Egy lemez kivonása a használatból.** A `pvmove /dev/sda2` az adott PV összes használt extentjét a csoport többi PV-jének szabad extentjeire költözteti, miközben az LV-k használatban maradnak; ezután a `vgreduce vg1 /dev/sda2` eltávolítja az üres PV-t a csoportból, a `pvremove /dev/sda2` pedig törli a címkéjét. A csoportban elég szabad extentnek kell lennie az adatok befogadására.
+3. **Zsugorítás.** Az XFS egyáltalán nem zsugorítható; az ext4 csak lecsatolt állapotban (az `lvreduce -r` előbb a fájlrendszert zsugorítja, aztán az LV-t). Ha az LV-t a fájlrendszer előzetes zsugorítása nélkül csökkentjük, az adatok megsemmisülnek. Ezért bevett gyakorlat, hogy a csoport egy részét kiosztatlanul hagyják, és szükség esetén bővítik az LV-ket.
+
+A `pvs`, a `vgs` és az `lvs` objektumonként egy sort ír ki; a `pvdisplay`, a `vgdisplay -v` és az `lvdisplay` a részleteket; az `lsblk` a teljes vermet mutatja a lemezektől a csatolási pontokig. Az LVM **pillanatképeket** (snapshot) is tud készíteni (`lvcreate -s`: egy LV adott pillanatbeli, írásra másolással kezelt képe, konzisztens biztonsági mentésekhez hasznos), és **vékony készleteket** (thin pool) is tud építeni, amelyekből az LV-k csak akkor kapnak extenteket, amikor ténylegesen adat íródik, így több hely ígérhető, mint amennyi létezik. A parancsokat a [linuxos szakasz](#lvm-egy-virtuális-gépen) mutatja be, virtuális gépen kipróbálva.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> LVM, fizikai kötet, extent, kötetcsoport, logikai kötet, lineáris, csíkozott, tükrözött, SAN, pillanatkép, vékony készlet</summary>
+
+- **LVM** (Logical Volume Manager, logikai kötetkezelő): a Linux egy rétege, amellyel valódi lemezekből rugalmas „virtuális lemezeket” építhetsz, és később átméretezheted őket.
+- **Fizikai kötet (PV):** egy valódi lemez vagy partíció, amelyet átadtunk az LVM-nek.
+- **Extent:** egy fizikai kötet kis, egyforma méretű (4 MiB-os) darabja, az az egység, amelyet az LVM kioszt, mint egy tégla.
+- **Kötetcsoport (VG):** több lemez összes téglája egyetlen kupacba hányva.
+- **Logikai kötet (LV):** a kupac tégláiból épített „virtuális lemez”, akárhonnan származnak is a téglák; később további téglákat kaphat.
+- **Lineáris, csíkozott, tükrözött:** a téglák egymás után; a gyorsaság kedvéért több lemezre szétterítve; vagy a biztonság kedvéért két példányban.
+- **SAN** (storage area network, tárolóhálózat): tárolódobozok külön hálózata, amelyeket a szerverek úgy használnak, mintha helyi lemezek volnának; egy ilyen lemez a **LUN**.
+- **pvmove:** a téglák átköltöztetése egy lemezről a többire, hogy a lemezt ki lehessen venni, miközben minden tovább működik.
+- **Pillanatkép (snapshot):** egy kötet egy pillanatban „kimerevített” képe; gyorsan elkészül, mert csak a későbbi változásokat kell átmásolni.
+- **Vékony készlet (thin pool):** a hely csak akkor kerül kiosztásra, amikor tényleg írnak rá, mint amikor egy légitársaság több jegyet ad el, mint ahány ülése van, arra számítva, hogy nem jön el mindenki.
 
 </details>
 
@@ -555,6 +669,101 @@ Change: 2026-10-07 16:57:40.409662638 +0200
 - **ls -i:** kilistázza a fájlokat az inode-sorszámukkal együtt.
 - **stat:** megmutat mindent, amit az inode egy fájlról mond.
 - **Access, modify, change, birth idő:** mikor olvasták utoljára a fájlt, mikor változott utoljára a tartalma, mikor változott utoljára az inode-ja (tulajdonos, jogosultságok, linkek), és mikor hozták létre.
+
+</details>
+
+### Hét fájltípus a gyakorlatban
+
+A `filetypes.sh` minden típusból létrehoz egy objektumot a `/tmp/types` könyvtárban (rootként, a `mknod` miatt; a socketet egy egysoros Python-program hozza létre, amely meghívja a `bind`-ot), aztán használja a csövet és az eszközfájlokat, végül három félrevezető nevű fájlról megkérdezi a `file` parancsot (az A gépen):
+
+```console
+# ./filetypes.sh
+total 8
+drwxr-xr-x 2 root root 4096 Oct  7 18:38 dir
+lrwxrwxrwx 1 root root    9 Oct  7 18:38 link -> notes.txt
+brw-r--r-- 1 root root 7, 0 Oct  7 18:38 myloop
+crw-r--r-- 1 root root 1, 3 Oct  7 18:38 mynull
+-rw-r--r-- 1 root root   19 Oct  7 18:38 notes.txt
+prw-r--r-- 1 root root    0 Oct  7 18:38 pipe
+srwxr-xr-x 1 root root    0 Oct  7 18:38 sock
+--- the type as stat names it:
+dir        directory
+link       symbolic link
+myloop     block special file
+mynull     character special file
+notes.txt  regular file
+pipe       fifo
+sock       socket
+--- a FIFO passes bytes in one direction, from a writer to a reader:
+through the pipe
+--- a device file is only a name and two numbers; the driver does the rest:
+crw-r--r-- 1 root root 1, 3 Oct  7 18:38 mynull
+ 00 00 00 00 00 00 00 00
+--- extensions are just part of the name; file(1) looks at the content:
+photo.jpg:  ASCII text
+report.txt: gzip compressed data, was "notes.txt", last modified: Wed Oct  7 16:
+notes.pdf:  ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically
+pipe:       fifo (named pipe)
+mynull:     character special (1/3)
+link:       symbolic link to notes.txt
+```
+
+Minden sor első betűje a típus. A két eszközfájlnál az `ls` a méret helyén a fő- és az alszámot írja ki: a `mynull` egy második név a `/dev/null` mögötti meghajtóhoz (1,3), így a beleírt szöveg eltűnik, és a `cat` semmit sem ír ki, az `od` pedig a `/dev/zero`-ból olvasott nyolc nullabájtot mutatja; a `myloop` (7,0) pedig ugyanahhoz a lemezhez adna hozzáférést, mint a `/dev/loop0`. Ezért is van az eszközfájlok létrehozása a rootnak fenntartva: aki egy lemezhez blokkeszközfájlt tud készíteni, az a teljes lemezt olvashatja, megkerülve a rajta lévő összes fájljogosultságot. A FIFO és a socket mérete 0: az adatuk a kernelen halad át, és sosem éri el a lemezt. A `file` nem törődik a nevekkel: a `photo.jpg` szöveg, a `report.txt` gzip-archívum, a `notes.pdf` pedig az `ls` program másolata (a kimenetet 80 karakternél levágtuk).
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> mknod, mkfifo, stat -c %F, od, gzip</summary>
+
+- **mknod:** eszközfájl létrehozása a típusa (`b` vagy `c`) és a két száma megadásával. **mkfifo:** nevesített cső létrehozása.
+- **`stat -c %F`:** csak egy fájl típusát írja ki, szavakkal.
+- **od:** „octal dump”: a bemenet bájtjait számokként írja ki; a `-tx1` kapcsolóval hexadecimálisan.
+- **gzip:** fájlokat tömörítő program; a `file` a kimenetét az első két bájtjáról ismeri fel.
+
+</details>
+
+### A könyvtárfa teteje
+
+Az `fhs.sh` az A gép fájának tetejét vizsgálja:
+
+```console
+$ ./fhs.sh
+--- the usr-merge: /bin, /sbin and /lib are symbolic links into /usr
+lrwxrwxrwx 1 root root 7 Apr 22  2024 /bin -> usr/bin
+lrwxrwxrwx 1 root root 7 Apr 22  2024 /lib -> usr/lib
+lrwxrwxrwx 1 root root 9 Apr 22  2024 /lib64 -> usr/lib64
+lrwxrwxrwx 1 root root 8 Apr 22  2024 /sbin -> usr/sbin
+--- which file system holds which top-level directory:
+/         ext4   /dev/vda
+/usr      ext4   /dev/vda
+/var      ext4   /dev/vda
+/etc      ext4   /dev/vda
+/tmp      ext4   /dev/vda
+/run      ext4   /dev/vda
+/proc     proc   proc
+/sys      sysfs  sysfs
+/dev/shm  tmpfs  tmpfs
+--- the virtual file systems in /proc/mounts (no device behind them):
+proc /proc proc rw,relatime 0 0
+sysfs /sys sysfs rw,relatime 0 0
+--- /proc is generated by the kernel: one directory per process, and more
+67
+lrwxrwxrwx 1 root root 11 Oct  7 18:17 /proc/mounts -> self/mounts
+major minor  #blocks  name
+
+ 254        0  268435456 vda
+--- sizes of the big three:
+6.7G	/usr
+190M	/var
+8.0M	/etc
+```
+
+A usr-merge négy szimbolikus linkje az Ubuntu 24.04 alapképéből származik. A virtuális fájlrendszereken kívül minden egyetlen ext4 fájlrendszeren van a `/dev/vda` eszközön (254-es főszám, virtio lemez): ez a gép egy minimális felhőbeli virtuális gép a szokásos szolgáltatáskezelő nélkül, ezért itt még a `/run` is közönséges könyvtár. Egy szokásos telepítésen a `findmnt /run` tmpfs-t mutat, a szerverek pedig gyakran saját logikai kötetre teszik a `/var`-t vagy a `/home`-ot. A `/proc` ebben a pillanatban 67 folyamatkönyvtárat tartalmaz, és a `/proc/mounts`, a kernel csatolási listája, maga is egy szimbolikus link a `/proc/self`-be, annak a folyamatnak a könyvtárába, amelyik éppen olvassa. A `/usr`-ben telepített szoftver több mint 800-szor nagyobb, mint az `/etc`-ben lévő konfiguráció.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> findmnt, /proc/self, du -sh</summary>
+
+- **findmnt:** megmutatja, melyik fájlrendszerhez tartozik egy mappa, és melyik eszközről származik. A `-T` kapcsoló megkeresi azt a fájlrendszert, amely egy adott elérési utat tartalmaz.
+- **/proc/self:** egy varázslatos mappa, amely mindig azt jelenti: „az a folyamat, amelyik éppen engem néz”.
+- **du -sh:** egy mappa teljes mérete, ember számára olvasható mértékegységekben.
 
 </details>
 
@@ -1004,6 +1213,47 @@ sequential writes, drive full     write amplification  1.00
 
 </details>
 
+### LVM egy virtuális gépen
+
+Egyik tesztgép sem biztosít LVM-et (az A gépen nincsenek device mapper eszközök, a B gép felhasználója nem root), ezért ez a rész laborfeladat, amelyet rootként egy saját virtuális gépen kell futtatnod (például Fedorán, AlmaLinuxon vagy Ubuntu Serveren), két további, üres, 1 GiB-os virtuális lemezzel, itt `/dev/vdb` és `/dev/vdc`; SATA vagy SCSI virtuális lemeznél a nevük `/dev/sdb` és `/dev/sdc`. Kimenetet nem mutatunk, mert nem mértünk: futtasd a parancsokat, és olvasd el magad a kimenetüket. Előbb az `lsblk` paranccsal ellenőrizd, hogy a két lemez tényleg üres, mert ezek a parancsok megsemmisítik a tartalmukat.
+
+```console
+# --- create: one partition marked for LVM, a PV, a VG, an LV of 600 MiB, XFS
+parted -s /dev/vdb mklabel gpt mkpart lvm 1MiB 100% set 1 lvm on
+udevadm settle                        # wait until /dev/vdb1 appears
+pvcreate /dev/vdb1
+vgcreate vg1 /dev/vdb1
+lvcreate -n lv_data -L 600M vg1
+mkfs.xfs /dev/vg1/lv_data
+mkdir -p /data && mount /dev/vg1/lv_data /data
+pvs; vgs; lvs; lsblk /dev/vdb
+vgdisplay vg1 | grep -E 'PE Size|Total PE|Free  PE'
+# --- fill it, then grow it online with a second disk
+dd if=/dev/zero of=/data/big bs=1M count=550 status=none; df -h /data
+pvcreate /dev/vdc
+vgextend vg1 /dev/vdc
+lvextend -r -l +20%FREE /dev/vg1/lv_data   # also runs xfs_growfs
+df -h /data; lvs -o +devices vg1
+# --- retire the first disk while /data stays mounted
+pvmove /dev/vdb1
+vgreduce vg1 /dev/vdb1
+pvremove /dev/vdb1
+lvs -o +devices vg1; cat /data/big > /dev/null && echo "data still readable"
+# --- try to shrink: XFS refuses
+lvreduce -r -L 400M /dev/vg1/lv_data
+```
+
+Amit érdemes megfigyelni: az extentméretet és -számot a `vgdisplay` kimenetében; hogy a `df` az `lvextend -r` után azonnal, lecsatolás nélkül mutatja a nagyobb fájlrendszert; az `lvs -o +devices` kimenetében, hogy melyik PV-n vannak az LV extentjei a `pvmove` előtt és után; és az utolsó parancs hibaüzenetét. Ha a második lemez kisebb, mint az első lemez foglalt területe, a `pvmove` hibával leáll: egy lemezt csak akkor lehet kivonni, ha a csoport többi része befogadja az adatait.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> parted, udevadm settle, lsblk</summary>
+
+- **parted:** partíciók létrehozására és módosítására szolgáló eszköz; a `set 1 lvm on` megjelöli, hogy az 1-es partíció az LVM-é lesz.
+- **udevadm settle:** megvárja, amíg a rendszer befejezi az új partíció eszközfájljainak létrehozását.
+- **lsblk:** fa alakban mutatja a lemezeket, a partícióikat, és azt, ami rájuk épül.
+
+</details>
+
 ## Laborfeladatok
 
 1. **Lemezaritmetika.** Egy 15 000 rpm-es (percenként 15 000 fordulatú) szerverlemezre, 3,5 ms átlagos fejmozgatási idővel és 250 MB/s átviteli sebességgel számold ki egy véletlen 4 KiB-os olvasás átlagos idejét és az ilyen olvasások másodpercenkénti számát. Mennyi ideig tart 1 GB-ot szekvenciálisan beolvasni, és mennyi ideig 4 KiB-os véletlen olvasásokkal? Ismételd meg 64 KiB-os kérésekkel.
@@ -1014,6 +1264,8 @@ sequential writes, drive full     write amplification  1.00
 6. **FAT kézzel.** Bővítsd a `fat16.py`-t egy `undelete` paranccsal, amely visszaállít egy törölt fájlt, ha a klaszterei még szabadok, feltételezve, hogy összefüggők voltak. Próbáld ki az `A.DAT`-on, mielőtt a `C.DAT` létrejönne. Miért szükséges az összefüggőségi feltételezés?
 7. **Három fájlrendszer, egy terhelés.** Egy olyan Linux gépen, ahol root vagy, hozz létre 1 GiB-os, ext4-re, XFS-re és (ha elérhető) Btrfs-re formázott képfájlokat, csatold őket, és mérd meg 100 000 üres fájl és egy 500 MiB-os fájl létrehozásának idejét. Hasonlítsd össze a `df -i` kimenetét előtte és utána.
 8. **Írásamplifikáció.** Módosítsd az `ftlsim.py`-t úgy, hogy költség–haszon alapú áldozatválasztást használjon (a régi, kevés érvényes lapot tartalmazó blokkokat részesítse előnyben), vagy hogy a gyakran és a ritkán írt adatokat külön blokkokba tegye („forró/hideg szétválasztás”), egy torzított terheléssel, amelyben a lapok 20%-a kapja az írások 80%-át. Hogyan változik az írásamplifikáció?
+9. **Fájltípusok.** Futtasd a `filetypes.sh`-t. Ezután két terminálban: az egyikben `cat pipe`, a másikban `echo hello > pipe`; melyik parancs vár a másikra, és miért mutat az `ls -l pipe` továbbra is 0 méretet? Keress egy socketet, egy blokkeszközt és egy karakteres eszközt a saját rendszereden (`find / -xdev -type s 2>/dev/null | head`, `ls -l /dev`), és használd a `file` parancsot a home könyvtárad néhány fájlján, miután átnevezted őket. Mit csinál a `2>/dev/null` a `find` parancsban?
+10. **LVM.** Végezd el az [LVM-labort](#lvm-egy-virtuális-gépen) egy virtuális gépen. Jegyezd fel az extentméretet, az egyes PV-k extentjeinek számát az `lvextend` előtt és után, és azt, hogy melyik PV-n vannak az LV extentjei a `pvmove` előtt és után. Ezután ismételd meg a bővítési lépést XFS helyett ext4 fájlrendszerrel, és zsugorítsd az `lvreduce -r` paranccsal: mit csinál másképp az LVM, és miért kell a fájlrendszert lecsatolni?
 
 ## Ellenőrző kérdések
 
@@ -1034,6 +1286,11 @@ sequential writes, drive full     write amplification  1.00
 15. Hasonlítsd össze az ext4-et, az XFS-t és az NTFS-t: metaadatrekordok, az adatok helye, könyvtárak, szabad terület, inode-foglalás és jellemző felhasználás.
 16. Mi a rezidens attribútum az NTFS-ben? Mit mond egy nem rezidens attribútum futáslistája?
 17. Miért lett a mérésben az `fsync` miatt a fájllétrehozás akár 150-szer lassabb? Mikor kell egy alkalmazásnak meghívnia?
+18. Nevezd meg az `ls -l` által mutatott hét fájltípust. Mi a különbség egy nevesített cső és egy socket, illetve egy blokkeszköz és egy karakteres eszköz között? Mit tartalmaz egy eszközfájl inode-ja az adatblokkok címei helyett?
+19. Hová tartoznak a linuxos könyvtárfában a következők, és miért: az SSH-szerver konfigurációja, a webszerver naplófájljai, egy futó szolgáltatás PID-fájlja, az `ls` program, egy ideiglenes fájl, amelynek túl kell élnie az újraindítást?
+20. Egy 7200 rpm-es lemez feje 1–2 nm-rel a lemez fölött repül. Hányat fordul a lemez másodpercenként, mennyi az átlagos forgási késleltetés, és miért veszélyes a lemezre egy porszem?
+21. A FAT16-nak legfeljebb 65 524 klasztere van. Mekkora a legnagyobb kötet 4 KiB-os és 32 KiB-os klaszterekkel? Miért váltak problémává a nagy klaszterek, és hogyan oldotta meg ezt a FAT32?
+22. Írd le az LVM rétegeit a lemeztől a csatolt fájlrendszerig. Egy XFS fájlrendszert tartalmazó logikai kötet megtelt: sorold fel azokat a parancsokat, amelyekkel lecsatolás nélkül megkapja egy újonnan beszerelt lemez területét. Miért nem lehetne később zsugorítani?
 
 <details>
 <summary><strong>Megoldókulcs (oktatóknak)</strong></summary>
@@ -1055,8 +1312,13 @@ sequential writes, drive full     write amplification  1.00
 15. Lásd az összehasonlító táblázatot: 256 B-os inode / 512 B-os inode / 1 KiB-os MFT-rekord; extentek / B+ fás extentek / futáslisták; htree / helyi, blokk, B+ fa / B+ fa; bittérképek / B+ fák allokációs csoportonként / `$Bitmap`; rögzített / dinamikus / dinamikus; Linux alapértelmezés / RHEL és nagy szerverek / Windows.
 16. Magában az MFT-rekordban tárolt attribútum (kis fájloknál az adat is). A futáslista klaszterszakaszokat ad meg: fájlbeli klaszter (VCN), kötetbeli klaszter (LCN), hossz.
 17. Minden fsync megvárja az adatblokkot, egy naplóvéglegesítést és az eszköz gyorsítótárának kiürítését, ahelyett hogy egy memóriamásolás után visszatérne. Az alkalmazásoknak akkor kell meghívniuk, amikor az adatnak túl kell élnie egy összeomlást, mielőtt sikert jeleznének (adatbázisok, fájlt mentő szerkesztők, levelezőszerverek), lehetőleg a változtatásokat kötegelve.
+18. `-` közönséges fájl, `d` könyvtár, `l` szimbolikus link, `p` nevesített cső (FIFO), `s` socket, `b` blokkeszköz, `c` karakteres eszköz. A FIFO egyirányú bájtcsatorna (egy író és egy olvasó vég); a Unix domain socket kétirányú, és vihet kapcsolatot (stream) vagy különálló üzeneteket (datagramokat). A blokkeszközt blokkokban, tetszőleges pozíción érjük el (lemezek), a karakteres eszközt bájtfolyamként (terminálok, `/dev/null`). Egy eszközfájl inode-ja a főszámot (meghajtó) és az alszámot (eszköz) tartalmazza, adatblokkokat nem.
+19. `/etc/ssh/sshd_config` (gépre jellemző konfiguráció); `/var/log/...` (változó adat, amelynek meg kell maradnia); `/run/...` (futásidejű adat, csak az indítás óta érvényes, tmpfs); `/usr/bin/ls` (telepített, csak olvasható szoftver; a `/bin/ls` ugyanez a fájl a usr-merge szimbolikus linkjén át); `/var/tmp` (ideiglenes, de a `/tmp`-vel ellentétben megmarad az újraindítások között).
+20. 7200 / 60 = 120 fordulat másodpercenként, fordulatonként 8,33 ms, 4,17 ms átlagos forgási késleltetés. Már egy 2,5 µm-es részecske is több mint ezerszer nagyobb a résnél; a fej nekiütközik, megkarcolja a felületet és önmagát (fejütközés), és az adat megsemmisül. Ezért vannak lezárt, szűrős házak és parkolórámpák.
+21. 65 524 × 4 KiB ≈ 256 MiB; 65 524 × 32 KiB ≈ 2 GiB (2 GB). Minden fájl átlagosan fél klasztert pazarol el (belső fragmentáció), így 32 KiB-os klaszterekkel a sok kis fájl a lemez nagy részét elpazarolja. A FAT32 28 bites klaszterszámokat használ, így 8 GB-os kötetekig megtarthatja a 4 KiB-os klasztereket (és nagyobb klasztereket csak nagyobb köteteken használ).
+22. Blokkeszköz (lemez, partíció, RAID, SAN LUN) → `pvcreate` → extentekre (4 MiB) osztott fizikai kötet → `vgcreate`/`vgextend` → kötetcsoport (készlet) → `lvcreate` → logikai kötet → `mkfs` → fájlrendszer → `mount`. Bővítés: `pvcreate /dev/sdX`, `vgextend vg /dev/sdX`, `lvextend -r -l +100%FREE /dev/vg/lv` (a `-r` futtatja az `xfs_growfs`-t). Az XFS csak a bővítést támogatja; zsugorításhoz biztonsági mentést kell készíteni, újra kell létrehozni egy kisebb fájlrendszert, és vissza kell állítani az adatokat.
 
-**Laborválaszok.** 1. labor: 3,5 + 2 + 0,016 ≈ 5,5 ms, ≈ 180 olvasás/s; 1 GB szekvenciálisan ≈ 4 s, 4 KiB-os véletlen olvasásokkal ≈ 244 000 × 5,5 ms ≈ 22 perc; 64 KiB-os kérésekkel ≈ 15 250 × 5,77 ms ≈ 88 s. 4. labor: a hely csak az utolsó fájlleíró lezárásakor szabadul fel: az inode linkszáma 0, de a megnyitott fájl életben tartja. 5. labor: gyökér = 2, lost+found = 11, napló = 8; egy 200 MiB-os fájlhoz legalább 2 extent kell (egyenként legfeljebb 128 MiB); egy 100 karakteres cél már nem fér el a 60 bájtos i_block mezőben, és adatblokkot kap. 6. labor: a FAT nem őrzi meg a törölt láncot, csak az első klasztert és a méretet, így a lánc többi részét ki kell találni. 2. labor: a `truncate` paranccsal készült fájl egyetlen nagy lyuk, és egy lyuk olvasása sosem nyúl az eszközhöz. 7. labor: egy 1 GiB-os ext4-nek alapértelmezésben 65 536 inode-ja van, így 100 000 fájl létrehozása kb. 65 500-nál „No space left on device” hibával meghiúsul (használd az `mkfs.ext4 -N` vagy `-i` kapcsolót); az XFS és a Btrfs sikerrel jár.
+**Laborválaszok.** 1. labor: 3,5 + 2 + 0,016 ≈ 5,5 ms, ≈ 180 olvasás/s; 1 GB szekvenciálisan ≈ 4 s, 4 KiB-os véletlen olvasásokkal ≈ 244 000 × 5,5 ms ≈ 22 perc; 64 KiB-os kérésekkel ≈ 15 250 × 5,77 ms ≈ 88 s. 4. labor: a hely csak az utolsó fájlleíró lezárásakor szabadul fel: az inode linkszáma 0, de a megnyitott fájl életben tartja. 5. labor: gyökér = 2, lost+found = 11, napló = 8; egy 200 MiB-os fájlhoz legalább 2 extent kell (egyenként legfeljebb 128 MiB); egy 100 karakteres cél már nem fér el a 60 bájtos i_block mezőben, és adatblokkot kap. 6. labor: a FAT nem őrzi meg a törölt láncot, csak az első klasztert és a méretet, így a lánc többi részét ki kell találni. 2. labor: a `truncate` paranccsal készült fájl egyetlen nagy lyuk, és egy lyuk olvasása sosem nyúl az eszközhöz. 7. labor: egy 1 GiB-os ext4-nek alapértelmezésben 65 536 inode-ja van, így 100 000 fájl létrehozása kb. 65 500-nál „No space left on device” hibával meghiúsul (használd az `mkfs.ext4 -N` vagy `-i` kapcsolót); az XFS és a Btrfs sikerrel jár. 9. labor: a FIFO mindkét oldala az `open` hívásban blokkol, amíg a másik oldal meg nem nyitja; a bájtok egy kernelpufferen haladnak át, és sosem íródnak a lemezre, így a méret 0 marad. A `2>/dev/null` a hibaüzeneteket (2-es fájlleíró, pl. „Permission denied”) a null eszközre küldi, amely eldobja őket. 10. labor: ext4-nél az `lvextend -r` az `xfs_growfs` helyett a `resize2fs`-t hívja; az `lvreduce -r` előbb a `resize2fs` paranccsal zsugorítja a fájlrendszert (az ext4 csak offline zsugorítható, ezért le kell csatolni, különben a parancs megtagadja a műveletet), és csak utána csökkenti az LV-t, különben a fájlrendszer vége levágódna.
 
 </details>
 
@@ -1070,7 +1332,11 @@ Carrier, B. (2005). *File system forensic analysis*. Addison-Wesley.
 
 Hu, X.-Y., Eleftheriou, E., Haas, R., Iliadis, I., & Pletka, R. (2009). Write amplification analysis in flash-based solid state drives. In *Proceedings of SYSTOR 2009: The Israeli Experimental Systems Conference* (Article 10). ACM. https://doi.org/10.1145/1534530.1534544
 
+Linux Foundation. (2015). *Filesystem Hierarchy Standard* (Version 3.0). https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html
+
 Mathur, A., Cao, M., Bhattacharya, S., Dilger, A., Tomas, A., & Vivier, L. (2007). The new ext4 filesystem: Current status and future plans. In *Proceedings of the Linux Symposium* (Vol. 2, pp. 21–34). https://www.kernel.org/doc/ols/2007/ols2007v2-pages-21-34.pdf
+
+Matthes, L. M. (2016). *Experimental studies of the head-disk interface from a tribological and controls point of view for flying heights below 2 nm* [Doctoral dissertation, University of California, San Diego]. eScholarship. https://escholarship.org/uc/item/12d6n2s5
 
 McKusick, M. K., Joy, W. N., Leffler, S. J., & Fabry, R. S. (1984). A fast file system for UNIX. *ACM Transactions on Computer Systems, 2*(3), 181–197. https://doi.org/10.1145/989.990
 
@@ -1078,7 +1344,9 @@ Microsoft. (2009). *How FAT works*. https://learn.microsoft.com/en-us/previous-v
 
 Microsoft. (2025). *NTFS overview*. https://learn.microsoft.com/en-us/windows-server/storage/file-server/ntfs-overview
 
-Red Hat. (n.d.). *Managing file systems: Red Hat Enterprise Linux 10*. Retrieved October 7, 2026, from https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html-single/managing_file_systems/index
+Red Hat. (n.d.-a). *Configuring and managing logical volumes: Red Hat Enterprise Linux 9*. Retrieved October 7, 2026, from https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html-single/configuring_and_managing_logical_volumes/index
+
+Red Hat. (n.d.-b). *Managing file systems: Red Hat Enterprise Linux 10*. Retrieved October 7, 2026, from https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html-single/managing_file_systems/index
 
 Ritchie, D. M., & Thompson, K. (1974). The UNIX time-sharing system. *Communications of the ACM, 17*(7), 365–375. https://doi.org/10.1145/361011.361061
 
@@ -1091,6 +1359,8 @@ Seagate. (n.d.). *Seagate introduces hard drive capacities of up to 36TB, extend
 SpeedGuide. (n.d.). *SLC, MLC or TLC NAND for solid state drives?* Retrieved October 7, 2026, from https://www.speedguide.net/faq/slc-mlc-or-tlc-nand-for-solid-state-drives-406
 
 Sweeney, A., Doucette, D., Hu, W., Anderson, C., Nishimoto, M., & Peck, G. (1996). Scalability in the XFS file system. In *Proceedings of the USENIX 1996 Annual Technical Conference*. USENIX Association. https://www.usenix.org/legacy/publications/library/proceedings/sd96/sweeney.html
+
+U.S. Environmental Protection Agency. (n.d.). *Particulate matter (PM) basics*. Retrieved October 7, 2026, from https://www.epa.gov/pm-pollution/particulate-matter-pm-basics
 
 ## További olvasnivaló
 

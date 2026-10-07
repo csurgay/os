@@ -1,0 +1,79 @@
+# Builds the course website from the Markdown lectures on every push to main
+# and publishes it to GitHub Pages and/or a web host over FTP.
+#
+# Switch the targets on in Settings -> Secrets and variables -> Actions:
+#   Variables: PUBLISH_TO_GITHUB_PAGES = true      (GitHub Pages)
+#              FTP_SERVER     = ftp.example.com    (web host; empty = off)
+#              FTP_SERVER_DIR = /public_html/os/   (target folder, ends with /)
+#              FTP_PROTOCOL   = ftps               (ftps, ftps-legacy or ftp)
+#              SITE_URL       = https://...        (the site's public address, optional)
+#   Secrets:   FTP_USERNAME, FTP_PASSWORD
+
+name: Publish website
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-website
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: tools/requirements.txt
+
+      - name: Install MkDocs
+        run: pip install -r tools/requirements.txt
+
+      - name: Build the website
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: mkdocs build
+
+      - name: Check links, anchors and images
+        run: python tools/check_site.py site
+
+      - name: Prepare for GitHub Pages
+        if: vars.PUBLISH_TO_GITHUB_PAGES == 'true'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+      - name: Upload to the web host (FTP)
+        if: vars.FTP_SERVER != ''
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ vars.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ${{ vars.FTP_PROTOCOL || 'ftps' }}
+          local-dir: site/
+          server-dir: ${{ vars.FTP_SERVER_DIR || './' }}
+
+  pages:
+    if: vars.PUBLISH_TO_GITHUB_PAGES == 'true'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

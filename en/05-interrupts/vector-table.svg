@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 318" width="760" height="318" role="img" aria-label="Interrupt 17: entry 17 of the vector table holds the handler's address">
+<title>Interrupt 17: entry 17 of the vector table holds the handler's address</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.tint{fill:#f4f3ee}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.tint{fill:#22221f}
+  }
+</style>
+<defs><marker id="vt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Interrupt 17: entry 17 of the vector table holds the handler's address</text>
+<rect x="24" y="150" width="150" height="58" rx="8" class="tint"/><rect x="24" y="150" width="150" height="58" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<text x="99" y="172" font-size="13" font-weight="600" class="ink" text-anchor="middle">Interrupt source</text>
+<text x="99" y="190" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">requests no. 17</text>
+<path d="M174 179.0H258" fill="none" class="edge" stroke-width="1.25" marker-end="url(#vt)"/>
+<text x="216" y="171.0" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">17</text>
+<text x="260" y="72" font-size="13" font-weight="600" class="ink" text-anchor="start">Vector table</text>
+<text x="260" y="90" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">in memory, filled in by the OS</text>
+<rect x="260" y="104" width="44" height="30" fill="none" class="edge" stroke-width="1"/>
+<rect x="304" y="104" width="120" height="30" fill="none" class="edge" stroke-width="1"/>
+<text x="282.0" y="124" font-size="12" font-weight="400" class="quiet" text-anchor="middle">0</text>
+<text x="316" y="124" font-size="13" font-weight="400" class="ink mono" text-anchor="start">…</text>
+<rect x="260" y="134" width="44" height="30" fill="none" class="edge" stroke-width="1"/>
+<rect x="304" y="134" width="120" height="30" fill="none" class="edge" stroke-width="1"/>
+<text x="282.0" y="154" font-size="12" font-weight="400" class="quiet" text-anchor="middle">…</text>
+<text x="316" y="154" font-size="13" font-weight="400" class="ink mono" text-anchor="start"></text>
+<rect x="260" y="164" width="164" height="30" class="accf"/>
+<rect x="260" y="164" width="44" height="30" fill="none" class="edge" stroke-width="1"/>
+<rect x="304" y="164" width="120" height="30" fill="none" class="edge" stroke-width="1"/>
+<text x="282.0" y="184" font-size="12" font-weight="400" class="quiet" text-anchor="middle">17</text>
+<text x="316" y="184" font-size="13" font-weight="600" class="ink mono" text-anchor="start">FBCAh</text>
+<rect x="260" y="194" width="44" height="30" fill="none" class="edge" stroke-width="1"/>
+<rect x="304" y="194" width="120" height="30" fill="none" class="edge" stroke-width="1"/>
+<text x="282.0" y="214" font-size="12" font-weight="400" class="quiet" text-anchor="middle">18</text>
+<text x="316" y="214" font-size="13" font-weight="400" class="ink mono" text-anchor="start">…</text>
+<rect x="260" y="224" width="44" height="30" fill="none" class="edge" stroke-width="1"/>
+<rect x="304" y="224" width="120" height="30" fill="none" class="edge" stroke-width="1"/>
+<text x="282.0" y="244" font-size="12" font-weight="400" class="quiet" text-anchor="middle">…</text>
+<text x="316" y="244" font-size="13" font-weight="400" class="ink mono" text-anchor="start"></text>
+<text x="540" y="72" font-size="13" font-weight="600" class="ink" text-anchor="start">Memory</text>
+<text x="540" y="90" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">the handler's code</text>
+<rect x="540" y="104" width="70" height="30" fill="none" class="edge" stroke-width="1"/>
+<rect x="610" y="104" width="150" height="30" fill="none" class="edge" stroke-width="1"/>
+<text x="550" y="124" font-size="12" font-weight="400" class="quiet mono" text-anchor="start">…</text>
+<text x="620" y="124" font-size="11.5" font-weight="400" class="quiet" text-anchor="start"></text>
+<rect x="540" y="134" width="70" height="30" fill="none" class="edge" stroke-width="1"/>
+<rect x="610" y="134" width="150" height="30" fill="none" class="edge" stroke-width="1"/>
+<text x="550" y="154" font-size="12" font-weight="400" class="quiet mono" text-anchor="start">…</text>
+<text x="620" y="154" font-size="11.5" font-weight="400" class="quiet" text-anchor="start"></text>
+<rect x="540" y="164" width="220" height="30" class="accf"/>
+<rect x="540" y="164" width="70" height="30" fill="none" class="edge" stroke-width="1"/>
+<rect x="610" y="164" width="150" height="30" fill="none" class="edge" stroke-width="1"/>
+<text x="550" y="184" font-size="12" font-weight="600" class="ink mono" text-anchor="start">FBCAh</text>
+<text x="620" y="184" font-size="11.5" font-weight="400" class="ink" text-anchor="start">save registers</text>
+<rect x="540" y="194" width="70" height="30" fill="none" class="edge" stroke-width="1"/>
+<rect x="610" y="194" width="150" height="30" fill="none" class="edge" stroke-width="1"/>
+<text x="550" y="214" font-size="12" font-weight="400" class="quiet mono" text-anchor="start">…</text>
+<text x="620" y="214" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">handle the device</text>
+<rect x="540" y="224" width="70" height="30" fill="none" class="edge" stroke-width="1"/>
+<rect x="610" y="224" width="150" height="30" fill="none" class="edge" stroke-width="1"/>
+<text x="550" y="244" font-size="12" font-weight="400" class="quiet mono" text-anchor="start">…</text>
+<text x="620" y="244" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">return (iret)</text>
+<path d="M424 179.0H538" fill="none" class="edge" stroke-width="1.25" marker-end="url(#vt)"/>
+<text x="482.0" y="171.0" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">PC ← FBCAh</text>
+<text x="24" y="282" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">The table adds one level of indirection: the OS can move or replace a handler by changing one table entry.</text>
+<text x="24" y="300" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">On x86-64 each entry (gate descriptor) is 16 bytes and also holds the code segment and privilege settings.</text>
+</svg>

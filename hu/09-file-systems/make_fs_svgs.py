@@ -278,12 +278,15 @@ def links():
     p.append(text(342, 240, "tartalma: \"notes.txt\"", 12))
     p.append(text(550, 216, "az elérési utat minden használatkor újra feloldja:", 11.5, cls="quiet"))
     p.append(text(550, 232, "az rm notes.txt után a link lóg", 11.5, cls="quiet"))
+    # the symlink's content leads back into name lookup, to the NAME notes.txt (not to inode 12)
+    p.append(path("M400 260V276H12V101H34", "a6", cls="c2s", width=1.4, dash="5 4"))
+    p.append(text(412, 280, "a tárolt elérési utat újra feloldja, a névtől kezdve", 11, cls="c2"))
     rows2 = [("", "hard link", "szimbolikus link"), ("mire mutat", "egy inode-ra (sorszám szerint)", "egy elérési útra (név szerint)"),
              ("saját inode", "nincs: ugyanaz az inode, linkszám + 1", "van, „symlink” típusú"),
              ("a cél törlése", "az adat marad, amíg az utolsó link is el nem tűnik", "a link lóg"),
              ("másik fájlrendszer", "lehetetlen (az inode-sorszámok helyiek)", "lehetséges"),
              ("könyvtárak", "nem megengedett (ciklusokat hozna létre)", "megengedett")]
-    y = 296
+    y = 316
     for i, (a, b, c) in enumerate(rows2):
         w = 600 if i == 0 else 400
         p.append(text(36, y + 20 * i, a, 11.5, 600))
@@ -422,10 +425,175 @@ def mft():
     return svg(880, 446, title, "\n".join(p))
 
 
+# ---------------- 11. Flying height ----------------
+def head_gap():
+    title = "A fej 1–2 nm-rel a lemez fölött repül: minden részecske szikla az útjában"
+    p = [text(24, 30, title, 15, 600), marker("a11"), marker("a11b", "bad")]
+    # left: schematic side view, not to scale
+    p.append(text(24, 62, "oldalnézet (vázlatos, nem méretarányos)", 12, 600, cls="quiet"))
+    p.append('<rect x="24" y="200" width="400" height="16" class="accf"/>')
+    p.append(path("M24 200H424", cls="acc", width=2))
+    p.append(text(24, 236, "a lemez felülete, amely a fej alatt halad", 11.5, cls="quiet"))
+    p.append(path("M300 232H340", "a11", cls="acc", width=1.6))
+    # arm and slider
+    p.append(path("M200 96L290 150", cls="c2s", width=4))
+    p.append('<rect x="250" y="150" width="120" height="44" rx="4" class="c2f"/>')
+    p.append('<rect x="250" y="150" width="120" height="44" rx="4" fill="none" class="c2s" stroke-width="1.5"/>')
+    p.append(text(310, 176, "csúszka + fej", 11.5, 600, anchor="middle"))
+    p.append(path("M380 194H396", cls="edge", width=1))
+    p.append(path("M380 200H396", cls="edge", width=1))
+    p.append(text(400, 172, "1–2 nm", 11.5, 600))
+    p.append(text(400, 188, "rés", 11, cls="quiet"))
+    # a particle in front of the slider
+    p.append('<circle cx="150" cy="184" r="16" class="badf"/><circle cx="150" cy="184" r="16" fill="none" class="bads" stroke-width="1.5"/>')
+    p.append(text(150, 146, "porszem", 11.5, 600, cls="bad", anchor="middle"))
+    p.append(text(150, 160, "vagy ujjlenyomatréteg", 11, cls="bad", anchor="middle"))
+    p.append(path("M246 178H172", "a11b", cls="bads", width=1.4, dash="4 3"))
+    p.append(text(24, 266, "Ha nekiütközik, megkarcolja a felületet és a fejet: fejütközés.", 11.5, cls="quiet"))
+    p.append(text(24, 284, "Ezért van zárt ház, szűrő és parkolórámpa.", 11.5, cls="quiet"))
+    # right: logarithmic scale
+    x0, x1, yb = 480, 860, 170
+    p.append(text(x0, 62, "ugyanezek a méretek logaritmikus skálán", 12, 600, cls="quiet"))
+    p.append(path(f"M{x0} {yb}H{x1}", cls="edge", width=1.5))
+    span = (x1 - x0 - 30) / 5
+    for lab, e in [("1 nm", 0), ("10 nm", 1), ("100 nm", 2), ("1 µm", 3), ("10 µm", 4), ("100 µm", 5)]:
+        x = x0 + 15 + e * span
+        p.append(path(f"M{x:.1f} {yb - 5}V{yb + 5}", cls="edge", width=1.2))
+        p.append(text(x, yb + 22, lab, 10.5, cls="quiet", anchor="middle"))
+    items = [("repülési magasság 1–2 nm", math.log10(1.5), "acct"), ("finom porszem ≤ 2,5 µm", math.log10(2500), "bad"),
+             ("emberi hajszál ≈ 70 µm", math.log10(70000), "c2")]
+    for i, (lab, e, cls) in enumerate(items):
+        x = x0 + 15 + e * span
+        y = yb - 30 - 24 * i
+        p.append(f'<circle cx="{x:.1f}" cy="{yb}" r="5" class="{cls}"/>')
+        p.append(path(f"M{x:.1f} {yb - 6}V{y + 5}", cls="edge", width=1))
+        anchor = "start" if e < 2 else "end"
+        p.append(text(x + (4 if anchor == "start" else -4), y, lab, 11.5, 600, cls=cls, anchor=anchor))
+    p.append(text(x0, yb + 56, "Egy 2,5 µm-es részecske több mint ezerszer", 11.5, cls="quiet"))
+    p.append(text(x0, yb + 74, "magasabb a résnél, egy hajszál több tízezerszer.", 11.5, cls="quiet"))
+    return svg(880, 300, title, "\n".join(p))
+
+
+# ---------------- 12. The Linux directory tree ----------------
+def fhs():
+    title = "A linuxos könyvtárfa teteje (Filesystem Hierarchy Standard)"
+    p = [text(24, 30, title, 15, 600)]
+    p.append(rect(400, 48, 80, 30, "plain", rx=4))
+    p.append(text(440, 68, "/", 14, 600, anchor="middle"))
+    rows = [
+        [("/boot", ["kernel (vmlinuz),", "initramfs, GRUB;", "/boot/efi (ESP)"], "acc"),
+         ("/etc", ["a gépre jellemző", "konfiguráció:", "fstab, passwd …"], "acc"),
+         ("/usr", ["telepített szoftver,", "csak olvasható,", "megosztható"], "acc"),
+         ("/opt", ["kiegészítő csomagok,", "mindegyik a saját", "/opt/<package> alatt"], "acc"),
+         ("/home, /root", ["a felhasználók saját", "könyvtárai; a rooté", "a /root"], "c2")],
+        [("/var", ["változó adatok, amelyek", "túlélik az újraindítást:", "log spool lib www"], "c2"),
+         ("/srv", ["a gép által kiszolgált", "adatok (web, FTP)", ""], "c2"),
+         ("/tmp", ["ideiglenes fájlok,", "törlődhetnek,", "gyakran tmpfs"], "tint"),
+         ("/run", ["futásidejű adatok az", "indítás óta (PID-ek,", "socketek), tmpfs"], "tint"),
+         ("/mnt, /media", ["csatolási pontok", "ideiglenes és", "cserélhető tárolóknak"], "tint")],
+        [("/dev", ["eszközfájlok:", "sda nvme0n1 tty", "null zero random"], "virt"),
+         ("/proc", ["folyamatok, csatolások,", "partíciók, memória", "(generált)"], "virt"),
+         ("/sys", ["eszközök, meghajtók,", "kernelbeállítások", "(generált)"], "virt")],
+    ]
+    bw, bh, gap = 158, 86, 12
+    y = 108
+    p.append(path("M440 78V94", cls="edge", width=1))
+    p.append(path(f"M{24 + bw / 2} 94H{24 + 4 * (bw + gap) + bw / 2}", cls="edge", width=1))
+    for r, row in enumerate(rows):
+        x = 24
+        for name, lines, k in row:
+            if k == "virt":
+                p.append(f'<rect x="{x}" y="{y}" width="{bw}" height="{bh}" rx="6" fill="none" class="edge" stroke-width="1.4" stroke-dasharray="5 4"/>')
+            else:
+                p.append(rect(x, y, bw, bh, k, rx=6))
+            p.append(text(x + 10, y + 20, name, 13, 600))
+            for i, l in enumerate(lines):
+                if l:
+                    p.append(text(x + 10, y + 40 + 16 * i, l, 11, cls="ink" if k != "virt" else "quiet"))
+            if r == 0:
+                p.append(path(f"M{x + bw / 2} 94V{y}", cls="edge", width=1))
+            x += bw + gap
+        y += bh + gap
+    lx = 24 + 3 * (bw + gap) + 4
+    ly = 108 + 2 * (bh + gap) + 18
+    leg = [("acc", "statikus: szoftvertelepítéskor változik"), ("c2", "változó: a rendszer futása közben nő"),
+           ("tint", "ideiglenes vagy illékony"), ("virt", "virtuális: a kernel állítja elő")]
+    for i, (k, lab) in enumerate(leg):
+        yy = ly + 18 * i
+        if k == "virt":
+            p.append(f'<rect x="{lx}" y="{yy - 10}" width="18" height="12" rx="2" fill="none" class="edge" stroke-width="1.2" stroke-dasharray="3 2"/>')
+        else:
+            p.append(rect(lx, yy - 10, 18, 12, k, rx=2))
+        p.append(text(lx + 26, yy, lab, 11, cls="quiet"))
+    p.append(text(24, y + 14, "A mai disztribúciókon a /bin, /sbin, /lib szimbolikus link a /usr/bin, /usr/sbin, /usr/lib könyvtárra (usr-merge).", 11.5, cls="quiet"))
+    return svg(880, y + 28, title, "\n".join(p))
+
+
+# ---------------- 13. LVM ----------------
+def lvm():
+    title = "LVM: a blokkeszközökből fizikai kötetek lesznek, extentjeik egy kötetcsoportba kerülnek"
+    p = [text(24, 30, title, 15, 600), marker("a13"), marker("a13r", "c2")]
+    for x, lab in [(24, "blokkeszközök"), (190, "fizikai kötetek (PV)"), (400, "kötetcsoport (VG)"), (580, "logikai kötetek (LV)"), (760, "fájlrendszerek")]:
+        p.append(text(x, 62, lab, 12, 600, cls="quiet"))
+    p.append(text(190, 78, "4 MiB-os extentekre vágva", 10.5, cls="quiet"))
+    devs = [("/dev/sda2", "egy partíció", 5), ("/dev/md0", "egy RAID-tömb", 4), ("/dev/sdb", "egy SAN-lemez (LUN)", 6), ("/dev/sdc", "később hozzáadva", 5)]
+    ys = [90, 160, 230, 310]
+    vg_in = [130, 180, 230, 300]
+    for i, ((d, s, n), y) in enumerate(zip(devs, ys)):
+        new = i == 3
+        p.append(rect(24, y, 140, 50, "c2" if new else "tint", rx=10))
+        p.append(text(36, y + 22, d, 12, 600))
+        p.append(text(36, y + 40, s, 11, cls="c2" if new else "quiet"))
+        p.append(path(f"M164 {y + 25}H186", "a13r" if new else "a13", cls="c2s" if new else "edge"))
+        for j in range(n):
+            p.append(rect(190 + j * 26, y + 12, 22, 26, "c2" if new else "acc", rx=2))
+        sx = 190 + n * 26
+        p.append(path(f"M{sx} {y + 25}L396 {vg_in[i]}", "a13r" if new else "a13", cls="c2s" if new else "edge"))
+    # VG pool
+    p.append(rect(400, 90, 150, 270, "plain", rx=8))
+    p.append(text(475, 110, "vg1", 13, 600, anchor="middle"))
+    for r in range(8):
+        for c in range(4):
+            p.append(rect(414 + c * 32, 122 + r * 28, 26, 22, "c2" if r >= 6 else "acc", rx=2))
+    p.append(text(475, 378, "egy közös extentkészlet", 11, cls="quiet", anchor="middle"))
+    # LVs
+    p.append(rect(580, 96, 150, 56, "acc", rx=6))
+    p.append(text(592, 118, "lv_home", 12, 600))
+    p.append(text(592, 138, "lineáris", 11, cls="quiet"))
+    p.append(path("M552 124H578", "a13"))
+    p.append(rect(580, 190, 150, 56, "acc", rx=6))
+    p.append(text(592, 212, "lv_db", 12, 600))
+    p.append(text(592, 232, "raid1: két példány", 11, cls="quiet"))
+    p.append(path("M552 218H578", "a13"))
+    p.append(rect(580, 246, 150, 30, "c2", rx=6))
+    p.append(text(592, 266, "+ extentek (bővítve)", 11, 600, cls="c2"))
+    p.append(path("M552 300C566 300 566 262 578 262", "a13r", cls="c2s"))
+    for lab, mnt, y in [("XFS", "/home", 104), ("XFS", "/var/lib/db", 210)]:
+        p.append(path(f"M730 {y + 20}H758", "a13"))
+        p.append(rect(760, y, 100, 40, "tint", rx=6))
+        p.append(text(770, y + 17, lab, 12, 600))
+        p.append(text(770, y + 33, mnt, 11, cls="quiet"))
+    p.append(text(580, 300, "az lvextend -r csatolt állapotban", 11, cls="c2"))
+    p.append(text(580, 316, "bővíti az LV-t és a fájlrendszerét", 11, cls="c2"))
+    cmds = [("létrehozás", "pvcreate", "vgcreate", "lvcreate -L vagy -l", "mkfs.xfs, mount"),
+            ("bővítés", "pvcreate (új lemez)", "vgextend", "lvextend -r", "xfs_growfs, resize2fs"),
+            ("lemez kivonása", "pvmove, majd pvremove", "vgreduce", "", ""),
+            ("vizsgálat", "pvs, pvdisplay", "vgs, vgdisplay", "lvs, lvdisplay", "df, lsblk")]
+    y0 = 412
+    p.append(path(f"M24 {y0 - 18}H860", cls="grid", width=1))
+    xs = [24, 190, 400, 580, 760]
+    for i, row in enumerate(cmds):
+        for j, c in enumerate(row):
+            cls = "c2" if (i == 1 and j > 0) else ("quiet" if j == 0 else "ink")
+            p.append(text(xs[j], y0 + 20 * i, c, 11.5, 600 if j == 0 else 400, cls=cls))
+    return svg(880, y0 + 20 * len(cmds) + 4, title, "\n".join(p))
+
+
 if __name__ == "__main__":
     for name, fn in [("hdd", hdd), ("ssd", ssd), ("write-amplification", write_amp), ("storage-stack", layers),
                      ("inode", inode), ("links", links), ("directory", directory), ("fat16", fat16),
-                     ("ext4-layout", ext4_layout), ("ntfs-mft", mft)]:
+                     ("ext4-layout", ext4_layout), ("ntfs-mft", mft), ("head-gap", head_gap), ("fhs", fhs),
+                     ("lvm", lvm)]:
         with open(os.path.join(HERE, f"{name}.svg"), "w") as f:
             f.write(fn())
         print("wrote", name + ".svg")

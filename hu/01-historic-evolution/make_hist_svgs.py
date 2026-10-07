@@ -262,8 +262,109 @@ def layers():
     return svg(760, y0 + 6 * h + 42, title, "\n".join(p))
 
 
+# ---------------- 6. Munkacsomag vezérlőkártyákkal, és munkák kötege ----------------
+def carddeck():
+    m = "cd"
+    title = "Munkacsomag: a vezérlőkártyák közrefogják a programot és adatait; a munkák köteget alkotnak"
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600),
+         text(24, 50, "Munkavezérlő nyelv Stallings FORTRAN-példájában. A kártyaolvasó az elülső kártyát olvassa be először.", 11.5, cls="quiet")]
+    # az elülső kártya az első; hátulról előre rajzolva, hogy minden kártya eltakarja a mögötte lévő alsó részét
+    cards = [("$JOB  felhasználó, számla, korlátok", "ctl"), ("$FTN  lefordítja, ami utána jön", "ctl"),
+             ("programkártya", "prog"), ("programkártya", "prog"), ("programkártya", "prog"),
+             ("$LOAD  betölti a lefordított programot", "ctl"), ("$RUN  elindítja az adatokon", "ctl"),
+             ("adatkártya", "data"), ("adatkártya", "data"), ("$END  a munka vége", "ctl")]
+    x0, y0, w, h, dx, dy = 40, 330, 270, 70, 16, -24
+    for i in reversed(range(len(cards))):
+        lab, kind = cards[i]
+        cx, cy = x0 + i * dx, y0 + i * dy
+        d = f"M{cx} {cy}H{cx + w - 14}L{cx + w} {cy + 12}V{cy + h}H{cx}Z"
+        if kind == "ctl":
+            p.append(f'<path d="{d}" class="tint"/><path d="{d}" class="accf"/>'
+                     f'<path d="{d}" fill="none" class="acc" stroke-width="1.5"/>')
+            p.append(text(cx + 10, cy + 16, lab, 11.5, 600, cls="acct"))
+        elif kind == "data":
+            p.append(f'<path d="{d}" class="tint"/><path d="{d}" class="c2f"/>'
+                     f'<path d="{d}" fill="none" class="c2s" stroke-width="1.25"/>')
+            p.append(text(cx + 10, cy + 16, lab, 11.5))
+        else:
+            p.append(f'<path d="{d}" class="tint"/><path d="{d}" fill="none" class="edge" stroke-width="1.25"/>')
+            p.append(text(cx + 10, cy + 16, lab, 11.5))
+    p.append(text(x0 + 10, y0 + 50, "elöl: ezt olvassa be először", 11.5, cls="quiet"))
+    # jelmagyarázat
+    ly = y0 + h + 30
+    p.append(rect(24, ly - 11, 14, 14, "acc", rx=2))
+    p.append(text(44, ly, "vezérlőkártya (JCL) a monitornak", 11.5))
+    p.append(rect(260, ly - 11, 14, 14, "plain", rx=2))
+    p.append(text(280, ly, "program (forráskód)", 11.5))
+    p.append(rect(440, ly - 11, 14, 14, "c2", rx=2))
+    p.append(text(460, ly, "a program bemenő adatai", 11.5))
+    # köteg a jobb oldalon: több csomag egymás mögött
+    bx, by = 500, 96
+    p.append(text(bx, by - 18, "Egy köteg: munka munka után", 13, 600))
+    for j, name in enumerate(["3. munka", "2. munka", "1. munka"]):
+        yy = by + j * 46
+        p.append(rect(bx, yy, 210, 38, "tint", rx=3))
+        p.append(f'<rect x="{bx}" y="{yy}" width="10" height="38" class="accf"/>')
+        p.append(f'<rect x="{bx + 200}" y="{yy}" width="10" height="38" class="accf"/>')
+        p.append(text(bx + 22, yy + 17, name, 12.5, 600))
+        p.append(text(bx + 22, yy + 32, "$JOB … $END", 11, cls="quiet"))
+    yr = by + 3 * 46
+    p.append(path(f"M{bx + 105} {yr + 2}V{yr + 30}", m))
+    p.append(rect(bx, yr + 34, 210, 30, "acc", rx=4))
+    p.append(text(bx + 105, yr + 54, "kártyaolvasó → monitor", 12, 600, anchor="middle"))
+    p.append(text(bx, yr + 84, "Az 1. munkát olvassa be először;", 11.5, cls="quiet"))
+    p.append(text(bx, yr + 100, "a $END-nél a monitor operátor", 11.5, cls="quiet"))
+    p.append(text(bx, yr + 116, "nélkül indítja a következő munkát", 11.5, cls="quiet"))
+    return svg(760, ly + 24, title, "\n".join(p))
+
+
+# ---------------- 7. A megoldások újrahasznosítása ----------------
+def recycling():
+    m = "rc"
+    title = "Régi technikák visszatérnek, ha változik a gazdaság, a technológia vagy az igények"
+    aria = ("A megoldások újrahasznosítása: a régi technikák visszatérnek, "
+            "amikor a gazdaság, a technológia vagy az igények megváltoznak")
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600)]
+    # a hajtóerők háromszöge
+    cx, cy = 150, 170
+    pts = {"gazdaság": (cx, cy - 82), "technológia": (cx - 92, cy + 72), "igények": (cx + 92, cy + 72)}
+    subs = {"gazdaság": "mi olcsó", "technológia": "mi lehetséges", "igények": "mit kérnek"}
+    a, b, c = pts["gazdaság"], pts["technológia"], pts["igények"]
+    p.append(f'<path d="M{a[0]} {a[1]}L{b[0]} {b[1]}L{c[0]} {c[1]}Z" fill="none" class="edge" stroke-width="1.25"/>')
+    for k, (x, y) in pts.items():
+        p.append(f'<circle cx="{x}" cy="{y}" r="44" class="tint"/><circle cx="{x}" cy="{y}" r="44" class="accf"/>'
+                 f'<circle cx="{x}" cy="{y}" r="44" fill="none" class="acc" stroke-width="1.5"/>')
+        p.append(text(x, y - 2, k, 12, 600, anchor="middle"))
+        p.append(text(x, y + 13, subs[k], 10, cls="quiet", anchor="middle"))
+    p.append(text(cx, cy + 12, "melyik megoldás", 11, cls="quiet", anchor="middle"))
+    p.append(text(cx, cy + 26, "illik most?", 11, cls="quiet", anchor="middle"))
+    # párok: régi -> új
+    rows = [("Folytonos fájlelhelyezés", "CD-ROM (ISO 9660): egyszer írják"),
+            ("FAT (hajlékonylemez, MS-DOS)", "USB-kulcs, SD-kártya, EFI-partíció"),
+            ("Dinamikus linkelés (Multics)", "megosztott könyvtárak (.so, .dll)"),
+            ("Huzalozott vezérlés (S/360 előtt)", "RISC; egyszerű x86-mikroműveletek"),
+            ("Értelmezett virtuális utasítások", "Java VM bájtkód"),
+            ("Virtuális gépek (IBM VM/370)", "hipervizorok: VMware, Xen, KVM"),
+            ("Időosztás, számítási közmű", "felhő, használat szerinti díjjal"),
+            ("Kötegelt feldolgozás", "HPC-ütemezők, éjszakai munkák")]
+    ox, nx, ty = 290, 524, 74
+    p.append(text(ox, ty, "Korábbi megoldás", 12.5, 600))
+    p.append(text(nx, ty, "Ahol visszatért", 12.5, 600))
+    for i, (o, n) in enumerate(rows):
+        y = ty + 26 + i * 30
+        p.append(f'<line x1="{ox}" y1="{y - 18}" x2="740" y2="{y - 18}" class="grid"/>')
+        p.append(text(ox, y, o, 11.5, cls="quiet"))
+        p.append(path(f"M{nx - 24} {y - 4}H{nx - 8}", m))
+        p.append(text(nx, y, n, 11.5))
+    yb = ty + 26 + len(rows) * 30
+    p.append(text(24, yb + 10, "Egy technika nem elavult, csak vár: ha azok a feltételek, amelyekre kitalálták, új helyen újra előállnak,", 11.5, cls="quiet"))
+    p.append(text(24, yb + 26, "például egy fényképezőgép vagy egy USB-kulcs kicsi, olcsó vezérlőjében, a régi megoldás ismét beválik.", 11.5, cls="quiet"))
+    return svg(760, yb + 44, aria, "\n".join(p))
+
+
 if __name__ == "__main__":
     for name, f in [("os-timeline", timeline), ("batch-monitor", batch), ("multiprogramming", multiprog),
-                    ("virtual-memory", vmem), ("os-layers", layers)]:
+                    ("virtual-memory", vmem), ("os-layers", layers), ("card-deck", carddeck),
+                    ("recycling", recycling)]:
         open(f"{name}.svg", "w", encoding="utf-8").write(f())
     print("ok")

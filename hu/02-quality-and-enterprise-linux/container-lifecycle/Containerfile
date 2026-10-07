@@ -1,0 +1,9 @@
+# Each instruction below adds either a file-system layer or only metadata.
+FROM scratch
+COPY --chmod=755 tool /bin/tool
+RUN ["/bin/tool", "mkdir", "/data", "1000"]
+COPY app.conf /etc/app.conf
+EXPOSE 8080
+USER 1000
+WORKDIR /data
+CMD ["/bin/tool", "serve"]

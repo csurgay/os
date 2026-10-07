@@ -14,10 +14,11 @@ By the end, students will be able to:
 
 - explain the problems of placing several programs in one RAM: protection, relocation, fragmentation and size;
 - distinguish internal and external fragmentation, and explain allocation strategies and compaction;
+- describe overlays and swapping, the techniques used before paging, and explain why paging replaced them;
 - explain paging: pages and frames, the page table, the page-table base register, the valid and access-rights bits, and translate a virtual address to a physical one;
 - explain why page tables have several levels, and describe the x86-64 four-level page table;
 - explain the TLB and its effect on performance, and the role of huge pages;
-- describe what happens on a page fault, and distinguish demand paging, copy-on-write, minor and major faults;
+- describe what happens on a page fault, step by step in the hardware and the operating system, distinguish demand paging, copy-on-write, minor and major faults, and estimate their cost, including the write-back of a dirty victim;
 - simulate and compare page-replacement algorithms (FIFO, OPT, LRU, clock), explain Bélády's anomaly and why LRU does not suffer from it, and explain working sets and thrashing;
 - compare caches and virtual memory, and observe all of these mechanisms on Linux.
 
@@ -42,6 +43,8 @@ Virtual memory starts from the **RAM–disk pair as a two-level memory**, and fr
 - **A simple, private view.** With **virtual** memory, *every process sees as if it had the whole memory alone, contiguously, from 0 to max*. A program can then be compiled for fixed addresses, wherever it actually lands in RAM (**relocation**), and it does not need to know about the other programs at all.
 - **More memory than RAM.** Virtual memory extends RAM onto the disk: pages that are not needed at the moment can wait there, and the total memory of all processes can exceed the physical RAM.
 
+The figure asks the question that starts it all: what happens when a fifth process arrives, or process 1 wants to grow, and no free piece of RAM is large enough? Side by side, the goals are **protection** (separation), **programs larger than RAM**, and **relocation**, which can also be put positively as the **reuse of addresses**: every process may start at address 0 and use the same addresses as all the others, because each has its own mapping. Only the second goal depends on RAM being scarce. The other two matter however much RAM there is: the machine of the [Linux section](#the-same-ideas-on-linux-x86-64) has no swap area at all, and still every process runs in its own virtual address space.
+
 Virtual memory was first built on the **Atlas** computer at the University of Manchester, which went into operation in 1962. Its designers called it a *one-level storage system*: the programmer saw one large memory, while the hardware and the supervisor program moved 512-word pages between the small core memory and a magnetic drum automatically (Kilburn et al., 1962). Every general-purpose operating system today is built on the same idea.
 
 <details>
@@ -49,6 +52,7 @@ Virtual memory was first built on the **Atlas** computer at the University of Ma
 
 - **Separation, protection:** keeping each program inside its own memory, so that it cannot spy on or damage the others.
 - **Relocation:** being able to place a program anywhere in RAM, although its instructions contain addresses.
+- **Reuse of addresses:** every program may use the same addresses, starting from 0, like every house on different streets can be number 1.
 - **Atlas:** a British computer of the early 1960s, one of the most powerful of its time, and the first with virtual memory.
 - **Core memory:** the main memory technology of the 1950s and 1960s, made of tiny magnetic rings. **Drum:** a rotating magnetic cylinder, a slower predecessor of the hard disk.
 
@@ -80,9 +84,32 @@ Paging, the subject of the next section, chooses equal block sizes, and so trade
 
 </details>
 
+## Before paging: overlays and swapping
+
+Two older techniques dealt with programs and workloads larger than memory, and both explain what paging had to do better.
+
+![Overlays: OS, resident part and one overlay area, into which the editor, the compiler and the linker are loaded in turn from the program file; swapping: job 1 written out to the swap area on disk and job 2 read in](overlays-swapping.svg)
+
+- **Overlays.** A program larger than its memory is split by the programmer into a **resident part**, which stays in memory all the time, and phases that are never needed at the same time. The phases take turns in one **overlay area**: the resident part loads the editor into it, later the compiler over the editor, and later the linker over the compiler. The operating system does nothing special: the program itself reads the next phase from disk, according to an overlay structure that the programmer designed and the linker built.
+- **Swapping.** The operating system moves **whole jobs** between memory and a **swap area** on disk. A job that waits, for example for its user at a terminal, is swapped out, and another one is swapped in to run in its place. MIT's CTSS, one of the first time-sharing systems, swapped user programs between core memory and a drum when it switched from one user to the next (Corbató et al., 1962); swapped-out processes are the *suspended* states of the [scheduling lecture](../06-concurrency-deadlocks-scheduling/#the-process-state-space).
+
+Both have a basic cost. Overlays put the burden on the programmer, who must know the structure of the program and the size of the memory, and must redo the split when either changes. Swapping moves the whole job, even if only a small part of it will be used before the next swap, so every swap costs time in proportion to the job's size; a job swapped back in still needs one contiguous hole, with all the fragmentation problems of the previous section; and a job larger than RAM cannot run at all. Paging solves all of these automatically: it transfers only the pages that are actually used, places each page in any free frame, and lets the operating system, not the programmer, decide what is in memory (Denning, 1970). The old name survives: Linux still calls its disk area **swap**, but it moves single pages, not whole processes.
+
+<details>
+<summary><b>Explained simply:</b> overlay, resident part, phase, swapping, swap area, job</summary>
+
+- **Overlay:** loading one part of a program over another part that is no longer needed, into the same piece of memory, like a teacher who wipes the board to write the next topic.
+- **Resident part:** the part of a program that always stays in memory and loads the other parts.
+- **Phase:** a stage of the work, such as editing, then compiling, then linking.
+- **Swapping:** moving a whole waiting program out of RAM to the disk to make room, and back again later.
+- **Swap area:** the part of the disk reserved for programs or pages moved out of RAM.
+- **Job:** an older word for a program run, as handed to the computer.
+
+</details>
+
 ## Paging
 
-**Paging** divides the virtual memory of each process into fixed-size **pages** (4 KiB on x86) and the physical RAM into **frames** of the same size. Any page can be placed into any free frame. The pages of a process are contiguous in its own address space, but the frames that hold them can lie anywhere in RAM, in any order, and some pages may not be in RAM at all:
+**Paging** divides the virtual memory of each process into fixed-size **pages** (4 KiB on x86) and the physical RAM into **frames** of the same size. Any page can be placed into any free frame. The page is at the same time the **unit of mapping** (one page-table entry describes one page) and the **unit of transfer** (a whole page moves between RAM and the disk). The pages of a process are contiguous in its own address space, but the frames that hold them can lie anywhere in RAM, in any order, and some pages may not be in RAM at all:
 
 ![Pages 11, 12, 13 of process 1 and 21, 22, 23 of process 2 placed in scattered frames of RAM](paging.svg)
 
@@ -106,6 +133,8 @@ The most important bits of an entry:
 
 A worked example: the virtual address `0x00403A7C` has page number `0x00403` and offset `0xA7C`. If entry `0x403` of the page table says "valid, read/write, frame `0x12DC6`", the physical address is `0x12DC6A7C`.
 
+**The physical address can be longer than the virtual one.** The frame number and the offset are **joined** (concatenated), not added: the physical address is frame number × page size + offset, which in binary means writing the frame number in front of the offset. The width of the frame number is therefore a choice of the hardware, independent of the page number. A small example: with 16-bit virtual addresses and 4 KiB pages, the page number has 4 bits (16 pages, 64 KiB per process) and the offset 12 bits. If the page-table entries hold 7-bit frame numbers, physical addresses have 7 + 12 = 19 bits: 128 frames, 512 KiB of RAM. The virtual address `0x2ABC` is page 2, offset `0xABC`; if entry 2 holds frame `0x5D` (`101 1101`), the physical address is `0x5DABC` (`101 1101` followed by `1010 1011 1100`). No process can address more than 64 KiB, but eight such processes fit into RAM together. The **PAE** (physical address extension) of 32-bit x86 processors, introduced with the Pentium Pro in 1995, did the same on a larger scale: 32-bit virtual addresses, 4 GiB per process, were mapped to 36-bit physical addresses, up to 64 GiB of RAM, through 8-byte page-table entries with longer frame numbers (Intel Corporation, 2025). (On x86-64 it is the other way round: the machine used below has 48-bit virtual and 46-bit physical addresses.)
+
 ### Multi-level page tables
 
 A flat table for a 32-bit address space has $2^{20}$ entries; at 4 bytes each, that is 4 MiB per process, even for a program that uses a few pages. For 48-bit addresses a flat table would need $2^{36}$ entries of 8 bytes, 512 GiB per process: impossible. Page tables are therefore **hierarchical**: the page number is split into several indices, and each level's table only exists where memory is in use. On x86-64, a 48-bit virtual address is split into four 9-bit indices and a 12-bit offset, and each table holds 512 eight-byte entries, exactly one 4 KiB page:
@@ -117,9 +146,10 @@ The machine used below reports `address sizes : 46 bits physical, 48 bits virtua
 **Segmentation** is the older alternative: memory is divided into variable-sized logical **segments** (code, data, stack), each with its own base, limit and rights. It matches the program's structure, but suffers from external fragmentation. x86 processors had both, segments on top of pages; in 64-bit mode segmentation is essentially switched off, and modern operating systems rely on paging alone.
 
 <details>
-<summary><b>Explained simply:</b> paging, offset, page table, page-table entry, PTBR/CR3, page fault, exception, access rights, NX bit, user/supervisor, accessed and dirty bits, hierarchy, segment</summary>
+<summary><b>Explained simply:</b> paging, offset, page table, page-table entry, PTBR/CR3, page fault, exception, access rights, NX bit, user/supervisor, accessed and dirty bits, concatenation, PAE, hierarchy, segment, unit of mapping and of transfer</summary>
 
 - **Paging:** cutting memory into equal pieces and placing each piece wherever there is room, keeping a list of where each one went.
+- **Unit of mapping, unit of transfer:** the page is both the piece that the list describes and the piece that is moved between RAM and disk.
 - **Offset:** the position of a byte inside its page.
 - **Page table:** that list: for each page of a process, which frame of RAM holds it, and what may be done with it. Each line is a **page-table entry**.
 - **PTBR (page-table base register), CR3, TTBR:** the CPU register (CR3 on Intel and AMD processors, TTBR on ARM) that says where the current process's page table is. Changing it switches to another process's memory.
@@ -127,6 +157,8 @@ The machine used below reports `address sizes : 46 bits physical, 48 bits virtua
 - **Exception:** an interrupt caused by the instruction that is running.
 - **Access rights:** whether a page may be read, written or executed. **NX** (no-execute): data pages cannot be run as code. **User/supervisor:** whether ordinary programs may touch the page, or only the kernel.
 - **Accessed and dirty bits:** set by the hardware when a page is used, and when it is changed.
+- **Concatenation:** writing two numbers one after the other, like an area code followed by a phone number, instead of adding them.
+- **PAE** (physical address extension): a feature of 32-bit Intel and AMD processors that let the whole computer use more than 4 GiB of RAM, although each program could still see only 4 GiB.
 - **Hierarchical (multi-level) page table:** a table of tables, like a book's table of contents pointing to chapter contents, so that only the parts in use need to exist.
 - **Segment:** a variable-sized logical part of a program, such as its code or its stack.
 
@@ -164,12 +196,6 @@ When the valid bit is 0, or the access is not allowed, the CPU raises a page fau
 - **Copy-on-write:** after `fork()`, parent and child share all pages read-only. The first write to a shared page faults, and the kernel gives the writer a private copy. `fork()` is therefore fast even for large processes ([Linux section](#copy-on-write)).
 - **The page is on disk:** it was swapped out, or it belongs to a memory-mapped file that is not in the page cache. The kernel must read it from disk, which is a **major fault**: the process waits in the *waiting* state of the [scheduling lecture](../06-concurrency-deadlocks-scheduling/#the-process-state-space), and other processes run. Faults that need no disk access (demand-zero pages, copy-on-write, pages already in the page cache) are **minor faults**.
 
-Major faults are expensive: microseconds on a fast SSD, milliseconds on a hard disk, against about 100 ns for a memory access. The two-level formula of the previous lecture shows how rare they must be. With a fault rate $p$, a memory access time of 100 ns and a fault time of 8 ms,
-
-$$T = (1 - p) \cdot 100\ \text{ns} + p \cdot 8\ \text{ms}$$
-
-and to keep the slowdown under 10%, $p$ must stay below about $1.25 \cdot 10^{-6}$: one fault in 800,000 accesses (example adapted from Silberschatz et al., 2018, who use 200 ns).
-
 <details>
 <summary><b>Explained simply:</b> page-fault handler, VMA, SIGSEGV, demand paging, lazy, copy-on-write, fork, major and minor fault</summary>
 
@@ -180,6 +206,57 @@ and to keep the slowdown under 10%, $p$ must stay below about $1.25 \cdot 10^{-6
 - **Copy-on-write:** two processes share a page until one of them changes it; only then does it get its own copy.
 - **fork():** the system call that creates a new process as a copy of the current one.
 - **Major fault:** the page has to be read from disk (slow). **Minor fault:** the page can be provided without the disk (fast).
+
+</details>
+
+### A major fault, step by step
+
+A major fault is the place where the hardware, the interrupt system, the scheduler and page replacement all work together:
+
+![Flowchart: the hardware checks the TLB, walks the page table and raises a page fault if the page is invalid; the operating system checks the address, finds a frame (evicting and writing back a dirty victim if needed), starts the disk read, runs another process, and on the disk interrupt updates the page table and lets the process restart the instruction](page-fault-flow.svg)
+
+1. **Hardware.** The TLB has no translation, the page-table walk finds the entry invalid (or the access forbidden), and the CPU raises a **page-fault exception**: it saves the state of the interrupted instruction and enters the kernel, telling it the faulting address (on x86 in the CR2 register) and the kind of access.
+2. **Check.** The handler looks up the address in the process's VMAs. If it belongs to none, or the access breaks the region's rights, the process gets `SIGSEGV`.
+3. **Find a frame.** If no frame is free, page replacement chooses a victim. The victim's page-table entry is marked invalid and its TLB entry is invalidated (on every core that may cache it), so that nobody can change the page any more; if the victim is dirty, it must then be written to disk before its frame can be reused.
+4. **Start the read.** The handler asks the disk driver to read the page into the frame; the disk controller transfers it by DMA.
+5. **Wait.** The faulting process is blocked, and the scheduler runs another process for the milliseconds the disk needs.
+6. **Interrupt.** When the transfer is complete, the disk raises an **interrupt**. The kernel fills in the page-table entry (frame number, valid = 1), and the process becomes ready.
+7. **Restart.** When the process runs again, the faulting instruction is executed again from the beginning, and this time finds a valid page.
+
+The page fault itself is an exception, raised synchronously by the instruction; only the completion of the disk read is an interrupt request from a device, in the terms of the [interrupts lecture](../05-interrupts/#classes-of-interrupts). Steps 5 and 6 are the *waiting* and *ready* states of the [scheduling lecture](../06-concurrency-deadlocks-scheduling/#the-process-state-space). The order in step 3 matters: the frame must be free before the read can start, so a dirty victim makes the faulting process wait for a write *and* a read. A minor fault skips steps 4 to 6.
+
+<details>
+<summary><b>Explained simply:</b> MMU, CR2, DMA, restart an instruction</summary>
+
+- **MMU** (memory management unit): the part of the CPU that translates virtual addresses to physical ones, with the TLB and the page-table walker.
+- **CR2:** a register of x86 processors in which the CPU leaves the address that caused the last page fault, for the kernel to read.
+- **DMA** (direct memory access): the disk controller copies the data into RAM by itself, while the CPU does other work.
+- **Restarting an instruction:** running the same instruction again from its beginning, as if the fault had never happened; the program does not notice anything, except that it was slower.
+
+</details>
+
+### The cost of a fault
+
+Major faults are expensive: microseconds on a fast SSD, milliseconds on a hard disk, against about 100 ns for a memory access. The two-level formula of the previous lecture shows how rare they must be. With a fault rate $p$, a memory access time of 100 ns and a fault time of 8 ms,
+
+$$T = (1 - p) \cdot 100\ \text{ns} + p \cdot 8\ \text{ms}$$
+
+and to keep the slowdown under 10%, $p$ must stay below about $1.25 \cdot 10^{-6}$: one fault in 800,000 accesses (example adapted from Silberschatz et al., 2018, who use 200 ns).
+
+**A dirty victim doubles the cost.** When the frame for the new page must first be emptied of a dirty page, the fault needs a disk write and a disk read. A back-of-the-envelope model shows the effect: let a memory access take 1 time unit and a disk transfer 10,000 units, and let one access in 1,000 cause a fault. With clean victims, 1,000 accesses take 1,000 + 10,000 = 11,000 units, 11 times as long as without faults; with dirty victims, 1,000 + 10,000 + 10,000 = 21,000 units, 21 times as long. (The fault rate is unrealistically high on purpose; the formula above shows that real fault rates must be a thousand times lower.) Operating systems therefore try to keep both the write and part of the read out of the fault:
+
+- **Keep clean frames ready.** Background threads reclaim and clean pages before memory runs out. On Linux, `kswapd` frees pages when the free memory falls below a low watermark, and the flusher threads write dirty pages to disk in the background, when dirty data exceeds a share of memory (`vm.dirty_background_ratio`) or has been dirty for too long (`vm.dirty_expire_centisecs`). A fault then usually finds a free frame, or a clean victim that can be reused at once (The kernel development community, n.d.-a).
+- **Prefetch.** Read more than the faulting page, betting on spatial locality: **prepaging** or **read-ahead**. Linux reads file data ahead of a sequential reader, and at a fault on a swapped-out page it reads $2^n$ neighbouring pages from swap at once, where $n$ is the `vm.page-cluster` setting (3 by default: 8 pages). The fault-around of the [major-fault measurement](#major-faults) is the same bet for mapping pages that are already in memory.
+
+The [Linux section](#keeping-faults-cheap) shows these settings on the machine used below.
+
+<details>
+<summary><b>Explained simply:</b> watermark, kswapd, flusher threads, prepaging, read-ahead</summary>
+
+- **Watermark:** a level of free memory; below it, the kernel starts freeing pages, like refilling the fridge when only two bottles are left.
+- **kswapd:** the Linux kernel thread that frees memory in the background, so that programs do not have to wait for it.
+- **Flusher threads:** kernel threads that write changed (dirty) data to disk in the background.
+- **Prepaging, read-ahead:** reading pages from disk before they are asked for, because they will probably be needed soon.
 
 </details>
 
@@ -196,7 +273,7 @@ Linux keeps pages on two kinds of lists, **active** and **inactive** (one pair f
 
 ### Bélády's anomaly
 
-A natural question: if a process gets more frames, does its fault rate always fall? For FIFO, not necessarily. With the reference string `3 2 1 0 3 2 4 3 2 1 0 4`, FIFO makes 9 faults with 3 frames, but 10 with 4:
+A natural question: if a process gets more frames, does its fault rate always fall? A simple model says yes. Suppose a program has no locality at all, and every reference picks one of its $P$ pages at random. With $F$ frames, the referenced page is in RAM with probability $F/P$, whatever the replacement algorithm, so the fault rate is $1 - F/P$: with 4 of 16 pages in RAM, 75%; with 8 of 16, 50%. More frames, fewer faults; the simulator confirms it for FIFO, LRU and clock alike ([Linux section](#page-replacement-simulated)). For real reference strings and FIFO, however, not necessarily. With the reference string `3 2 1 0 3 2 4 3 2 1 0 4`, FIFO makes 9 faults with 3 frames, but 10 with 4:
 
 ![FIFO with 3 frames: 9 faults; with 4 frames: 10 faults; each column shows the frames after the reference](belady-anomaly.svg)
 
@@ -317,7 +394,7 @@ $ grep -E 'heap|libc.so' /proc/self/maps | head -2
 
 ### Where pages really live
 
-`v2p.c` maps six consecutive virtual pages, writes to the first four, and asks the kernel through `/proc/self/pagemap` (one 64-bit entry per virtual page: bit 63 "present", bits 0–54 the frame number; The kernel development community, n.d.) which physical frame holds each one:
+`v2p.c` maps six consecutive virtual pages, writes to the first four, and asks the kernel through `/proc/self/pagemap` (one 64-bit entry per virtual page: bit 63 "present", bits 0–54 the frame number; The kernel development community, n.d.-b) which physical frame holds each one:
 
 ```console
 $ gcc -O2 -o v2p v2p.c
@@ -411,6 +488,36 @@ The first time, every page must be read from the (virtual) disk: 65,536 major fa
 - **drop_caches:** a file through which the administrator can tell Linux to empty the page cache (for experiments like this one).
 - **Fault-around:** at a minor fault on a file page, the kernel also maps the neighbouring pages that are already in the page cache, expecting that they will be needed soon.
 - **KiB, MiB, GiB:** 1,024 bytes, 1,024 KiB, 1,024 MiB. **µs** (microsecond): a millionth of a second; **ns** (nanosecond): a thousandth of a microsecond.
+
+</details>
+
+### Keeping faults cheap
+
+The settings behind background writeback and prefetching, and the kernel threads that do the work, on the machine used here:
+
+```console
+$ sysctl vm.page-cluster vm.dirty_background_ratio vm.dirty_ratio vm.dirty_writeback_centisecs vm.dirty_expire_centisecs
+vm.page-cluster = 3
+vm.dirty_background_ratio = 10
+vm.dirty_ratio = 20
+vm.dirty_writeback_centisecs = 500
+vm.dirty_expire_centisecs = 3000
+$ cat /sys/block/vda/queue/read_ahead_kb
+128
+$ ps -eo pid,comm | grep -E 'kswapd|writeback'
+   12 kworker/u8:0-writeback
+   35 kworker/R-writeback
+   44 kswapd0
+```
+
+A swap-in reads $2^3$ = 8 pages at once (this machine has no swap, so the setting is idle here). The flusher threads (the `writeback` kernel workers) wake every 5 s (500 centiseconds), write back data that has been dirty for more than 30 s, and start writing in the background as soon as dirty pages exceed 10% of the available memory; at 20%, a process that keeps writing is made to wait and write itself. Sequential reads of files on the disk `vda` are read 128 KiB ahead. `kswapd0` is the background reclaimer of memory node 0 (The kernel development community, n.d.-a).
+
+<details>
+<summary><b>Explained simply:</b> sysctl, centisecond, kworker</summary>
+
+- **sysctl:** a command that shows and changes the kernel's tunable settings (the files under `/proc/sys`).
+- **Centisecond:** a hundredth of a second; 500 centiseconds are 5 seconds.
+- **kworker:** a general kernel worker thread; its name shows which kind of job it is doing, here writeback.
 
 </details>
 
@@ -566,7 +673,22 @@ frames    fifo     lru     opt   clock  random
      7       5       5       5       5       5
 ```
 
-FIFO (and clock, which degenerates to FIFO when every page's accessed bit is set) goes from 9 to 10 faults when the fourth frame is added; LRU and OPT only improve. Note that on a single string LRU can lose to FIFO (10 against 9 faults with 3 frames): the stack property only guarantees that LRU never gets *worse* with more frames, not that it always beats FIFO. With 5 frames all five pages fit, and only the 5 compulsory faults remain. And the working-set effect, for a program with three phases of 12 pages each:
+FIFO (and clock, which degenerates to FIFO when every page's accessed bit is set) goes from 9 to 10 faults when the fourth frame is added; LRU and OPT only improve. Note that on a single string LRU can lose to FIFO (10 against 9 faults with 3 frames): the stack property only guarantees that LRU never gets *worse* with more frames, not that it always beats FIFO. With 5 frames all five pages fit, and only the 5 compulsory faults remain. The naive model of uniformly random references, where every algorithm should give $1 - F/P$:
+
+```console
+$ python3 pagesim.py random
+20000 uniformly random references to 16 pages
+frames     fifo      lru    clock   1 - F/P
+     1   93.5%   93.5%   93.5%    93.8%
+     2   87.5%   87.5%   87.5%    87.5%
+     4   75.0%   74.9%   74.9%    75.0%
+     6   62.0%   62.3%   62.1%    62.5%
+     8   49.7%   49.9%   49.9%    50.0%
+    12   25.0%   25.0%   24.9%    25.0%
+    16    0.1%    0.1%    0.1%     0.0%
+```
+
+Without locality, the algorithm makes no difference and every extra frame helps by the same amount; with 16 frames only the 16 compulsory faults remain (0.1% of 20,000). Real programs have locality, which is what makes the choice of the algorithm matter, and particular reference strings can then trigger FIFO's anomaly. And the working-set effect, for a program with three phases of 12 pages each:
 
 ```console
 $ python3 pagesim.py thrash
@@ -605,6 +727,7 @@ frames  LRU faults  fault rate
 6. **TLB.** Run `tlb` and `tlb huge` on your machine, and find the steps. Look up your processor's TLB sizes (`cpuid -1 | grep -i tlb`, or the vendor's documentation) and check whether the steps match the number of entries.
 7. **Replacement.** Run `python3 pagesim.py trace lru 3 3 2 1 0 3 2 4 3 2 1 0 4` and the same with `opt` and `clock`, then add the aging algorithm to `pagesim.py` and run it on the same string. Then search, with a small script, for the shortest reference string over 5 pages that shows Bélády's anomaly for FIFO, and check that LRU never shows it on 1,000 random strings.
 8. **Thrashing, for real.** In a virtual machine or a container with a memory limit (for example `sudo systemd-run --scope -p MemoryMax=256M ./prog` with swap enabled), run a program that touches 200, 250, 300 and 400 MiB at random. Measure its run time and its major faults. Where does thrashing begin?
+9. **No locality, and the price of a fault.** Run `python3 pagesim.py random` and explain why all three algorithms give $1 - F/P$. Then add `opt` to the comparison (on 2,000 references, because OPT is slow in this simulator): why can OPT do much better even on random references? Finally, with the model of the [cost of a fault](#the-cost-of-a-fault) (memory access 1 unit, disk transfer 10,000 units), compute the slowdown for a fault rate of 1 in 10,000 accesses when no victim, half of the victims, or all victims are dirty.
 
 ## Review questions
 
@@ -623,6 +746,9 @@ frames  LRU faults  fault rate
 13. What is a working set, and what is thrashing? How can an operating system prevent thrashing?
 14. Compare caches and virtual memory: unit, size, cost of a miss, placement, replacement and write policy. Explain each difference by the cost of a miss.
 15. What did the Linux measurements show about demand paging, copy-on-write, major faults and the TLB? Give one number for each.
+16. What are overlays and swapping? What problems of each did paging solve? What does "swap" mean on Linux today?
+17. With uniformly random references to 16 pages, what fault rate do you expect with 4 and with 8 frames, and why does it not depend on the algorithm? How does Bélády's anomaly contradict the expectation that more frames always mean fewer faults?
+18. A system has 16-bit virtual addresses, 4 KiB pages and 7-bit frame numbers. How long are the page number, the offset and the physical address? Translate the virtual address `0x2ABC` if page 2 is in frame `0x5D`. Then list the steps of a major fault in order, and say why a dirty victim makes it about twice as slow.
 
 <details>
 <summary><strong>Answer key (for instructors)</strong></summary>
@@ -642,8 +768,11 @@ frames  LRU faults  fault rate
 13. The pages used in a recent time window. Thrashing: too few frames for the working sets, so processes mostly wait for paging. Prevent it by keeping fewer processes in memory (suspending or ending some), giving each enough frames for its working set, or adding memory.
 14. Line (64 B) vs page (4 KiB); KiB–MiB vs GiB; 10–100 ns vs µs–ms; set-associative vs fully associative; hardware random/pseudo-LRU vs software LRU approximations; write-through or write-back vs always write-back. A major page fault costs hundreds of thousands to millions of cycles, so the OS can afford full associativity and careful replacement, and must avoid any unnecessary disk write.
 15. Demand paging: 1 GiB mapped with 1 MiB resident until touched, then 262,144 faults. Copy-on-write: the child got a new frame (0x1802b2) only when it wrote. Major faults: 57 µs per page vs about 0.15 µs when cached. TLB: 14.9 ns vs 4.3 ns per access for 4,096 pages with 4 KiB vs 2 MiB pages.
+16. Overlays: the programmer splits a program into a resident part and phases that are loaded in turn into one overlay area. Swapping: the OS moves whole jobs between memory and a swap area. Overlays burden the programmer and depend on the memory size; swapping moves whole processes (cost proportional to size), needs a contiguous hole on return, and cannot run a job larger than RAM. Paging moves only the pages used, into any frame, automatically. On Linux, swap is the disk area for single anonymous pages evicted from RAM.
+17. $1 - F/P$: 75% with 4 frames, 50% with 8 (the simulator: 75.0% and 49.7–49.9%). Every page is equally likely to be referenced next, so which pages are kept does not matter, only how many. Bélády's anomaly: with FIFO and the string 3 2 1 0 3 2 4 3 2 1 0 4, 4 frames give 10 faults and 3 frames only 9; it happens because FIFO is not a stack algorithm.
+18. Page number 4 bits, offset 12 bits, physical address 7 + 12 = 19 bits (512 KiB). `0x2ABC` → page 2, offset `0xABC` → physical `0x5DABC` (the frame number is written in front of the offset). Steps: exception, check of the address and rights, finding a frame (evicting and writing back a dirty victim), starting the disk read, running another process, disk interrupt, updating the page-table entry, restarting the instruction. A dirty victim must be written before its frame can be reused, so the fault costs a disk write plus a disk read instead of one read.
 
-**Lab answers.** Lab 3: `0x00000FFF` → frame 7, physical `0x00007FFF`; `0x00001000` → page 1, not present: page fault; `0x00403A7C` → `0x12DC6A7C`. `0x00007F8A2F422ABC`: indices 0xFF (255), 0x28 (40), 0x17A (378), 0x22 (34), offset 0xABC. Lab 4: 2²⁰ × 4 B = 4 MiB; for 8 MiB contiguous (and aligned): 1 table at each of levels 4, 3 and 2, and 4 tables at level 1 (2,048 entries / 512), 7 pages = 28 KiB in total, in theory. Measured, VmPTE grows only by about 4–5 pages (16–20 kB): the new region usually lands next to the libraries, whose upper-level tables already exist, and VmPTE does not count the top-level table. Lab 5: one minor fault per page written by the child (262,144 for 1 GiB); fork itself must copy the page tables, about 2 MiB, which takes milliseconds; a reading child causes no copies and no faults at all. Lab 7: an exhaustive search over all strings of up to 12 references over up to 5 pages shows that 12 is the minimum length, and that, up to renaming the pages, the string of the figure, with 3 against 4 frames, is the only such string of length 12.
+**Lab answers.** Lab 3: `0x00000FFF` → frame 7, physical `0x00007FFF`; `0x00001000` → page 1, not present: page fault; `0x00403A7C` → `0x12DC6A7C`. `0x00007F8A2F422ABC`: indices 0xFF (255), 0x28 (40), 0x17A (378), 0x22 (34), offset 0xABC. Lab 4: 2²⁰ × 4 B = 4 MiB; for 8 MiB contiguous (and aligned): 1 table at each of levels 4, 3 and 2, and 4 tables at level 1 (2,048 entries / 512), 7 pages = 28 KiB in total, in theory. Measured, VmPTE grows only by about 4–5 pages (16–20 kB): the new region usually lands next to the libraries, whose upper-level tables already exist, and VmPTE does not count the top-level table. Lab 5: one minor fault per page written by the child (262,144 for 1 GiB); fork itself must copy the page tables, about 2 MiB, which takes milliseconds; a reading child causes no copies and no faults at all. Lab 7: an exhaustive search over all strings of up to 12 references over up to 5 pages shows that 12 is the minimum length, and that, up to renaming the pages, the string of the figure, with 3 against 4 frames, is the only such string of length 12. Lab 9: OPT knows the future, so even without locality it keeps the pages that will be needed soonest; on 2,000 random references to 16 pages it faults about 50%, 25% and 10% of the time with 4, 8 and 12 frames, against about 74%, 49% and 24% for FIFO and LRU. Slowdown at 1 fault in 10,000 accesses: (10,000 + 10,000) / 10,000 = 2 times with clean victims, 2.5 times if half of them are dirty, 3 times if all are.
 
 </details>
 
@@ -655,11 +784,17 @@ Bélády, L. A., Nelson, R. A., & Shedler, G. S. (1969). An anomaly in space-tim
 
 Corbató, F. J. (1968). *A paging experiment with the Multics system* (Report No. MAC-M-384). Massachusetts Institute of Technology, Project MAC. https://people.csail.mit.edu/saltzer/Multics/Multics-Documents/M00s/M0104.pdf
 
+Corbató, F. J., Merwin-Daggett, M., & Daley, R. C. (1962). An experimental time-sharing system. In *Proceedings of the May 1–3, 1962, Spring Joint Computer Conference* (pp. 335–344). Association for Computing Machinery. https://doi.org/10.1145/1460833.1460871
+
 Denning, P. J. (1968a). The working set model for program behavior. *Communications of the ACM, 11*(5), 323–333. https://doi.org/10.1145/363095.363141
 
 Denning, P. J. (1968b). Thrashing: Its causes and prevention. In *Proceedings of the December 9–11, 1968, Fall Joint Computer Conference, Part I* (pp. 915–922). ACM. https://doi.org/10.1145/1476589.1476705
 
+Denning, P. J. (1970). Virtual memory. *ACM Computing Surveys, 2*(3), 153–189. https://doi.org/10.1145/356571.356573
+
 Intel Corporation. (2024). *Intel 64 and IA-32 architectures optimization reference manual: Volume 1*. https://www.intel.com/content/www/us/en/content-details/671488/intel-64-and-ia-32-architectures-optimization-reference-manual-volume-1.html
+
+Intel Corporation. (2025). *Intel 64 and IA-32 architectures software developer's manual: Volume 3A. System programming guide, part 1*. https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
 
 Kilburn, T., Edwards, D. B. G., Lanigan, M. J., & Sumner, F. H. (1962). One-level storage system. *IRE Transactions on Electronic Computers, EC-11*(2), 223–235. https://doi.org/10.1109/TEC.1962.5219356
 
@@ -667,7 +802,9 @@ Knuth, D. E. (1997). *The art of computer programming: Vol. 1. Fundamental algor
 
 Larabel, M. (2022, October 11). *MGLRU merged for Linux 6.1*. Phoronix. https://www.phoronix.com/news/MGLRU-In-Linux-6.1
 
-The kernel development community. (n.d.). *Examining process page tables*. The Linux Kernel documentation. Retrieved October 7, 2026, from https://docs.kernel.org/admin-guide/mm/pagemap.html
+The kernel development community. (n.d.-a). *Documentation for /proc/sys/vm/*. The Linux Kernel documentation. Retrieved October 7, 2026, from https://docs.kernel.org/admin-guide/sysctl/vm.html
+
+The kernel development community. (n.d.-b). *Examining process page tables*. The Linux Kernel documentation. Retrieved October 7, 2026, from https://docs.kernel.org/admin-guide/mm/pagemap.html
 
 Mattson, R. L., Gecsei, J., Slutz, D. R., & Traiger, I. L. (1970). Evaluation techniques for storage hierarchies. *IBM Systems Journal, 9*(2), 78–117. https://doi.org/10.1147/sj.92.0078
 
@@ -676,7 +813,5 @@ Silberschatz, A., Galvin, P. B., & Gagne, G. (2018). *Operating system concepts*
 ## Further reading
 
 Arpaci-Dusseau, R. H., & Arpaci-Dusseau, A. C. (2023). *Operating systems: Three easy pieces* (Version 1.10). Arpaci-Dusseau Books. https://pages.cs.wisc.edu/~remzi/OSTEP/
-
-Denning, P. J. (1970). Virtual memory. *ACM Computing Surveys, 2*(3), 153–189. https://doi.org/10.1145/356571.356573
 
 Gorman, M. (2004). *Understanding the Linux virtual memory manager*. Prentice Hall. https://www.kernel.org/doc/gorman/

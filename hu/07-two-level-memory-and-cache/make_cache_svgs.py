@@ -83,11 +83,18 @@ def hierarchy():
         p.append(rect(24, y, 740, 36, k, rx=6))
         p.append(text(36, y + 23, a, 12.5, 600)); p.append(text(240, y + 23, b, 12)); p.append(text(420, y + 23, c, 12))
         p.append(text(600, y + 23, d, 11.5, cls="quiet"))
-    p.append(path("M790 340V84", m, width=2)); p.append(text(804, 210, "bájtonkénti ár", 11.5, cls="quiet"))
-    p.append(text(804, 226, "és sebesség", 11.5, cls="quiet"))
+    # Stallings csoportosítása: belső (0-2. sor), külső (3-4. sor), offline (5. sor)
+    for r0, r1, name in ((0, 2, "belső"), (3, 4, "külső"), (5, 5, "offline")):
+        ya, yb = 72 + r0 * 46 + 2, 72 + r1 * 46 + 34
+        p.append(path(f"M774 {ya}H780V{yb}H774", width=1.5))
+        p.append(text(788, (ya + yb) / 2 + 4, name, 12, 600))
+        p.append(text(788, (ya + yb) / 2 + 19, "tár", 11, cls="quiet"))
+    p.append(path("M890 340V84", m, width=2)); p.append(text(902, 210, "bájtonkénti ár", 11.5, cls="quiet"))
+    p.append(text(902, 226, "és sebesség", 11.5, cls="quiet"))
     p.append(text(24, 368, "Kék: az előadás gyorsítótár–RAM párosa (felejtő, a hardver kezeli). Narancs: az alatta lévő tárak, ahol a RAM a lemez", 11.5, cls="quiet"))
     p.append(text(24, 386, "gyorsítótáraként működik (lapgyorsítótár, virtuális memória). A gyorsítótár-idők az előadás gépén mérve (latency.c).", 11.5, cls="quiet"))
-    return svg(900, 402, title, "\n".join(p))
+    p.append(text(24, 404, "A belső tárat a CPU utasításai érik el, a külső tárat I/O-n keresztül; az offline tárnál előbb be kell helyezni az adathordozót.", 11.5, cls="quiet"))
+    return svg(1000, 420, title, "\n".join(p))
 
 
 # ---------------- 2. The triangle and the magic ----------------
@@ -322,10 +329,64 @@ def traversal():
     return svg(840, 380, title, "\n".join(p))
 
 
+# ---------------- 10. SRAM- és DRAM-cella ----------------
+def cells():
+    title = "Miért drága a gyors memória: egy SRAM-cellában hat tranzisztor van, egy DRAM-cellában egy tranzisztor és egy kondenzátor"
+    p = [text(24, 30, "Miért drága a gyors memória: egy SRAM-bit és egy DRAM-bit", 15, 600)]
+
+    def tr(x, y, name):                      # tranzisztor kis kapcsolódobozként, a vezérlőelektróda felül
+        return rect(x, y, 44, 26, "c2", rx=3) + text(x + 22, y + 17, name, 11, 600, anchor="middle")
+
+    def inv(x, y, right=True):              # inverter: háromszög, a kimenetén kis körrel
+        d = 1 if right else -1
+        tri = f"M{x} {y - 14}L{x + d * 34} {y}L{x} {y + 14}Z"
+        return (f'<path d="{tri}" class="accf"/><path d="{tri}" fill="none" class="acc" stroke-width="1.5"/>'
+                f'<circle cx="{x + d * 38}" cy="{y}" r="4" fill="none" class="acc" stroke-width="1.5"/>')
+
+    # ---- SRAM, bal oldali panel ----
+    p.append(text(24, 64, "SRAM-cella (gyorsítótárak): 6 tranzisztor", 13, 600))
+    p.append(path("M40 92H400", width=2)); p.append(text(404, 96, "szóvezeték", 11, cls="quiet"))
+    p.append(path("M60 80V290", width=2)); p.append(text(60, 308, "bitvezeték", 11, cls="quiet", anchor="middle"))
+    p.append(path("M380 80V290", width=2)); p.append(text(380, 308, "negált bitvezeték", 11, cls="quiet", anchor="middle"))
+    p.append(tr(98, 170, "T5")); p.append(tr(298, 170, "T6"))
+    p.append(path("M120 92V170")); p.append(path("M320 92V170"))
+    p.append(path("M60 183H98")); p.append(path("M342 183H380"))
+    # a Q csomópont (x=170) a felső invertert, a nem-Q (x=270) az alsót táplálja; a kimenetek keresztbe kötve
+    p.append(path("M142 183H170V150H186")); p.append(path("M224 150H270V183"))
+    p.append(path("M298 183H270V216H254")); p.append(path("M216 216H170V183"))
+    p.append(inv(186, 150, True)); p.append(inv(254, 216, False))
+    p.append('<circle cx="170" cy="183" r="3" class="edgef"/><circle cx="270" cy="183" r="3" class="edgef"/>')
+    p.append(text(164, 200, "Q", 11, 600, anchor="end")); p.append(text(276, 212, "nem Q", 11, 600))
+    p.append(text(220, 252, "két inverter (egyenként 2 tranzisztor) táplálja egymást:", 11, cls="quiet", anchor="middle"))
+    p.append(text(220, 266, "a bit addig marad meg, amíg van tápfeszültség", 11, cls="quiet", anchor="middle"))
+    # ---- DRAM, jobb oldali panel ----
+    x0 = 500
+    p.append(text(x0, 64, "DRAM-cella (központi memória): 1 tranzisztor + 1 kondenzátor", 13, 600))
+    p.append(path(f"M{x0 + 10} 92H{x0 + 300}", width=2)); p.append(text(x0 + 304, 96, "szóvezeték", 11, cls="quiet"))
+    p.append(path(f"M{x0 + 40} 80V290", width=2)); p.append(text(x0 + 40, 308, "bitvezeték", 11, cls="quiet", anchor="middle"))
+    p.append(tr(x0 + 120, 170, "T"))
+    p.append(path(f"M{x0 + 142} 92V170")); p.append(path(f"M{x0 + 40} 183H{x0 + 120}"))
+    p.append(path(f"M{x0 + 164} 183H{x0 + 220}V206"))
+    p.append(f'<path d="M{x0 + 196} 206H{x0 + 244}M{x0 + 196} 216H{x0 + 244}" fill="none" class="acc" stroke-width="3"/>')
+    p.append(path(f"M{x0 + 220} 216V236")); p.append(path(f"M{x0 + 204} 236H{x0 + 236}M{x0 + 210} 242H{x0 + 230}M{x0 + 216} 248H{x0 + 224}", width=1.5))
+    p.append(text(x0 + 254, 208, "kondenzátor: a bit", 11, cls="quiet")); p.append(text(x0 + 254, 222, "egy parányi töltés", 11, cls="quiet"))
+    p.append(text(x0 + 205, 272, "a töltés elszivárog: minden sort frissíteni kell", 11, cls="quiet", anchor="middle"))
+    p.append(text(x0 + 205, 286, "(DDR-memóriában 32–64 ms-on belül), és az olvasás kiüríti", 11, cls="quiet", anchor="middle"))
+    # ---- összehasonlítás ----
+    rows = [("SRAM", "kb. 6 tranzisztor bitenként, nincs frissítés, ~1 ns a CPU-lapkán: gyors, nagy terület, drága → gyorsítótárak", "acct"),
+            ("DRAM", "1 tranzisztor + 1 kondenzátor bitenként, frissíteni kell, ~100 ns a memóriavezérlőn át: sűrű, olcsó → RAM", "c2"),
+            ("CAM", "SRAM-cella plusz összehasonlító logika, kb. 9–10 tranzisztor bitenként → csak kis teljesen asszociatív gyorsítótárak, TLB-k", "bad")]
+    for i, (a, b, c) in enumerate(rows):
+        y = 342 + i * 22
+        p.append(text(24, y, a, 12, 600, cls=c)); p.append(text(76, y, b, 11.5, cls="quiet"))
+    return svg(900, 410, title, "\n".join(p))
+
+
 if __name__ == "__main__":
     for name, fn in [("memory-hierarchy", hierarchy), ("two-level-magic", triangle), ("latency-ladder", ladder),
                      ("call-depth", calldepth), ("direct-mapped-cache", dmcache), ("fully-associative-cache", facache),
-                     ("block-placement", placement), ("miss-rate-vs-line-size", blocksize), ("traversal", traversal)]:
+                     ("block-placement", placement), ("miss-rate-vs-line-size", blocksize), ("traversal", traversal),
+                     ("memory-cells", cells)]:
         with open(os.path.join(HERE, f"{name}.svg"), "w") as f:
             f.write(fn())
         print("wrote", name + ".svg")

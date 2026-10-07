@@ -12,13 +12,13 @@ A [megszakításokról szóló előadás](../05-interrupts/) bemutatta azt a mec
 
 Az előadás végére a hallgatók képesek lesznek:
 
-- megfogalmazni a kritikus szakasz problémáját és annak három követelményét, és megmagyarázni, miért kell egy zár vizsgálatának és beállításának egyetlen atomi lépésnek lennie;
+- megfogalmazni a kritikus szakasz problémáját és annak három követelményét, lépésről lépésre végigkövetni egy elveszett frissítéssel járó versenyhelyzetet (két pénzfelvétel ugyanarról a bankszámláról), és megmagyarázni, miért kell egy zár vizsgálatának és beállításának egyetlen atomi lépésnek lennie, és miért nem segít a beállítás utáni újbóli ellenőrzés;
 - elmagyarázni Peterson algoritmusát, és azt, miért hibázik egy modern többmagos processzoron memóriakorlátok nélkül;
 - leírni a szinkronizáció három rétegét (hardverutasítás, operációs rendszerbeli mutex és szemafor, nyelvi konstrukció) és a futex gyors útját, valamint összehasonlítani az atomi műveletek, a spinlockok és a mutexek költségét;
-- szemaforokat használni kölcsönös kizárásra és számlálásra, és megoldani a termelő–fogyasztó problémát;
-- definiálni a holtpontot, kimondani a négy Coffman-feltételt, felrajzolni az erőforrás-foglalási gráfot, és elmagyarázni a megelőzést, az elkerülést (bankár-algoritmus), a felismerést és a feloldást; megkülönböztetni a holtpontot a livelocktól, az éheztetéstől és a prioritásinverziótól;
-- felrajzolni a folyamatok állapotdiagramját, elmagyarázni a hosszú, közép- és rövid távú ütemezőt, a zombikat és az árvákat, és megfeleltetni az állapotokat a Linux `ps` kódjainak;
-- kiszámítani a várakozási, átfutási és válaszidőt FIFO, SJF, SRTF és Round Robin ütemezés mellett, valamint az időszelet hatásfokbeli költségét;
+- szemaforokat használni kölcsönös kizárásra és számlálásra, és megoldani a termelő–fogyasztó és az alvó borbély problémát;
+- definiálni a holtpontot, kimondani a négy Coffman-feltételt, felrajzolni az erőforrás-foglalási gráfot (a több példányos erőforrásokkal együtt), és elmagyarázni a megelőzést, az elkerülést (bankár-algoritmus), a felismerést és a feloldást; megkülönböztetni a holtpontot a livelocktól, az éheztetéstől és a prioritásinverziótól;
+- felrajzolni a folyamatok állapotdiagramját, elmagyarázni a hosszú, közép- és rövid távú ütemezőt, a zombikat és az árvákat, és megfeleltetni az állapotokat a Linux `ps` kódjainak, visszavezetve a megszakítható és a megszakíthatatlan alvást a klasszikus Unix alvási prioritásaira;
+- kiszámítani a várakozási, átfutási és válaszidőt FIFO, SJF, SRTF, HRRN és Round Robin ütemezés mellett, valamint az időszelet hatásfokbeli költségét;
 - elmagyarázni a Linux ütemezési osztályait, a nice-értékeket és a súlyokat, valamint az EEVDF ütemezőt, és megmérni ezek hatását.
 
 <details>
@@ -56,6 +56,27 @@ Többmagos processzoron a probléma még élesebb: két szál valóban ugyanabba
 
 ## A kritikus szakasz problémája
 
+A versenyhelyzetet pénzzel a legkönnyebb szemléltetni. Két bankkártya tartozik ugyanahhoz a bankszámlához, amelyen 150 van. Ugyanabban a pillanatban az egyik kártyabirtokos 100-at vesz fel egy budapesti, a másik 100-at egy hongkongi bankautomatából. Mindkét automata ugyanazt a kódot futtatja a bank szerverén, két párhuzamos folyamatként, amelyek egy közös változón, a `balance`-on (egyenleg) osztoznak:
+
+```text
+withdraw(amount):
+    b = balance                  // read the balance
+    if b >= amount:              // check: is there enough money?
+        balance = b - amount     // act: write the new balance
+        dispense(amount)
+```
+
+Önmagában mindkét kérés helyes. Összefésülődve azonban elromolhatnak:
+
+| Lépés | 1. automata (Budapest) | 2. automata (Hongkong) | `balance` |
+|---|---|---|---|
+| ① | kiolvassa: `b = 150`; 150 ≥ 100, az ellenőrzés sikeres | | 150 |
+| ② | | kiolvassa: `b = 150`; 150 ≥ 100, az ellenőrzés sikeres | 150 |
+| ③ | beírja: `balance = 150 − 100 = 50`; kiad 100-at | | 50 |
+| ④ | | beírja: `balance = 150 − 100 = 50`; kiad 100-at | 50 |
+
+Az automaták 200-at fizettek ki, a számla mégis 50-et mutat: az 1. automata frissítését felülírták, elveszett. Ez a klasszikus **elveszett frissítés** (lost update), a mögötte álló minta pedig az **ellenőrzés, aztán cselekvés** (check-then-act): a döntés (① lépés) olyan értéken alapul, amely a cselekvés (③ vagy ④ lépés) pillanatában már nem igaz. Ha a kód közvetlenül az írás előtt újra kiolvasná a `balance` értékét, a számla −50-re futna ki, vagyis túllépnék a fedezetet, holott az ellenőrzésnek éppen ezt kellett volna megakadályoznia. Akárhogy is, az olvasásnak, az ellenőrzésnek és az írásnak egyetlen oszthatatlan egységet kell alkotnia. A bankok ezt az adatbázisuktól kapják meg: a pénzfelvétel **tranzakcióként** fut, amely zárolja a számla sorát (vagy egyetlen atomi utasításként, például `UPDATE account SET balance = balance - 100 WHERE id = 42 AND balance >= 100`), így az ugyanarról a számláról történő párhuzamos pénzfelvételek **sorosítva** (serialised), egymás után hajtódnak végre.
+
 A programnak az a része, amely közös adatokon dolgozik, a **kritikus szakasza**. A kritikus szakasz problémájának helyes megoldása három dolgot kell garantálnia (Silberschatz et al., 2018):
 
 1. **Kölcsönös kizárás:** egyszerre legfeljebb egy folyamat lehet a kritikus szakaszában.
@@ -65,6 +86,55 @@ A programnak az a része, amely közös adatokon dolgozik, a **kritikus szakasza
 Mindennek működnie kell a folyamatok egymáshoz viszonyított sebességétől függetlenül, és akárhol is üt be egy megszakítás.
 
 A naiv `while (S == 0); S = 0;` zár már az első követelményt sem teljesíti, mert a **vizsgálat** (`while (S == 0)`) és a **beállítás** (`S = 0`) két külön lépés; ha a kettő között megszakítás érkezik, mindkét folyamat bejut. A megoldás egy **test-and-set** (vizsgál és beállít) utasítás: olyan hardverutasítás, amely egyetlen, oszthatatlan (atomi) lépésben vizsgál és állít be. x86-on ez az `xchg`, amellyel a megszakításokról szóló előadás spinlockot épített.
+
+### Két zár, amely nem működik
+
+Szemaforként felírva a naiv zár belépéskor `while (s == 0); s--;`, kilépéskor `s++;`, kezdetben `s = 1`. Legyen P1 kritikus szakasza `X = 1`, P2-é pedig `X = 0; X = X + 1`. Egymás után futtatva, bármilyen sorrendben, mindkét szakasz `X = 1`-et hagy maga után. A sorszámok egy lehetséges összefésülődést mutatnak:
+
+| Lépés | P1 | P2 | `s` | `X` |
+|---|---|---|---|---|
+| ① | vizsgálja: `s == 0` hamis, kilép a ciklusból | | 1 | |
+| ② | | vizsgálja: `s == 0` hamis, kilép a ciklusból | 1 | |
+| ③ | `s--` | | 0 | |
+| ④ | | `s--` | −1 | |
+| ⑤ | | `X = 0` | −1 | 0 |
+| ⑥ | `X = 1` | | −1 | 1 |
+| ⑦ | | `X = X + 1` | −1 | 2 |
+
+Mindkét folyamat bent van, és `X` végül 2 lesz, ami semmilyen soros végrehajtási sorrendből nem jöhet ki. A két `s++` után `s` ismét 1, így a zár még a nyomokat is eltünteti.
+
+Csábító javítás, ha utólag ellenőrizzük, valóban miénk-e a zár: minden folyamat beírja a saját azonosítóját `S`-be, és csak akkor lép be, ha az azonosítója még mindig ott van.
+
+```c
+retry:
+    while (S != 0) ;              /* wait until the lock is free      */
+    S = me;                       /* claim it with my ID (1 or 2)     */
+    if (S != me) goto retry;      /* overwritten by the other? retry  */
+    /* critical section */
+    S = 0;
+```
+
+| Lépés | P1 | P2 | `S` |
+|---|---|---|---|
+| ① | látja, hogy `S == 0`, kilép a ciklusból | | 0 |
+| ② | | látja, hogy `S == 0`, kilép a ciklusból | 0 |
+| ③ | beírja: `S = 1` | | 1 |
+| ④ | ellenőrzi: `S == 1`, még az enyém, belép | | 1 |
+| ⑤ | | beírja: `S = 2` | 2 |
+| ⑥ | | ellenőrzi: `S == 2`, még az enyém, belép | 2 |
+
+Az ellenőrzés csak akkor veszi észre a másik folyamatot, ha annak írása a saját írásom és a saját ellenőrzésem közé esik; a később érkező írást nem láthatja. Egy második ellenőrzés csak arrébb tolja az ablakot. Két kiút marad: egy hardverutasítás, amely egyetlen atomi lépésben olvas és ír (test-and-set), vagy egy olyan algoritmus, amelyben minden folyamat előbb bejelenti a szándékát, aztán előreengedi a másikat; Peterson algoritmusa pontosan ezt teszi.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> elveszett frissítés, ellenőrzés, aztán cselekvés, tranzakció, sorosítás, összefésülődés</summary>
+
+- **Elveszett frissítés** (lost update): két program egyszerre módosítja ugyanazt az értéket, és az egyik módosítás csendben felülírja a másikat, mintha meg sem történt volna.
+- **Ellenőrzés, aztán cselekvés** (check-then-act): előbb megnézed („van elég pénz?”), aztán a látottak alapján cselekszel. Ha valaki más közben megváltoztatja a helyzetet, a cselekvésed már régi információn alapul.
+- **Tranzakció:** adatbázis-műveletek olyan csoportja, amely vagy teljesen megtörténik, vagy egyáltalán nem, és úgy, mintha közben senki más nem használná az adatbázist.
+- **Sorosítás** (serialise): a dolgok egymás után történnek, nem egyszerre, mint amikor egyetlen ablak előtt egyetlen sor áll.
+- **Összefésülődés** (interleaving): az a sorrend, amelyben két program lépései ténylegesen követik egymást, amikor felváltva kapják meg a processzort, vagy két magon futnak.
+
+</details>
 
 ### Peterson algoritmusa: zár tisztán szoftverből
 
@@ -136,6 +206,10 @@ Dijkstra (1965) vezette be a **szemafort**: egy nemnegatív egész számlálót 
 - `P(S)`: ha S > 0, csökkenti, és a folyamat továbbmegy; különben alszik, amíg S nagyobb nem lesz 0-nál (ez Dijkstra nemnegatív változata; a megszakításokról szóló előadás azt az egyenértékű változatot mutatta be, amelyben S negatív is lehet, és ilyenkor a várakozó folyamatokat számolja);
 - `V(S)`: növeli S-t, és ha van alvó, egyet felébreszt.
 
+A név a vasúttól származik (Dijkstra első, a témáról írt feljegyzésének címe *Over seinpalen*, „A szemaforokról”; Dijkstra, n.d.). Egy egyvágányú vonalon a két irányból érkező vonatok egyetlen pályaszakaszon osztoznak, ez a kritikus szakasz, és mindkét végén egy **szemafor** (alakjelző) őrzi a behajtást. Vízszintes karja azt jelenti, „megállj”, felemelt karja azt, „szabad az út”. A jelzőhöz érő vonat P műveletet hajt végre: ha a szakasz szabad, behajt, és mögötte a jelzők megállj állásba váltanak (S 0 lesz); ha nem, a jelzőnél vár. A szakaszt elhagyó vonat V műveletet hajt végre: a szakasz ismét szabad (S = 1), és egy várakozó vonat indulhat.
+
+![Egyvágányú vasúti szakasz két kétvágányú szakasz között; az A vonat bent van, mindkét jelző megállj állásban, a B vonat a keleti jelzőnél vár; a jelmagyarázat a vízszintes kart (megállj, S = 0) és a felemelt kart (szabad, S = 1) mutatja](railway-semaphore.svg)
+
 A megszakításokról szóló előadás 1-re inicializált szemafort használt zárként (**bináris szemafor**). Ha *n*-re inicializáljuk, egyszerre *n* folyamatot enged be (**számláló szemafor**): *n* szabad nyomtató, *n* adatbázis-kapcsolat, *n* parkolóhely. És mivel az egyik folyamat hívhatja a V-t, miközben egy másik a P-t, a szemaforral egy eseményt is **jelezni** lehet folyamatok között, amire a mutex nem képes.
 
 A klasszikus példa a **termelő–fogyasztó** (korlátos puffer) probléma: a termelők elemeket tesznek egy *N* férőhelyes pufferbe, a fogyasztók kiveszik őket. Három szemafor megoldja:
@@ -150,6 +224,22 @@ consumer:  P(full);  P(mutex); item = take(); V(mutex); V(empty)
 ```
 
 A termelő akkor alszik, ha tele van a puffer, a fogyasztó akkor, ha üres, és senki sem vár tevékenyen. A két P művelet sorrendje számít: az a termelő, amely előbb a `mutex`-et foglalná le, és utána aludna el az `empty`-n, lezárva tartaná a puffert, és egyetlen fogyasztó sem tudna soha helyet felszabadítani: ez holtpont.
+
+**Az alvó borbély.** Egy másik klasszikus feladat Dijkstrától (1965): egy borbélyüzletben egy borbély, egy borbélyszék és *n* szék van a várakozó vendégeknek. Ha nincs vendég, a borbély a székében alszik. Az érkező vendég felébreszti a borbélyt, ha az alszik, leül várni, ha van szabad szék, és elmegy, ha minden szék foglalt. A nehézség az elveszett ébresztés: az a vendég, aki látja, hogy a borbély dolgozik, és éppen le akar ülni, valamint az a borbély, aki végzett, nem lát várakozót, és éppen elalszik, örökké egymásra várhatnak. Két jelzésre használt szemafor és egy zárként használt szemafor megoldja:
+
+```text
+semaphore customers = 0   // waiting customers; the barber sleeps on it
+semaphore barber    = 0   // the barber is ready; a customer sleeps on it
+semaphore mutex     = 1   // protects waiting
+int waiting = 0           // customers on the waiting chairs (at most n)
+
+barber:    loop { P(customers); P(mutex); waiting--; V(barber); V(mutex); cut_hair() }
+customer:  P(mutex)
+           if waiting < n:  waiting++; V(customers); V(mutex); P(barber); get_haircut()
+           else:            V(mutex); leave()
+```
+
+Mivel a számláló akkor is megjegyzi a V-t, ha még senki sem vár, egyetlen ébresztés sem veszhet el. Ugyanez a szerkezet jelenik meg minden olyan szerverben, amelyben munkaszálak készlete és kérések korlátos sora van: a borbély egy munkaszál, a székek a sor, és az a vendég, aki tele találja a sort, egy elutasított kérés.
 
 A szemaforok hatékonyak, de könnyű rosszul használni őket: egyetlen elfelejtett V vagy egy felcserélt P és V, és a program lefagy, vagy sérül a kölcsönös kizárás. A **monitorok** (Hoare, 1974) a közös adatot, a zárat és a **feltételváltozókat** (amelyeken egy szál a záron belül egy feltétel teljesülésére várhat) egyetlen konstrukcióba csomagolják; a Java-objektumok a `synchronized`, `wait()` és `notify()` eszközökkel, valamint a C++ `std::condition_variable` osztálya a gyakorlatban monitorok. POSIX-szálakkal a korlátos puffer így néz ki:
 
@@ -167,13 +257,17 @@ Két részlet fontos. A `pthread_cond_wait` alvás közben elengedi a mutexet, �
 **Olvasók és írók.** Sok közös adatszerkezetet sokkal gyakrabban olvasnak, mint írnak. Az **olvasó–író zár** (readers–writer lock, `pthread_rwlock_t`) tetszőleges számú olvasót együtt beenged, írót viszont csak egyedül; ügyelnie kell arra, hogy ne éheztesse ki az írókat. A Linux-kernel a főleg olvasott adatokra még tovább megy az **RCU**-val (read-copy-update, olvasás–másolás–frissítés): az olvasók egyáltalán nem foglalnak zárat, az író pedig közzétesz egy új másolatot, és a régit csak akkor szabadítja fel, amikor minden olvasó végzett, amelyik még láthatta (McKenney, 2023).
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> szemafor, P és V, bináris és számláló szemafor, termelő–fogyasztó, puffer, monitor, feltételváltozó, Mesa-szemantika, hamis ébredés, olvasó–író zár, RCU</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> szemafor, vasúti szemafor (alakjelző), P és V, bináris és számláló szemafor, termelő–fogyasztó, puffer, alvó borbély, elveszett ébresztés, munkaszál-készlet, monitor, feltételváltozó, Mesa-szemantika, hamis ébredés, olvasó–író zár, RCU</summary>
 
 - **Szemafor:** a belépést szabályozó számláló, olyan, mint egy parkolóház kijelzője: lefelé számol, ahogy az autók behajtanak, 0-nál megállítja az autókat, és felfelé számol, ahogy kihajtanak.
 - **P és V:** Dijkstra holland nevei arra, hogy „várj, amíg el tudsz venni egyet” és „adj vissza egyet”.
 - **Bináris szemafor:** csak 0 vagy 1 lehet, ezért zárként működik. **Számláló szemafor:** bármilyen szám lehet, több egyforma erőforráshoz.
 - **Termelő–fogyasztó:** a program egyik része elemeket készít, a másik felhasználja őket, és közöttük egy korlátos méretű várakozóhely van, mint a pékségben a polc a pék és a vevők között.
 - **Puffer:** ez a várakozóhely a memóriában.
+- **Vasúti szemafor (alakjelző):** a pálya mellett álló oszlop mozgatható karral; a vízszintes kar azt jelenti, „állj”, a felemelt kar azt, „mehetsz”. Egyszerre csak egy vonatot enged rá egy egyvágányú szakaszra, vagyis arra a pályára, amelyen a két irányba haladó vonatoknak osztozniuk kell.
+- **Alvó borbély:** fejtörő egy borbélyról, aki alszik, ha senki sem vár, és akit a következő vendégnek kell felébresztenie, úgy, hogy közben senki ne maradjon ki.
+- **Elveszett ébresztés:** az egyik fél éppen a másik „ébredj!” kiáltása után alszik el, így a kiáltás elvész, és mindketten örökké várnak. A szemafor megszámolja a kiáltásokat, így egy sem vész el.
+- **Munkaszál-készlet** (worker pool): egy szerver rögzített számú szála, amelyek egy sorból veszik a kéréseket, ahogy a borbélyok a várakozó székekről a vendégeket.
 - **Monitor:** programnyelvi konstrukció, amely a közös adatot összecsomagolja az őt védő zárral, így nem lehet elfelejteni a zárolást.
 - **Feltételváltozó:** egy hely a monitoron belül, ahol egy szál alhat, amíg egy másik szál nem szól neki, hogy valami megváltozott („a polc már nem üres”).
 - **Mesa-szemantika, hamis ébredés:** a felébresztés csak annyit jelent, hogy „valami talán megváltozott”, nem azt, hogy „teljesül a feltételed”; néha egy szálat ok nélkül is felébresztenek. Ezért újra meg kell néznie.
@@ -197,13 +291,19 @@ Folyamatok egy halmaza **holtpontban van**, ha mindegyikük olyan eseményre vá
 
 Az **erőforrás-foglalási gráf** (Holt, 1972) ezt láthatóvá teszi: a folyamattól az erőforrás felé mutató nyíl azt jelenti, „akarja”, az erőforrástól a folyamat felé mutató azt, „ő birtokolja”. Ha minden erőforrásból egy példány van, a gráfban lévő kör holtpontot jelent.
 
+Egy bedugult kereszteződés ugyanez a helyzet négy szereplővel. Minden egyenesen áthaladó autónak a kereszteződés két negyedére van szüksége: arra, amelyikben áll, és a következőre. Ha négy autó mind behajtott egy-egy negyedbe, mindegyik a következő autó által foglalt negyedre vár, a mögöttük álló sorok miatt pedig tolatni sem tudnak:
+
+![Balra: kereszteződés négy autóval, mindegyik egy negyedben áll, és a következőt akarja, mögöttük sorok. Jobbra: az erőforrás-foglalási gráf, az autók körök, a negyedek egy-egy pontot tartalmazó téglalapok, amelyek az 1. autó, ÉK, 2. autó, ÉNy, 3. autó, DNy, 4. autó, DK kört alkotják](gridlock.svg)
+
+A gráf Holt szabványos jelölését használja: a **folyamat** kör, az **erőforrás** téglalap, benne minden **példányához** (egyforma egységéhez) egy ponttal, a **kérési él** a folyamattól ahhoz a téglalaphoz vezet, amelyre vár, a **hozzárendelési él** pedig egy ponttól (a lefoglalt példánytól) a birtokosához. Ha minden erőforrásból egy példány van, a kör a holtpont szükséges és elégséges feltétele. Több példány esetén a kör szükséges, de nem elégséges. Tegyük fel, hogy az R1 erőforrásnak két példánya van, az egyik P1-nél, a másik P3-nál; P1 az R2-re vár, amely P2-nél van; P2 az R1-re vár. Van egy P1 → R2 → P2 → R1 → P1 kör, P3 viszont semmire sem vár: befejeződik, felszabadítja az R1 egyik példányát, ezt P2 megkapja és befejeződik, végül P1 is (Silberschatz et al., 2018). Ilyenkor a holtpont eldöntéséhez a bankár-algoritmus biztonságossági vizsgálatában használt redukciós algoritmus kell: ismételten befejezünk egy olyan folyamatot, amelynek kérései teljesíthetők, és megnézzük, mindenki befejeződhet-e.
+
 ### A holtpontok kezelése
 
 Négy stratégia létezik (Silberschatz et al., 2018; Stallings, 2018):
 
 - **Megelőzés:** a négy feltétel valamelyikét lehetetlenné tesszük. A leggyakorlatiasabb a **körkörös várakozás** megtörése egy globális **zárolási sorrenddel**: minden program előbb a nyugati, aztán a keleti felet foglalja le, így nem alakulhat ki kör. A **foglalva várakozás** megtörése azt jelenti, hogy minden erőforrást egyszerre foglalunk le (egy „közlekedési lámpaként” működő szemafor egyszerre egy autót enged fel az *egész* hídra); a **nincs elvétel** megtörése azt, hogy erőforrásokat elveszünk (ez lehetséges a processzornál vagy a memóriánál, de egy félig megírt fájlnál nem); a **kölcsönös kizárás** megtörése pedig azt, hogy az erőforrást megoszthatóvá tesszük (például nyomtatási sor, spooling).
 - **Elkerülés:** a rendszer előre tudja, melyik erőforrásból mennyire lehet szüksége az egyes folyamatoknak, és csak akkor teljesít egy kérést, ha az így létrejövő állapot **biztonságos**, vagyis még létezik olyan sorrend, amelyben minden folyamat megkaphatja a maximumát és befejeződhet. **Dijkstra bankár-algoritmusa** (Dijkstra, 1965) ezt ellenőrzi, mint egy bank, amely csak akkor ad kölcsönt, ha utána is ki tudja szolgálni minden ügyfele hitelkeretét ([linuxos rész](#elkerülés-a-bankár-algoritmus)). Előre ismernie kell a maximális igényeket, ezért az általános célú operációs rendszerek ritkán használják.
-- **Felismerés és feloldás:** hagyjuk, hogy holtpont alakuljon ki, megkeressük a köröket a várakozási gráfban, és megtörjük őket egy áldozat leállításával vagy munkájának visszagörgetésével. Az adatbázis-kezelők pontosan ezt teszik a tranzakciókkal.
+- **Felismerés és feloldás:** hagyjuk, hogy holtpont alakuljon ki, megkeressük a köröket a várakozási gráfban, és megtörjük őket egy áldozat leállításával vagy munkájának visszagörgetésével. Az adatbázis-kezelők pontosan ezt teszik a tranzakciókkal. A felismeréshez globális tudás kell: az egész gráf, egyetlen pillanatban. Egyetlen gépen ez a kernel vagy az adatbázis rendelkezésére áll; egy elosztott rendszerben viszont minden csomópont csak a saját zárait látja, az üzenetek ideje nem nulla, és az összerakott gráfban olyan élek is lehetnek, amelyek már nem léteznek („fantom” holtpont), ezért az elosztott rendszerek gyakran időkorlátokra (time-out) hagyatkoznak.
 - **A probléma figyelmen kívül hagyása** (a „strucc-algoritmus”): az általános célú operációs rendszerek, köztük a Linux és a Windows, nem ismerik fel a felhasználói folyamatok közötti holtpontokat; elkerülésük a programozó dolga, a lefagyott program leállítása pedig a felhasználóé. A Linux-kernelen belül a **lockdep** ellenőrző rögzíti, milyen sorrendben foglalják le az egyes zárosztályokat, és azonnal figyelmeztet, ha két kódút két zárat ellentétes sorrendben foglal le, akkor is, ha a holtpont ténylegesen még sosem következett be (Linux kernel documentation, n.d.-a).
 
 A klasszikus tananyagpélda Dijkstra **étkező filozófusok** problémája (Dijkstra, 1971): öt filozófus ül egy asztal körül, minden két szomszéd között egy villa van, és mindegyiküknek mindkét szomszédos villára szüksége van az evéshez. Ha mindannyian egyszerre veszik fel a bal oldali villájukat, mindannyian örökké várnak. Ha megszámozzuk a villákat, és mindig a kisebb sorszámút vesszük fel először (zárolási sorrend), a probléma megoldódik.
@@ -215,12 +315,17 @@ A klasszikus tananyagpélda Dijkstra **étkező filozófusok** problémája (Dij
 - **Prioritásinverzió:** egy magas prioritású feladat egy alacsony prioritású által birtokolt zárra vár, az utóbbi viszont nem tud futni, mert közepes prioritású feladatok folyton kiszorítják. 1997 júliusában ez újra és újra újraindította a NASA Mars Pathfinder leszállóegységének számítógépét a Marson: egy alacsony prioritású meteorológiai feladat birtokolt egy mutexet (a feladatok közötti kommunikáció mechanizmusán belül), amelyre a magas prioritású sínelosztó feladatnak szüksége volt; amikor a sínütemező észlelte, hogy a sínfeladat nem fejezte be a ciklusát, az egész rendszert újraindította. A mérnökök a Földön reprodukálták a hibát, és egy feltöltött javítócsomaggal (patch) orvosolták, amely egy globális beállítás módosításával bekapcsolta a **prioritásöröklést** az adott mutexre: amíg egy alacsony prioritású feladat olyan zárat birtokol, amelyre egy magas prioritásúnak szüksége van, ideiglenesen a magas prioritáson fut (Reeves, 1997). A Linux ugyanezt kínálja a prioritásöröklő futexekkel (`PTHREAD_PRIO_INHERIT`).
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> erőforrás, erőforrás elvétele, erőforrás-foglalási gráf, kör, zárolási sorrend, biztonságos állapot, tranzakció, visszagörgetés, livelock, prioritásinverzió, prioritásöröklés, watchdog, spooling, lockdep</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> erőforrás, erőforrás elvétele, erőforrás-foglalási gráf, bedugult kereszteződés, példány, kérési és hozzárendelési él, kör, elosztott rendszer, fantom holtpont, zárolási sorrend, biztonságos állapot, tranzakció, visszagörgetés, livelock, prioritásinverzió, prioritásöröklés, watchdog, spooling, lockdep</summary>
 
 - **Erőforrás:** bármi, amire egy folyamatnak szüksége van, és amire esetleg várnia kell: zár, nyomtató, memória, fájl.
 - **Erőforrás elvétele:** erővel elvenni a birtokosától.
 - **Erőforrás-foglalási gráf:** nyilakkal megrajzolt ábra arról, kinél mi van, és ki mit akar.
+- **Bedugult kereszteződés** (gridlock): olyan forgalmi dugó egy kereszteződésben, amelyben körben minden autó elzárja a következőt, így senki sem tud mozdulni.
+- **Példány:** egy erőforrás több egyforma egységének egyike, például három egyforma nyomtató közül az egyik. A gráfban minden példány egy pont.
+- **Kérési él, hozzárendelési él:** a kétféle nyíl: „ez a folyamat arra az erőforrásra vár”, illetve „az erőforrásnak ez az egysége ahhoz a folyamathoz tartozik”.
 - **Kör:** nyilak olyan útja, amely visszaér a kiindulópontjába.
+- **Elosztott rendszer:** hálózaton keresztül együttműködő számítógépek sokasága, amelyek közül egyik sem lát mindent egyszerre.
+- **Fantom holtpont:** olyan holtpont, amelyet egy felismerő elavult információ alapján jelez, holott az már megszűnt.
 - **Zárolási sorrend:** rögzített szabály, hogy mindenki ugyanabban a sorrendben foglalja le a zárakat (mindig előbb a nyugati felet).
 - **Biztonságos állapot:** olyan helyzet, amelyből a rendszer valamilyen sorrendben még mindenkinek meg tudja adni, amit kérhet.
 - **Tranzakció, visszagörgetés:** az adatbázis-tranzakció változtatások csoportja, amely vagy teljesen megtörténik, vagy egyáltalán nem; visszagörgetni azt jelenti, hogy visszacsináljuk.
@@ -234,7 +339,7 @@ A klasszikus tananyagpélda Dijkstra **étkező filozófusok** problémája (Dij
 
 ## A folyamatok állapottere
 
-A **folyamat** egy végrehajtás alatt álló program: *folyamat = futó program + környezet*. A **környezet** (kontextus) mindaz, ami ahhoz kell, hogy a folyamatot leállítsuk, és később úgy folytassuk, mintha semmi sem történt volna: a processzor regiszterei (köztük az utasításszámláló), a memóriatérkép, a megnyitott fájlok, az ütemezési állapot. Az operációs rendszer ezt egy **folyamatleíróban** (process control block, PCB) tárolja; Linuxban ez egy `struct task_struct`. A Linux a `fork()` hívással hoz létre folyamatot, amely megkettőzi a hívó folyamatot, és a másolatba rendszerint az `exec()` hívással tölt be egy új programot.
+A **folyamat** egy végrehajtás alatt álló program: *folyamat = futó program + környezet*. A **környezet** (kontextus) mindaz, ami ahhoz kell, hogy a folyamatot leállítsuk, és később úgy folytassuk, mintha semmi sem történt volna: a processzor regiszterei (köztük az utasításszámláló), a memóriatérkép, a megnyitott fájlok, az ütemezési állapot. Az operációs rendszer ezt egy **folyamatleíróban** (process control block, PCB) tárolja; Linuxban ez egy `struct task_struct`. Egy PCB legalább a következőket tartalmazza: a folyamat és a szülője azonosítóját, az állapotot, a prioritást és más ütemezési adatokat, az elmentett regisztereket (utasításszámláló, állapotszó, veremmutató), a memóriakezelési adatokra (laptáblákra) mutató hivatkozásokat, a megnyitott fájlokat, valamint elszámolási adatokat, például a felhasznált processzoridőt. A Linux a `fork()` hívással hoz létre folyamatot, amely megkettőzi a hívó folyamatot, és a másolatba rendszerint az `exec()` hívással tölt be egy új programot.
 
 ![Folyamatállapot-diagram: a rövid távú tartományban futásra kész, futó, várakozó; a középtávú tartományban felfüggesztett futásra kész és felfüggesztett várakozó; a hosszú távú szinten program és zombi](process-states.svg)
 
@@ -243,7 +348,7 @@ Az ábra a hétállapotú modellt mutatja:
 - **Futásra kész** (sok folyamat): futni tudna, csak egy processzorra vár. **Futó** (processzormagonként egy folyamat): éppen végrehajtás alatt áll. A **dispatcher** (kiosztó) viszi át a folyamatot futásra kész állapotból futóba; az időzítő-megszakítás (lejárt az időszelet) vagy maga a folyamat (önkéntes lemondás, yield) viszi vissza.
 - **Várakozó** (gyakran *blokkolt*-nak is nevezik): a folyamat egy eseményre vár: egy I/O-művelet végére, adatra egy pufferben, egy szemaforra. Amikor az esemény bekövetkezik (megszakítás, V művelet), ismét futásra kész lesz, nem futó: ugyanúgy várnia kell a processzorra, mint mindenki másnak.
 - **Felfüggesztett futásra kész** és **felfüggesztett várakozó** (Stallingsnél Ready/Suspend és Blocked/Suspend): a folyamatot kivitték a memóriából (swap out), hogy helyet csináljanak másoknak. Ha egy felfüggesztett várakozó folyamat eseménye bekövetkezik, felfüggesztett futásra kész lesz; futás előtt vissza kell hozni a memóriába (swap in).
-- **Zombi:** a folyamat véget ért (az `exit()` hívással vagy mert leállították), de a kilépési állapotát megőrzik, amíg a szülője a `wait()` hívással át nem veszi. Ekkor az utolsó nyoma is eltűnik: a szülő **begyűjti** (reap) a zombit.
+- **Zombi:** a folyamat véget ért (az `exit()` hívással vagy mert leállították), de a kilépési állapotát megőrzik, amíg a szülője a `wait()` hívással át nem veszi. Ekkor az utolsó nyoma is eltűnik: a szülő **begyűjti** (reap) a zombit. Minden véget érő folyamat, akár normálisan, akár szignál hatására, bármelyik állapotból áthalad ezen az állapoton; az egyetlen kivétel az a gyermek, amelynek szülője jelezte, hogy nem kér kilépési állapotokat (figyelmen kívül hagyja a `SIGCHLD` szignált, vagy beállítja az `SA_NOCLDWAIT` jelzőt): ezt a kernel azonnal eltávolítja.
 
 Az ábrát három tartományra osztja az, hogy **milyen gyakran** születnek döntések (Stallings, 2018):
 
@@ -266,12 +371,19 @@ Az ábrát három tartományra osztja az, hogy **milyen gyakran** születnek dö
 
 A Linux a `ps`-ben nem különbözteti meg a futásra kész és a futó állapotot, mert a kettő közötti különbség másodpercenként több ezerszer változik. Külön felfüggesztett állapotai sincsenek: nem egész folyamatokat, hanem egyes memórialapokat visz ki a lapozóterületre (swap), így egy folyamat részben lehet a memóriában. Ha egy szülő a gyermekei előtt ér véget, az **árvákat** az `init` (az 1-es PID-ű folyamat vagy egy kijelölt „subreaper”) fogadja örökbe, és ő gyűjti be őket.
 
+**Honnan ered az S és a D?** A kétféle alvás a klasszikus Unix-kernelig nyúlik vissza, amely minden alvó folyamatnak aszerint adott prioritást, hogy *mire* várt (Bach, 1986):
+
+![A klasszikus Unix prioritáslétrája: a swapper, a lemez-I/O-ra, pufferre és inode-ra várakozás a PZERO szignálküszöb fölött; a tty-bemenetre, tty-kimenetre és gyermek kilépésére várakozás alatta; a felhasználói módú prioritási szintek a PUSER alatt](unix-sleep-priorities.svg)
+
+Az a folyamat, amely egy rendszerhíváson belül alszik el, a várt esemény által meghatározott **kernelmódú alvási prioritást** kap: a legmagasabbat a swapper, utána a lemez-I/O-ra, pufferre, inode-ra várakozás, majd a terminálbemenetre vagy -kimenetre várakozás, és a legalacsonyabbat a gyermek kilépésére várakozás. Ezek mind minden **felhasználói módú prioritás** fölött vannak, így a felébredt folyamat gyorsan befejezi a kernelbeli munkáját, és felszabadítja a nála esetleg lévő puffereket és inode-okat, amelyekre más folyamatoknak is szükségük van. Egy küszöb két részre osztja a kernelprioritásokat. A fölötte alvó folyamatot (lemez-I/O, pufferek, inode-ok) szignál nem ébresztheti fel: az esemény biztosan hamarosan bekövetkezik, a művelet félbehagyása pedig inkonzisztens állapotban hagyhatná a kernel adatszerkezeteit. Az alatta alvó folyamat (terminál, gyermek kilépése) akármeddig várhat, ezért egy szignál felébreszti, és a rendszerhívás idő előtt, hibával (`EINTR`) tér vissza. A Linux pontosan ezt a megkülönböztetést őrzi meg a `D` (megszakíthatatlan, `TASK_UNINTERRUPTIBLE`) és az `S` (megszakítható, `TASK_INTERRUPTIBLE`) állapotban, és hozzáteszi a `D` egy „lelőhető” (killable) változatát, amelyet csak végzetes szignálok szakíthatnak meg. A felébredő folyamatnak azonban már nem az esemény szerint ad prioritást; ehelyett a méltányos ütemező általában hamar futni engedi az alvásból felébredő feladatot, mert az kevesebbet használt a processzorból, mint amennyi kijárna neki.
+
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> környezet, regiszter, utasításszámláló, folyamatleíró, fork, exec, dispatcher, yield, swap, zombi, begyűjtés, szignál, árva, init, cgroup, subreaper, befogadás</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> környezet, regiszter, utasításszámláló, folyamatleíró, állapotszó, elszámolás, fork, exec, dispatcher, yield, swap, zombi, begyűjtés, szignál, SIGCHLD, árva, init, cgroup, subreaper, befogadás, alvási prioritás, swapper, inode, tty, EINTR</summary>
 
 - **Környezet** (kontextus): minden, amit a processzornak és az operációs rendszernek meg kell jegyeznie egy folyamatról ahhoz, hogy később folytatni tudja, mint egy könyvjelző és mellette a jegyzetek az asztalon.
 - **Regiszter:** apró, nagyon gyors tárolóhely a processzorban. Az **utasításszámláló** (program counter) az a regiszter, amely a következő utasítás címét tartalmazza.
 - **Folyamatleíró (PCB):** az operációs rendszer nyilvántartó kartonja egy folyamatról.
+- **Állapotszó** (PSW, program status word): a processzor jelzőbitjeit tartalmazó regiszter, például az utolsó összehasonlítás eredményét, és azt, hogy engedélyezettek-e a megszakítások. **Elszámolás** (accounting): könyvelés, például arról, mennyi processzoridőt használt egy folyamat.
 - **`fork()`:** lemásolja a futó folyamatot. **`exec()`:** a folyamatban futó programot egy másik programra cseréli.
 - **Dispatcher** (kiosztó): az operációs rendszernek az a része, amely ténylegesen átadja a processzort a kiválasztott folyamatnak.
 - **Yield:** a folyamat önként lemond a processzorról.
@@ -282,6 +394,11 @@ A Linux a `ps`-ben nem különbözteti meg a futásra kész és a futó állapot
 - **cgroup** (control group, vezérlőcsoport): Linux-szolgáltatás, amely csoportokba fogja a folyamatokat, és korlátozza a processzor- vagy memóriahasználatukat, illetve a számukat.
 - **Subreaper:** olyan folyamat, amely kérte, hogy az 1-es PID helyett ő fogadja örökbe az elárvult leszármazottait.
 - **Befogadás** (admission): annak eldöntése, hogy egy új feladat egyáltalán elindulhat-e, vagy várnia kell.
+- **SIGCHLD:** az a szignál, amelyet a szülő kap, amikor valamelyik gyermeke véget ér.
+- **Alvási prioritás:** a klasszikus Unixban az, hogy egy alvó folyamatnak mennyire sürgősen kell futnia, amikor megérkezik az eseménye; attól függ, mire várt.
+- **Swapper:** az a klasszikus Unix-folyamat, amely egész folyamatokat mozgat a memória és a lemez között.
+- **Inode:** a lemezen lévő (és a memóriában is tárolt másolatú) bejegyzés, amely egy fájlt ír le. **tty:** terminál, egy felhasználó billentyűzetből és képernyőből álló vonala (a „teletypewriter”, távgépíró szóból).
+- **EINTR:** az a hibakód, amelyet egy rendszerhívás akkor ad vissza, ha egy szignál megszakította a várakozását („interrupted system call”); a program egyszerűen újrapróbálkozhat.
 
 </details>
 
@@ -294,15 +411,27 @@ A rövid távú ütemező a futásra kész sorból választja ki a következők�
 - a **válaszidő** (az érkezéstől addig, amíg a feladat először fut) az interaktív felhasználóknál számít;
 - a **méltányosság** és az éheztetés hiánya mindenkinek számít.
 
-Három klasszikus algoritmus:
+Négy klasszikus algoritmus:
 
 - **FIFO** (first in, first out; más néven FCFS, first come, first served: aki előbb jön, előbb kap): minden feladatot érkezési sorrendben, a végéig futtat. Egyszerű, és bizonyos értelemben méltányos, de egyetlen hosszú feladat miatt mindenki vár, aki mögötte áll (*konvojhatás*).
 - **SJF** (shortest job first, a legrövidebb feladat először): a következő a legrövidebb futásra kész feladat. Olyan feladathalmazra, amelynek minden tagja már az elején rendelkezésre áll, ez adja a legkisebb átlagos várakozási időt az összes nem preemptív algoritmus közül. Preemptív változata, az **SRTF** (shortest remaining time first, a legrövidebb hátralévő idő először), átvált egy újonnan érkezett feladatra, ha az rövidebb, mint az éppen futó hátralévő része. Két buktató van: a feladatok hossza előre nem ismert, ezért becsülni kell, általában a korábbi CPU-löketek exponenciális átlagával, $\tau_{n+1} = \alpha t_n + (1-\alpha) \tau_n$; és a hosszú feladatok kiéhezhetnek. Költsége is van: ha a lista végignézésével választjuk ki a legrövidebbet $n$ futásra kész feladat közül, az minden döntésnél $O(n)$ idő; ha a sort kupacban vagy fában rendezve tartjuk, $O(\log n)$.
+- **HRRN** (highest response ratio next, a legnagyobb válaszarányú következik): nem preemptív kompromisszum az SJF és a FIFO között (Stallings, 2018). Valahányszor felszabadul a processzor, minden futásra kész feladatra kiszámítja a **válaszarányt** (response ratio), $R = (W + S) / S$, ahol $W$ az eddig várakozással töltött idő, $S$ pedig a feladat (becsült) kiszolgálási ideje, és a legnagyobb $R$-ű feladatot futtatja. Egy újonnan érkezett feladatra $R = 1$; a rövid feladatok aránya gyorsan nő, mert $W$-t kis $S$-sel osztjuk, de minden várakozó feladat aránya folyamatosan növekszik, így végül még egy hosszú feladat is megelőz bármely újonnan érkezőt: nincs éheztetés, külön öregítési szabály nélkül is.
 - **RR** (Round Robin, körbeforgó): FIFO időkorláttal. Minden feladat legfeljebb egy **időszeletig** (kvantum, quantum) $q$ fut, aztán a futásra kész sor végére kerül. Egyetlen feladat sem vár $(n-1) q$-nál többet a sorára, ami jó válaszidőt ad.
 
 ![Az öt példafeladat Gantt-diagramja FIFO, SJF, SRTF és 2-es kvantumú Round Robin ütemezés mellett](gantt.svg)
 
 A példák két konvenciót követnek, amelyeket a kézi számításoknak is használniuk kell: az a feladat, amely éppen akkor érkezik, amikor egy másikat kiszorítanak, a kiszorított feladat *előtt* kerül a futásra kész sorba; egyenlőség esetén pedig az a feladat nyer, amelyik régebben vár.
+
+**HRRN kézzel.** Ugyanarra az öt feladatra először A fut (a 0. időpontban egyedül van) 6-ig. Ettől kezdve minden befejeződéskor az arányok döntenek:
+
+| Idő | B (érk. 1, S = 3) | C (érk. 2, S = 8) | D (érk. 3, S = 5) | E (érk. 4, S = 2) | Fut |
+|---|---|---|---|---|---|
+| 6 | (5 + 3) / 3 = 2,67 | (4 + 8) / 8 = 1,50 | (3 + 5) / 5 = 1,60 | (2 + 2) / 2 = 2,00 | B, 6–9 |
+| 9 | | (7 + 8) / 8 = 1,88 | (6 + 5) / 5 = 2,20 | (5 + 2) / 2 = 3,50 | E, 9–11 |
+| 11 | | (9 + 8) / 8 = 2,13 | (8 + 5) / 5 = 2,60 | | D, 11–16 |
+| 16 | | csak C maradt | | | C, 16–24 |
+
+A várakozási idők: A 0, B 5, C 14, D 8, E 5, átlagosan 6,4: az SJF (6,2) és a FIFO (8,8) között. Az SJF-fel ellentétben a HRRN a rövidebb E előtt futtatta B-t, mert B régebben várt. Valódi előnye akkor mutatkozik meg, amikor folyamatosan érkeznek rövid feladatok: az SJF addig halasztja a hosszú feladatot, amíg van nála rövidebb, a HRRN alatt viszont a hosszú feladat aránya addig nő, amíg nyer ([linuxos rész](#ütemezési-algoritmusok-egymás-mellett)).
 
 **Az időszelet ára.** Minden váltás $s$ időbe kerül az operációs rendszernek: a regiszterek elmentése és visszaállítása, az ütemező futtatása és a gyorsítótárak újratöltése. $q$ kvantum mellett az alkalmazásoknak megmaradó processzoridő-hányad a **hatásfok**:
 
@@ -311,7 +440,7 @@ $$\eta = \frac{\text{alkalmazásidő}}{\text{alkalmazásidő} + \text{OS-idő}} 
 Kis $q$ gyors válaszokat, de alacsony hatásfokot ad; nagy $q$ magas hatásfokot, de a Round Robint FIFO-vá változtatja. Az alább mért váltási költséggel ($s \approx 1{,}5$ µs, gyorsítótár-hatások nélkül) és $q = 4$ ms mellett $\eta \approx 0{,}9996$ (99,96%); a kis időszeletek valódi korlátja a gyorsítótárak újratöltése és a válaszidő-előny elvesztése, nem maga a váltás. A valódi rendszerek kombinálják az ötleteket: **prioritásos ütemezés** (**öregítéssel**, azaz a sokáig várakozó feladatok prioritásának lassú emelésével az éheztetés ellen) és **többszintű visszacsatolt sorok** (multilevel feedback queues), amelyek rövid időszeletet és magas prioritást adnak a gyakran blokkolódó (interaktív) feladatoknak, és hosszabb időszeletet a processzorigényeseknek.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> átbocsátóképesség, átfutási, várakozási és válaszidő, FIFO/FCFS, konvojhatás, SJF, SRTF, löket, exponenciális átlag, O(n), Round Robin, kvantum, Gantt-diagram, öregítés</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> átbocsátóképesség, átfutási, várakozási és válaszidő, FIFO/FCFS, konvojhatás, SJF, SRTF, löket, exponenciális átlag, O(n), HRRN, válaszarány, Round Robin, kvantum, Gantt-diagram, öregítés</summary>
 
 - **Átbocsátóképesség:** hány feladat készül el időegység alatt.
 - **Átfutási idő:** attól, hogy egy feladat megérkezik, addig, amíg elkészül. **Várakozási idő:** ennek az a része, amelyet a sorban várakozva tölt. **Válaszidő:** az érkezéstől addig, amíg a feladat először megkapja a processzort.
@@ -321,6 +450,7 @@ Kis $q$ gyors válaszokat, de alacsony hatásfokot ad; nagy $q$ magas hatásfoko
 - **CPU-löket** (burst): olyan időszakasz, amelyben a folyamat várakozás nélkül számol.
 - **Exponenciális átlag:** olyan folyamatosan frissülő átlag, amelyben a friss értékek többet számítanak, mint a régiek.
 - **O(n), O(log n):** a „nagy O” jelölés azt írja le, hogyan nő a munka az elemek számával: az O(n) megduplázódik, ha n megduplázódik; az O(log n) csak egy lépéssel nő, ha n megduplázódik.
+- **HRRN, válaszarány:** pontszám minden várakozó feladatnak: (a várakozással töltött idő + a szükséges idő) osztva a szükséges idővel. A rövid feladatok pontszáma gyorsan nő, de a hosszú feladaté is folyamatosan emelkedik, amíg vár, így biztosan sorra kerül.
 - **Round Robin, kvantum:** körben mindenki sorra kerül egy rövid időre (ez a kvantum), mint amikor körbeadogatnak egy labdát.
 - **Gantt-diagram:** sávdiagram, amely megmutatja, ki mikor használta a processzort.
 - **Öregítés:** minél tovább várt egy feladat, annál nagyobb lesz a prioritása, így nem várhat örökké.
@@ -572,6 +702,34 @@ parent: reaped child 2181, exit status 42
 
 A `WCHAN` oszlop annak a kernelfüggvénynek a nevét mutatja, amelyben egy alvó folyamat vár: a `sleep` esetén egy nagy felbontású időzítőét, a leállított folyamatnál a szignál miatti leállítás kódjáét. A zombinak már nincs memóriája és kódja, csak a folyamattábla-bejegyzése és a kilépési állapota (42), amelyet a szülő a `waitpid()` hívással átvesz; ezután a PID eltűnik.
 
+### Egy folyamat leállítása és folytatása
+
+A `SIGSTOP` addig veszi el a processzort egy folyamattól, amíg egy `SIGCONT` meg nem érkezik; a legtöbb szignállal ellentétben nem lehet elkapni vagy figyelmen kívül hagyni. A `stopcont.sh` elindít egy processzorigényes ciklust a 0-s magon, leállítja, vár, majd folytatja, és minden alkalommal kiírja a `/proc/PID/stat` fájlból az állapotbetűt (3. mező) és a felhasználói módban töltött processzoridőt órajel-ütésekben (14. mező, `utime`, itt másodpercenként 100 ütés), valamint a `ps` nézetét:
+
+```console
+$ ./stopcont.sh
+running for 1 s:       state R  utime   98 ticks   ps: R    -
+after SIGSTOP:         state T  utime   99 ticks   ps: T    do_signal_stop
+2 s later, stopped:    state T  utime   99 ticks   ps: T    do_signal_stop
+1 s after SIGCONT:     state R  utime  195 ticks   ps: R    -
+19
+18
+```
+
+Amíg a folyamat le van állítva, a processzorideje egyáltalán nem nő (99 ütés a 2 másodperc előtt és után is), és a kernel `do_signal_stop` függvényében vár; a `SIGCONT` után ismét futtatható, és másodpercenként csaknem egy teljes másodpercnyi processzoridőt gyűjt. Az utolsó két sor a `kill -l STOP CONT` kimenete: x86-os Linuxon ezeknek a szignáloknak 19 és 18 a száma, így a `kill -19 PID` ugyanaz, mint a `kill -STOP PID`, néhány más architektúrán azonban mások a számok, ezért a szkriptekben a neveket érdemes használni. (A mínuszjel nélküli `kill 19 PID` az alapértelmezett `SIGTERM` szignált küldené a 19-es és a PID azonosítójú folyamatnak.) Terminálban a Ctrl-Z a hasonló `SIGTSTP` szignált küldi (ezt egy program elkaphatja), a shell `fg` és `bg` parancsa pedig `SIGCONT`-ot küld. A leállított folyamat a teljes memóriáját megtartja; ez áll a legközelebb az ábra *felfüggesztett* állapotaihoz Linuxon, csak itt egy felhasználó vagy egy hibakereső dönt róla, nem egy középtávú ütemező.
+
+<details>
+<summary><b>Egyszerűen elmagyarázva:</b> SIGSTOP, SIGCONT, SIGTSTP, /proc/PID/stat, utime, órajel-ütés, fg, bg</summary>
+
+- **SIGSTOP, SIGCONT:** a „szünet” és a „lejátszás” gomb egy folyamathoz. A szüneteltetett folyamat mindent megtart, de nem kap processzoridőt.
+- **SIGTSTP:** a Ctrl-Z által küldött udvarias szünetkérés; a SIGSTOP-pal ellentétben egy program reagálhat rá, vagy vissza is utasíthatja.
+- **/proc/PID/stat:** olyan fájl, amely nincs rajta semmilyen lemezen: a kernel minden olvasáskor beleírja a PID azonosítójú folyamat aktuális adatait.
+- **utime:** mennyi processzoridőt használt a folyamat felhasználói módban, órajel-ütésekben számolva.
+- **Órajel-ütés** (clock tick, itt): ezeknek a számlálóknak az egysége, Linuxon a másodperc 1/100 része.
+- **fg, bg:** shellparancsok, amelyek egy leállított feladatot az előtérben (ő kapja a billentyűzetet) vagy a háttérben folytatnak.
+
+</details>
+
 ### Önkéntes és kényszerű környezetváltások
 
 A Linux minden folyamatnál számolja, hányszor hagyta el a processzort magától (azért, hogy várjon: ez az **önkéntes** (voluntary) váltás, a futó → várakozó nyíl), és hányszor szorították ki (a futó → futásra kész nyíl, **kényszerű**, involuntary). A `switches.sh` két processzorigényes ciklust és egy olyan ciklust futtat, amely alkalmanként 10 ms-ot alszik, mind a 0-s magon, 5 másodpercig:
@@ -612,6 +770,7 @@ algorithm    wait turnaround response    end   timeline (2 chars = 1 unit)
 FIFO         8.80      13.60     8.80   24.0   AAAAAAAAAAAABBBBBBCCCCCCCCCCCCCCCCDDDDDDDDDDEEEE
 SJF          6.20      11.00     6.20   24.0   AAAAAAAAAAAAEEEEBBBBBBDDDDDDDDDDCCCCCCCCCCCCCCCC
 SRTF         5.40      10.20     4.40   24.0   AABBBBBBEEEEAAAAAAAAAADDDDDDDDDDCCCCCCCCCCCCCCCC
+HRRN         6.40      11.20     6.40   24.0   AAAAAAAAAAAABBBBBBEEEEDDDDDDDDDDCCCCCCCCCCCCCCCC
 RR q=1      10.60      15.40     1.20   24.0   AABBAACCBBDDAAEECCBBDDAAEECCDDAACCDDAACCDDCCCCCC
 RR q=2      10.80      15.60     2.80   24.0   AAAABBBBCCCCAAAADDDDEEEEBBCCCCAAAADDDDCCCCDDCCCC
 RR q=4      11.20      16.00     5.40   24.0   AAAAAAAABBBBBBCCCCCCCCDDDDDDDDEEEEAAAACCCCCCCCDD
@@ -628,6 +787,20 @@ RR q=4      13.50      18.30     6.40   27.5   AAAAAAAA|BBBBBB|CCCCCCCC|DDDDDDDD
 ```
 
 $q = 1$ mellett 21 váltás 10,5 időegységbe kerül: a 24 egységnyi munka 34,5 egységig tart, ami 24 / 34,5 ≈ 70% hatásfok.
+
+A HRRN visszaadja a kézi számítás eredményét (6,4). Lényege rövid feladatok folyamatos áramlásánál látszik meg: egy hosszú L feladat (10 egység) a 0. időpontban egy rövid feladattal együtt érkezik, és minden 2. időegységben új, 2 egységnyi feladat érkezik (a Round Robin sorokat elhagytuk):
+
+```console
+$ python3 sched_sim.py S1:0:2 L:0:10 S2:1:2 S3:3:2 S4:5:2 S5:7:2 S6:9:2 S7:11:2
+jobs: S1(arrives 0, needs 2), L(arrives 0, needs 10), S2(arrives 1, needs 2), S3(arrives 3, needs 2), S4(arrives 5, needs 2), S5(arrives 7, needs 2), S6(arrives 9, needs 2), S7(arrives 11, needs 2)
+algorithm    wait turnaround response    end   timeline (2 chars = 1 unit)
+FIFO         8.50      11.50     8.50   24.0   S1S1S1S1LLLLLLLLLLLLLLLLLLLLS2S2S2S2S3S3S3S3S4S4S4S4S5S5S5S5S6S6S6S6S7S7S7S7
+SJF          2.50       5.50     2.50   24.0   S1S1S1S1S2S2S2S2S3S3S3S3S4S4S4S4S5S5S5S5S6S6S6S6S7S7S7S7LLLLLLLLLLLLLLLLLLLL
+SRTF         2.50       5.50     2.50   24.0   S1S1S1S1S2S2S2S2S3S3S3S3S4S4S4S4S5S5S5S5S6S6S6S6S7S7S7S7LLLLLLLLLLLLLLLLLLLL
+HRRN         6.50       9.50     6.50   24.0   S1S1S1S1S2S2S2S2S3S3S3S3LLLLLLLLLLLLLLLLLLLLS4S4S4S4S5S5S5S5S6S6S6S6S7S7S7S7
+```
+
+Az SJF átlaga a legjobb, L viszont addig vár, amíg el nem apad a rövid feladatok áramlása (itt 14 egységig; ha sosem apad el, örökké). A HRRN alatt L aránya a 6. időpontban (6 + 10) / 10 = 1,6, nagyobb, mint az 1 egységet várt rövid feladat 1,5-ös aránya, így L 6 egységnyi várakozás után fut, az utána következő rövid feladatok pedig valamivel tovább várnak.
 
 ### Méltányos részesedés: nice-értékek és súlyok
 
@@ -672,6 +845,9 @@ A körbeforgó (round-robin) valós idejű feladatok 100 ms-os időszeleteket ka
 6. **Folyamatállapotok.** A `ps -eo pid,ppid,stat,wchan:20,cmd` paranccsal keress a saját gépeden `S`, `R` és `I` állapotú folyamatokat. Írj programot, amely **árvát** hoz létre: olyan gyermeket, amely a szülője kilépése után is fut tovább. Ki lesz az új szülője (`ps -o ppid`)? Hozz létre `D` állapotot: C-ben hívd meg a `vfork()`-ot, és a gyermek hívja meg a `sleep(30)`-at; a szülő `D` állapotban vár, amíg a gyermek meg nem hívja az exec-et vagy ki nem lép. Le tudod lőni a szülőt a `kill -9` paranccsal? Magyarázd meg a különbséget a közönséges és a „lelőhető” (killable) megszakíthatatlan alvás között.
 7. **Ütemezés.** A `sched_sim.py` segítségével keress olyan feladathalmazt, amelyre az SJF átlagos válaszideje sokkal rosszabb, mint az RR-é, és olyat, amelyre a $q = 1$ kvantumú, 0,1 váltási költségű RR átfutási ideje rosszabb, mint a FIFO-é. Egészítsd ki a szimulátort egy öregítéses prioritásos ütemezővel.
 8. **A Linux ütemezési osztályai.** Futtasd a `shares.sh` szkriptet 1, 3, 5 és 19 nice-értékkel, és vesd össze az eredményt a 820, 526, 335 és 15 súlyokkal. Ezután indítsd a két ciklust két *különböző* terminálból: mi változik, és miért (autogroup)? Végül rendszergazdai jogokkal futtass ugyanazon a magon egy processzorigényes ciklust `chrt -f 10` alatt és egyet −20-as nice-értékkel: melyik kapja meg a processzort? (Ezt a saját gépeden végezd; az 5%-os tartalék használhatóan tartja a rendszert.)
+9. **A bankautomata-verseny.** Írd meg C-ben az előadás `withdraw()` függvényét: két szál vesz fel 100-at egy 150-es közös egyenlegből, az ellenőrzés és az írás között egy `usleep(1000)` hívással, hogy szélesebb legyen az ablak. Számold meg 1000 futtatás alatt, hányszor sikerül mindkét pénzfelvétel. Ezután védd az olvasást, az ellenőrzést és az írást egyetlen `pthread_mutex`-szel, és külön valósítsd meg a pénzfelvételt egy compare-and-swap ciklusként (`__atomic_compare_exchange_n`), amely újrapróbálkozik, ha az egyenleg megváltozott. Melyik változat helyes, és melyik nem blokkol soha?
+10. **Az alvó borbély.** Valósítsd meg a borbélyt POSIX-szemaforokkal egy borbélyra, 3 várakozó székre és 20 vendégre, akik véletlenszerű időközönként (0–30 ms) érkeznek, 10 ms-os hajvágással. Számold meg a kiszolgált és az elküldött vendégeket. Ezután távolítsd el a `waiting` számlálót és a mutexet, és cseréld le a `P(barber)` hívást egy jelzőváltozó vizsgálatára: mutass be egy elveszett ébresztést vagy egy kétszer kiszolgált vendéget.
+11. **Leállítás és folytatás.** Futtasd a `stopcont.sh` szkriptet. Ezután egy ciklus helyett egy `sleep 100` parancsot állíts le: milyen állapotbetűt mutat neki a `ps` a `SIGSTOP` előtt és után, és mi történik az időzítőjével, amíg le van állítva: később ér véget, mint az indítás után 100 másodperccel? Próbáld ki a Ctrl-Z, a `jobs`, a `bg` és az `fg` parancsot egy ciklussal egy interaktív shellben, és kövesd az állapotát egy második terminálból a `ps -o pid,stat,cmd` paranccsal.
 
 ## Ellenőrző kérdések
 
@@ -691,6 +867,13 @@ A körbeforgó (round-robin) valós idejű feladatok 100 ms-os időszeleteket ka
 14. Vezesd le a $q / (q + s)$ hatásfokképletet, és elemezd a kvantum megválasztását.
 15. Magyarázd el, hogyan osztja el a Linux a processzort a különböző nice-értékű folyamatok között, és számítsd ki egy nice 0 és egy nice 5 értékű folyamat részesedését egy magon. Mit változtatott a CFS és az EEVDF az O(1) ütemezőhöz képest?
 16. Miért kell egy szálnak egy `while` ciklusban újra ellenőriznie a feltételét, miután a `pthread_cond_wait()` visszatért?
+17. Két bankautomata vesz fel 100-100-at egy 150-et tartalmazó számláról a következő módon: „olvasd ki az egyenleget; ha legalább 100, írd be az egyenleg − 100 értéket, és fizess ki”. Adj meg egy sorszámozott összefésülődést, amelyben mindkettő kifizet, add meg a végső egyenleget, és nevezd meg a versenyhelyzet típusát. Hogyan előzik meg ezt a bankok?
+18. Egy zár, miután megvárta, hogy `S == 0` legyen, beírja `S`-be a folyamat saját azonosítóját, és csak akkor lép be, ha `S` még mindig az ő azonosítóját tartalmazza. Mutasd meg egy lépésenkénti nyomkövetéssel, hogy két folyamat ettől még egyszerre lehet bent. Miért nem segít egy második ellenőrzés?
+19. Egy erőforrás-foglalási gráfban R1-nek két példánya van, ezek P1-nél és P3-nál vannak, R2-nek egy példánya van, ez P2-nél; P1 R2-t kéri, P2 R1-et. Rajzold fel a gráfot. Van benne kör? Van holtpont? Miért más a válasz, mint az egysávos hídnál?
+20. Ütemezd az A (0, 6), B (1, 3), C (2, 8), D (3, 5), E (4, 2) feladatokat HRRN szerint, minden döntésnél megadva a válaszarányokat, és számítsd ki az átlagos várakozási időt. Miért nem éheztethet ki a HRRN egy hosszú feladatot, míg az SJF igen?
+21. A klasszikus Unixban miért kap egy lemezpufferre váró folyamat magasabb prioritást bármely felhasználói módú folyamatnál, és miért nem ébresztheti fel szignál? Melyik Linux `ps`-állapot felel meg a kétféle kernelbeli alvásnak?
+22. Három rendszerben minden 25 időegységből a hasznos munka és a többletterhelés (váltás, várakozás az operációs rendszerre) 21 + 4, 7 + 18, illetve 1 + 24. Számítsd ki mindegyik hatásfokát. Ha a többletterhelés egy $q$ időszeletenkénti rögzített $s$ váltási költség, mekkora $q / s$ aránynak felel meg mindegyik, és mekkorának kell lennie $q / s$-nek a 99%-os hatásfokhoz?
+23. Mit tesz a `SIGSTOP` és a `SIGCONT` egy folyamat állapotával és processzoridejével? Melyik `ps`-betű mutatja a leállított folyamatot, és miben különbözik a leállítás a hétállapotú modell felfüggesztett állapotaitól?
 
 <details>
 <summary><strong>Megoldókulcs (oktatóknak)</strong></summary>
@@ -711,14 +894,25 @@ A körbeforgó (round-robin) valós idejű feladatok 100 ms-os időszeleteket ka
 14. Minden ciklusban a processzor q időt tölt az alkalmazással és s-et a váltással: η = q / (q + s). Kis q: jó válaszidő, alacsony hatásfok, több gyorsítótár-hiány; nagy q: magas hatásfok, gyenge válaszidő (a FIFO-hoz közelít). A q legyen sokkal nagyobb s-nél, de elég kicsi az interaktív válaszidőhöz (néhány ms).
 15. Súly szerint: minden nice-lépés nagyjából ×1,25 (nice 0 = 1024, nice 5 = 335); részesedés = 1024 / (1024 + 335) ≈ 75%. Az O(1) prioritásonként rögzített időszeleteket és heurisztikákat használt az interaktivitás felismerésére; a CFS a súlyokkal arányosan osztja el a processzoridőt úgy, hogy mindig a legkisebb virtuális futásidejű feladatot futtatja (piros-fekete fa, O(log n)); az EEVDF megtartja a méltányos részesedéseket, de a jogosult feladatok közül a legkorábbi virtuális határidejűt választja, így a késleltetés az időszelet hosszával szabályozható.
 16. Mert a pthreads (és a Java) Mesa-szemantikát használ: a jelzést küldő szál fut tovább, és mire a felébresztett szál futni kezd, egy másik szál már ismét megváltoztathatta a feltételt; a szabvány ráadásul megengedi a hamis ébredéseket is. Hoare eredeti monitorai garantálták a feltételt felébredéskor, ott elég lett volna az `if`.
+17. ① Az 1. automata kiolvassa a 150-et, az ellenőrzés sikeres; ② a 2. automata kiolvassa a 150-et, az ellenőrzés sikeres; ③ az 1. automata beírja az 50-et, és kifizet 100-at; ④ a 2. automata beírja az 50-et (az elavult 150-ből számolva), és kifizet 100-at. Kifizetve 200, az egyenleg 50: elveszett frissítés, amelyet a közös adaton végzett ellenőrzés, aztán cselekvés (check-then-act) okoz. (Ha az írás előtt újra kiolvassák az egyenleget, az eredmény −50, vagyis fedezetlen túllépés.) A bankok az olvasás–ellenőrzés–írás hármast egyetlen kritikus szakasszá teszik: egy adatbázis-tranzakcióval, amely zárolja a sort, vagy egyetlen atomi feltételes `UPDATE … WHERE balance >= 100` utasítással, így egy számlán a pénzfelvételek sorosítva történnek.
+18. ① P1 látja, hogy S = 0; ② P2 látja, hogy S = 0; ③ P1 beírja: S = 1; ④ P1 ellenőrzi, S = 1, belép; ⑤ P2 beírja: S = 2; ⑥ P2 ellenőrzi, S = 2, belép. Az ellenőrzés csak a saját írás és a saját ellenőrzés közé eső idegen írást veszi észre, az ellenőrzés utánit nem; minden további ellenőrzésnek ugyanilyen ablaka van. Atomi olvasás–módosítás–írás (test-and-set, compare-and-swap) vagy Peterson-féle szándékjelzők kellenek.
+19. Élek: R1 → P1, R1 → P3 (hozzárendelések), R2 → P2, P1 → R2, P2 → R1 (kérések). A P1 → R2 → P2 → R1 → P1 kör létezik, holtpont mégsincs: P3-nak semmi sem kell, befejeződik, felszabadítja az R1 egyik példányát; P2 megkapja, befejeződik, felszabadítja R2-t; P1 befejeződik. Erőforrásonként több példány esetén a kör szükséges, de nem elégséges feltétel; a hídon mindkét félből egyetlen példány van, ezért ott a kör holtpont.
+20. A 0–6. A 6. időpontban: B 8/3 = 2,67, C 12/8 = 1,5, D 8/5 = 1,6, E 4/2 = 2 → B 6–9. A 9. időpontban: C 15/8 = 1,88, D 11/5 = 2,2, E 7/2 = 3,5 → E 9–11. A 11. időpontban: C 17/8 = 2,13, D 13/5 = 2,6 → D 11–16; C 16–24. Várakozások 0, 5, 14, 8, 5 → 6,4. Egy várakozó feladat (W + S)/S aránya W növekedésével korlát nélkül nő, egy új feladaté viszont 1-ről indul, így végül minden feladaté lesz a legnagyobb arány; az SJF csak S-et hasonlítja össze, ez pedig nem változik, amíg a feladat vár.
+21. Annak a folyamatnak, amely kernelerőforrásokat (puffereket, inode-okat) birtokol vagy ezekre vár, felébredés után gyorsan be kell fejeznie a kernelbeli munkáját, hogy felszabadítsa őket; ezt biztosítja, hogy minden felhasználói prioritásnál magasabb prioritást kap. A lemez-I/O-ra, pufferre és inode-ra várakozás rövid, és biztosan véget ér, a félbehagyásuk pedig inkonzisztens állapotban hagyhatná a kernel adatait, ezért a szignálküszöb (PZERO) fölött alszanak, és nem megszakíthatók. A terminálra és a gyermek kilépésére várakozás örökké tarthat, ezért megszakítható. Linux: `D` (megszakíthatatlan, a lelőhető változattal együtt) és `S` (megszakítható).
+22. η = 21/25 = 84%, 7/25 = 28%, 1/25 = 4%. Az η = q / (q + s) képletből q / s = η / (1 − η): 21/4 = 5,25, 7/18 ≈ 0,39, 1/24 ≈ 0,042, vagyis az időszelet a váltási költség 5-szöröse, 0,4-szerese, illetve 1/24-e. A 99%-hoz: q / s ≥ 0,99 / 0,01 = 99, az időszeletnek a váltási költség nagyjából 100-szorosának kell lennie (s ≈ 1,5 µs mellett q ≥ 0,15 ms; a Linux 0,7–4 ms-a jóval fölötte van).
+23. A `SIGSTOP` leállított állapotba helyezi a folyamatot (`T`; hibakereső általi leállításnál `t`); nem kap processzoridőt, így az `utime` értéke állandó marad (a `stopcont.sh`-ban 99 ütés a 2 másodperc előtt és után). A `SIGCONT` ismét futtathatóvá (`R`) teszi, vagy visszateszi abba az alvásba, amelyben volt. A leállított folyamat megtartja a memóriáját, és egy felhasználó vagy hibakereső döntésére áll le; a modell felfüggesztett állapotaiba akkor kerül egy folyamat, amikor a középtávú ütemező kiviszi a memóriából, hogy RAM-ot szabadítson fel.
 
-**Válaszok a laborfeladatokhoz.** 1. labor: a szekvenciálisan konzisztens atomi tárolások x86-on `xchg`-re fordulnak, amely teljes memóriakorlátként működik, így a program helyes lesz; egy magon nincs sértés (mindkét szál ugyanazon a magon fut, amely a saját tárolásait mindig programsorrendben látja), de rendkívül lassú, mert a várakozó szál az időszelete végéig pörög. 2. labor: a spinlock 1–2 szálnál a leggyorsabb, a mutex nyer, amint a szálak száma meghaladja a magokét. 3. labor: felcserélt sorrend esetén a termelők a mutexet birtokolva alszanak az `empty`-n; végül minden szál `S` állapotba kerül, `futex` várakozási csatornával. 4. labor: négy negyednél egy globális sorrend (például a negyed sorszáma szerint) megelőzi a holtpontot; egyenesen áthaladó forgalomnál a 3-as szemafor is megelőzi, mert a kör bezárásához négy autó kell (kanyarodó autók rövidebb köröket is alkothatnának). 5. labor: a zárolási sorrend és a legfeljebb négy leülő filozófus egyaránt megtöri a körkörös várakozást. 6. labor: az árvákat az 1-es PID vagy egy subreaper, például a felhasználó `systemd --user` folyamata fogadja örökbe; a `vfork()` szülője lelőhető (killable) megszakíthatatlan alvásban vár, így a `kill -9` működik; egy klasszikus `D` alvás azért nem szakítható meg, mert a kernel egy olyan művelet közepén van, amelyet nem lehet biztonságosan félbehagyni. 7. labor: pl. egy elsőként érkező hosszú feladat és sok rövid (az SJF nem preemptív, ezért mögötte várnak), illetve RR kontra FIFO esetén sok egyforma hosszú feladat. 8. labor: a részesedések nagyjából 55/45, 66/34, 75/25 és 98,5/1,5; két terminálból (külön autogroupok) nagyjából 50/50; a SCHED_FIFO feladat a nice-értékektől függetlenül elfoglalja a magot, eltekintve az 5%-os tartaléktól (RT throttling vagy fair server).
+**Válaszok a laborfeladatokhoz.** 1. labor: a szekvenciálisan konzisztens atomi tárolások x86-on `xchg`-re fordulnak, amely teljes memóriakorlátként működik, így a program helyes lesz; egy magon nincs sértés (mindkét szál ugyanazon a magon fut, amely a saját tárolásait mindig programsorrendben látja), de rendkívül lassú, mert a várakozó szál az időszelete végéig pörög. 2. labor: a spinlock 1–2 szálnál a leggyorsabb, a mutex nyer, amint a szálak száma meghaladja a magokét. 3. labor: felcserélt sorrend esetén a termelők a mutexet birtokolva alszanak az `empty`-n; végül minden szál `S` állapotba kerül, `futex` várakozási csatornával. 4. labor: négy negyednél egy globális sorrend (például a negyed sorszáma szerint) megelőzi a holtpontot; egyenesen áthaladó forgalomnál a 3-as szemafor is megelőzi, mert a kör bezárásához négy autó kell (kanyarodó autók rövidebb köröket is alkothatnának). 5. labor: a zárolási sorrend és a legfeljebb négy leülő filozófus egyaránt megtöri a körkörös várakozást. 6. labor: az árvákat az 1-es PID vagy egy subreaper, például a felhasználó `systemd --user` folyamata fogadja örökbe; a `vfork()` szülője lelőhető (killable) megszakíthatatlan alvásban vár, így a `kill -9` működik; egy klasszikus `D` alvás azért nem szakítható meg, mert a kernel egy olyan művelet közepén van, amelyet nem lehet biztonságosan félbehagyni. 7. labor: pl. egy elsőként érkező hosszú feladat és sok rövid (az SJF nem preemptív, ezért mögötte várnak), illetve RR kontra FIFO esetén sok egyforma hosszú feladat. 8. labor: a részesedések nagyjából 55/45, 66/34, 75/25 és 98,5/1,5; két terminálból (külön autogroupok) nagyjából 50/50; a SCHED_FIFO feladat a nice-értékektől függetlenül elfoglalja a magot, eltekintve az 5%-os tartaléktól (RT throttling vagy fair server). 9. labor: az 1 ms-os ablakkal szinte minden futás kétszer fizet ki; a mutexes változat és a CAS-ciklus egyaránt helyes; a CAS-ciklus sosem blokkol (a sikertelen CAS újra kiolvassa az egyenleget, és megismétli az ellenőrzést, így a második pénzfelvételt elutasítja). 10. labor: a szemaforokkal egyetlen vendég sem vész el, és senkit sem szolgálnak ki kétszer, a kiszolgáltak és az elküldöttek száma együtt 20; ha a `P(barber)` helyett egy jelzőváltozót vizsgálunk, egy vendég éppen azelőtt vizsgálhatja meg a jelzőt, hogy a borbély beállítaná, és így vagy örökké vár, vagy borbély nélkül megy tovább. 11. labor: a `sleep` előbb `S`, aztán `T` állapotban van; az időzítője abszolút időben fut tovább, így a `SIGCONT` után az eredetileg tervezett pillanatban ér véget, vagy azonnal, ha az a pillanat már elmúlt (mérve: 1 másodpercre leállítva egy `sleep 3` így is 3,0 másodperc után ért véget; 4 másodpercre leállítva közvetlenül a `SIGCONT` után, 4,5 másodpercnél); a Ctrl-Z `T` állapotot ad, a `bg` pedig `R` állapotot a háttérben.
 
 </details>
 
 ## Irodalom
 
+Bach, M. J. (1986). *The design of the UNIX operating system*. Prentice Hall.
+
 Coffman, E. G., Elphick, M., & Shoshani, A. (1971). System deadlocks. *ACM Computing Surveys, 3*(2), 67–78. https://doi.org/10.1145/356586.356588
+
+Dijkstra, E. W. (n.d.). *Over seinpalen* [On semaphores] (EWD-74). E. W. Dijkstra Archive, University of Texas at Austin. https://www.cs.utexas.edu/~EWD/ewd00xx/EWD74.PDF
 
 Dijkstra, E. W. (1965). *Cooperating sequential processes* (EWD-123). Technological University, Eindhoven. https://www.cs.utexas.edu/~EWD/transcriptions/EWD01xx/EWD123.html
 

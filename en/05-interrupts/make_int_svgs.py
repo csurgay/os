@@ -84,15 +84,15 @@ def cycle():
         p.append(text(cx, rowA + 14, sub, 11.5, cls="quiet", anchor="middle"))
     pts = f"{cd - 64},{rowA} {cd},{rowA - 40} {cd + 64},{rowA} {cd},{rowA + 40}"
     p.append(f'<polygon points="{pts}" class="accf"/><polygon points="{pts}" fill="none" class="acc" stroke-width="2"/>')
-    p.append(text(cd, rowA - 2, "Interrupt", 13, 600, anchor="middle"))
-    p.append(text(cd, rowA + 14, "pending?", 13, 600, anchor="middle"))
+    p.append(text(cd, rowA - 2, "Enabled and", 12.5, 600, anchor="middle"))
+    p.append(text(cd, rowA + 14, "pending?", 12.5, 600, anchor="middle"))
     p.append(rect(cd - hw / 2, rowB - 28, hw, 56))
     p.append(text(cd, rowB - 4, "Interrupt handler", 13, 600, anchor="middle"))
     p.append(text(cd, rowB + 14, "PC already points to the next instruction", 11.5, cls="quiet", anchor="middle"))
     p.append(text(cd + 10, rowA + 64, "yes", 11.5, cls="quiet"))
     p.append(text(728, rowA - 8, "no", 11.5, cls="quiet", anchor="end"))
     p.append(text((c1 + cd - hw / 2) / 2, rowB - 8, "the handler is fetched like any other code", 11.5, cls="quiet", anchor="middle"))
-    p.append(text(400, rowB + 70, "no interrupt: straight on to the next instruction", 11.5, cls="quiet", anchor="middle"))
+    p.append(text(400, rowB + 70, "no interrupt pending (or interrupts disabled): straight on to the next instruction", 11.5, cls="quiet", anchor="middle"))
     return svg(760, 360, title, "\n".join(p))
 
 
@@ -346,10 +346,109 @@ def controller():
     return svg(760, 384, title, "\n".join(p))
 
 
+# ---------------- 8. Vector table lookup ----------------
+def vector_table():
+    m = "vt"
+    title = "Interrupt 17: entry 17 of the vector table holds the handler's address"
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600)]
+    rh, ry = 30, 104
+    # source
+    p.append(rect(24, ry + 2 * rh - 14, 150, 58, tint=True))
+    p.append(text(99, ry + 2 * rh + 8, "Interrupt source", 13, 600, anchor="middle"))
+    p.append(text(99, ry + 2 * rh + 26, "requests no. 17", 11.5, cls="quiet", anchor="middle"))
+    yc = ry + 2 * rh + rh / 2
+    p.append(path(f"M174 {yc}H258", m))
+    p.append(text(216, yc - 8, "17", 11.5, 600, anchor="middle"))
+    # vector table
+    tx, iw, aw = 260, 44, 120
+    p.append(text(tx, 72, "Vector table", 13, 600))
+    p.append(text(tx, 90, "in memory, filled in by the OS", 11.5, cls="quiet"))
+    rows = [("0", "…"), ("…", ""), ("17", "FBCAh"), ("18", "…"), ("…", "")]
+    for i, (a, b) in enumerate(rows):
+        y = ry + i * rh
+        if a == "17":
+            p.append(f'<rect x="{tx}" y="{y}" width="{iw + aw}" height="{rh}" class="accf"/>')
+        p.append(f'<rect x="{tx}" y="{y}" width="{iw}" height="{rh}" fill="none" class="edge" stroke-width="1"/>')
+        p.append(f'<rect x="{tx + iw}" y="{y}" width="{aw}" height="{rh}" fill="none" class="edge" stroke-width="1"/>')
+        p.append(text(tx + iw / 2, y + 20, a, 12, cls="quiet", anchor="middle"))
+        p.append(text(tx + iw + 12, y + 20, b, 13, 600 if a == "17" else 400, mono=True))
+    # memory with the handler
+    mx, maw, mcw = 540, 70, 150
+    p.append(text(mx, 72, "Memory", 13, 600))
+    p.append(text(mx, 90, "the handler's code", 11.5, cls="quiet"))
+    mrows = [("…", ""), ("…", ""), ("FBCAh", "save registers"), ("…", "handle the device"), ("…", "return (iret)")]
+    for i, (a, b) in enumerate(mrows):
+        y = ry + i * rh
+        if a == "FBCAh":
+            p.append(f'<rect x="{mx}" y="{y}" width="{maw + mcw}" height="{rh}" class="accf"/>')
+        p.append(f'<rect x="{mx}" y="{y}" width="{maw}" height="{rh}" fill="none" class="edge" stroke-width="1"/>')
+        p.append(f'<rect x="{mx + maw}" y="{y}" width="{mcw}" height="{rh}" fill="none" class="edge" stroke-width="1"/>')
+        p.append(text(mx + 10, y + 20, a, 12, 600 if a == "FBCAh" else 400, cls="ink" if a == "FBCAh" else "quiet", mono=True))
+        p.append(text(mx + maw + 10, y + 20, b, 11.5, cls="ink" if a == "FBCAh" else "quiet"))
+    p.append(path(f"M{tx + iw + aw} {yc}H{mx - 2}", m))
+    p.append(text((tx + iw + aw + mx) / 2, yc - 8, "PC ← FBCAh", 11.5, 600, anchor="middle"))
+    p.append(text(24, 282, "The table adds one level of indirection: the OS can move or replace a handler by changing one table entry.", 11.5, cls="quiet"))
+    p.append(text(24, 300, "On x86-64 each entry (gate descriptor) is 16 bytes and also holds the code segment and privilege settings.", 11.5, cls="quiet"))
+    return svg(760, 318, title, "\n".join(p))
+
+
+# ---------------- 9. Page fault that needs the disk ----------------
+def fault_chain():
+    m = "fc"
+    title = "A page fault that needs the disk: exception, DMA, another process, interrupt"
+    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600)]
+    lanes = [("Process A", 80), ("Kernel", 140), ("Process B", 200), ("Disk (DMA)", 260)]
+    bh = 32
+    for name, y in lanes:
+        p.append(text(24, y + 21, name, 13, 600))
+        p.append(f'<line x1="140" y1="{y + bh / 2}" x2="740" y2="{y + bh / 2}" class="grid"/>')
+
+    def bar(x0, x1, y, label, kind):
+        if kind == "run":
+            p.append(rect(x0, y, x1 - x0, bh, main=True))
+        else:
+            p.append(rect(x0, y, x1 - x0, bh, tint=True))
+        p.append(text((x0 + x1) / 2, y + 21, label, 11.5, 600 if kind == "run" else 400, anchor="middle"))
+
+    yA, yK, yB, yD = 80, 140, 200, 260
+    bar(140, 226, yA, "A runs", "run")
+    p.append(path(f"M226 {yA + bh / 2}H676", m, end=False, dash="4 4"))
+    p.append(f'<rect x="380" y="{yA + 6}" width="176" height="20" class="tint"/>')
+    p.append(text(468, yA + 21, "A blocked: waits for the page", 11.5, cls="quiet", anchor="middle"))
+    bar(680, 740, yA, "A again", "run")
+    bar(230, 342, yK, "fault handler", "k")
+    bar(600, 672, yK, "IRQ handler", "k")
+    bar(344, 594, yB, "B runs: the CPU stays busy", "run")
+    bar(312, 596, yD, "transfer: disk → free frame", "k")
+
+    def num(x, y, n):
+        p.append(f'<circle cx="{x}" cy="{y}" r="9" class="accf"/><circle cx="{x}" cy="{y}" r="9" fill="none" class="acc" stroke-width="1.25"/>')
+        p.append(text(x, y + 4, str(n), 11, 600, anchor="middle"))
+
+    p.append(path(f"M228 {yA + bh}V{yK}", m)); num(244, 126, 1)
+    p.append(path(f"M318 {yK + bh}V{yD}", m)); num(302, 246, 2)
+    p.append(path(f"M338 {yK + bh}V{yB}", m)); num(356, 186, 3)
+    p.append(path(f"M598 {yD}V{yK + bh}", m)); num(614, 246, 4)
+    p.append(path(f"M664 {yK}V124H704V{yA + bh}", m)); num(648, 126, 5)
+    p.append(path(f"M140 312H740", m))
+    p.append(text(740, 330, "time", 11.5, cls="quiet", anchor="end"))
+    notes = [
+        "1  A touches a page that is not in memory: a page fault, an exception (synchronous, caused by the instruction).",
+        "2  The handler finds a free frame and tells the disk controller to read the page into it by DMA. A is blocked.",
+        "3  The scheduler runs another process, B: the CPU does useful work while the disk transfers the page.",
+        "4  When the transfer is complete, the disk raises an interrupt (asynchronous, from outside).",
+        "5  The handler updates the page table and makes A ready; A re-executes the faulting instruction, which now succeeds.",
+    ]
+    for i, s in enumerate(notes):
+        p.append(text(24, 356 + 20 * i, s, 11.5, cls="quiet"))
+    return svg(760, 450, title, "\n".join(p))
+
+
 if __name__ == "__main__":
     for name, f in [("interrupt-cycle", cycle), ("interrupt-processing", processing),
                     ("nested-interrupts", nested), ("race-condition", race),
                     ("io-cpu-time", io_timeline), ("interrupt-latency", latency),
-                    ("interrupt-controller", controller)]:
+                    ("interrupt-controller", controller),
+                    ("vector-table", vector_table), ("page-fault-chain", fault_chain)]:
         open(f"{name}.svg", "w", encoding="utf-8").write(f())
     print("ok")

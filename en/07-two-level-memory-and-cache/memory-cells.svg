@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 410" width="900" height="410" role="img" aria-label="Why fast memory is expensive: an SRAM cell has six transistors, a DRAM cell one transistor and a capacitor">
+<title>Why fast memory is expensive: an SRAM cell has six transistors, a DRAM cell one transistor and a capacitor</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Why fast memory is expensive: one bit of SRAM and one bit of DRAM</text>
+<text x="24" y="64" font-size="13" font-weight="600" class="ink" text-anchor="start">SRAM cell (caches): 6 transistors</text>
+<path d="M40 92H400" fill="none" class="edge" stroke-width="2"/>
+<text x="404" y="96" font-size="11" font-weight="400" class="quiet" text-anchor="start">word line</text>
+<path d="M60 80V290" fill="none" class="edge" stroke-width="2"/>
+<text x="60" y="308" font-size="11" font-weight="400" class="quiet" text-anchor="middle">bit line</text>
+<path d="M380 80V290" fill="none" class="edge" stroke-width="2"/>
+<text x="380" y="308" font-size="11" font-weight="400" class="quiet" text-anchor="middle">inverted bit line</text>
+<rect x="98" y="170" width="44" height="26" rx="3" class="c2f"/><rect x="98" y="170" width="44" height="26" rx="3" fill="none" class="c2s" stroke-width="1.5"/><text x="120" y="187" font-size="11" font-weight="600" class="ink" text-anchor="middle">T5</text>
+<rect x="298" y="170" width="44" height="26" rx="3" class="c2f"/><rect x="298" y="170" width="44" height="26" rx="3" fill="none" class="c2s" stroke-width="1.5"/><text x="320" y="187" font-size="11" font-weight="600" class="ink" text-anchor="middle">T6</text>
+<path d="M120 92V170" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M320 92V170" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M60 183H98" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M342 183H380" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M142 183H170V150H186" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M224 150H270V183" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M298 183H270V216H254" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M216 216H170V183" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M186 136L220 150L186 164Z" class="accf"/><path d="M186 136L220 150L186 164Z" fill="none" class="acc" stroke-width="1.5"/><circle cx="224" cy="150" r="4" fill="none" class="acc" stroke-width="1.5"/>
+<path d="M254 202L220 216L254 230Z" class="accf"/><path d="M254 202L220 216L254 230Z" fill="none" class="acc" stroke-width="1.5"/><circle cx="216" cy="216" r="4" fill="none" class="acc" stroke-width="1.5"/>
+<circle cx="170" cy="183" r="3" class="edgef"/><circle cx="270" cy="183" r="3" class="edgef"/>
+<text x="164" y="200" font-size="11" font-weight="600" class="ink" text-anchor="end">Q</text>
+<text x="276" y="200" font-size="11" font-weight="600" class="ink" text-anchor="start">not Q</text>
+<text x="220" y="252" font-size="11" font-weight="400" class="quiet" text-anchor="middle">two inverters (2 transistors each) feed each other:</text>
+<text x="220" y="266" font-size="11" font-weight="400" class="quiet" text-anchor="middle">the bit stays as long as there is power</text>
+<text x="500" y="64" font-size="13" font-weight="600" class="ink" text-anchor="start">DRAM cell (main memory): 1 transistor + 1 capacitor</text>
+<path d="M510 92H800" fill="none" class="edge" stroke-width="2"/>
+<text x="804" y="96" font-size="11" font-weight="400" class="quiet" text-anchor="start">word line</text>
+<path d="M540 80V290" fill="none" class="edge" stroke-width="2"/>
+<text x="540" y="308" font-size="11" font-weight="400" class="quiet" text-anchor="middle">bit line</text>
+<rect x="620" y="170" width="44" height="26" rx="3" class="c2f"/><rect x="620" y="170" width="44" height="26" rx="3" fill="none" class="c2s" stroke-width="1.5"/><text x="642" y="187" font-size="11" font-weight="600" class="ink" text-anchor="middle">T</text>
+<path d="M642 92V170" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M540 183H620" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M664 183H720V206" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M696 206H744M696 216H744" fill="none" class="acc" stroke-width="3"/>
+<path d="M720 216V236" fill="none" class="edge" stroke-width="1.25"/>
+<path d="M704 236H736M710 242H730M716 248H724" fill="none" class="edge" stroke-width="1.5"/>
+<text x="754" y="208" font-size="11" font-weight="400" class="quiet" text-anchor="start">capacitor: the bit</text>
+<text x="754" y="222" font-size="11" font-weight="400" class="quiet" text-anchor="start">is a tiny charge</text>
+<text x="705" y="272" font-size="11" font-weight="400" class="quiet" text-anchor="middle">the charge leaks away: every row must be refreshed</text>
+<text x="705" y="286" font-size="11" font-weight="400" class="quiet" text-anchor="middle">(within 32–64 ms in DDR memory), and reading drains it</text>
+<text x="24" y="342" font-size="12" font-weight="600" class="acct" text-anchor="start">SRAM</text>
+<text x="76" y="342" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">about 6 transistors per bit, no refresh, ~1 ns on the CPU chip: fast, large area, expensive → caches</text>
+<text x="24" y="364" font-size="12" font-weight="600" class="c2" text-anchor="start">DRAM</text>
+<text x="76" y="364" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">1 transistor + 1 capacitor per bit, needs refresh, ~100 ns through the memory controller: dense, cheap → RAM</text>
+<text x="24" y="386" font-size="12" font-weight="600" class="bad" text-anchor="start">CAM</text>
+<text x="76" y="386" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">an SRAM cell plus comparison logic, about 9–10 transistors per bit → only small fully associative caches, TLBs</text>
+</svg>

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 444" width="760" height="444" role="img" aria-label="A kockázat (valószínűség × hatás) dönti el, mire költsünk a rendelkezésre állásból">
+<title>A kockázat (valószínűség × hatás) dönti el, mire költsünk a rendelkezésre állásból</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="rm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="acct"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">A kockázat (valószínűség × hatás) dönti el, mire költsünk a rendelkezésre állásból</text>
+<rect x="150" y="70" width="146" height="64" rx="0" class="c2f"/><rect x="150" y="70" width="146" height="64" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="296" y="70" width="146" height="64" rx="0" class="badf"/><rect x="296" y="70" width="146" height="64" rx="0" fill="none" class="bads" stroke-width="1.5"/>
+<rect x="442" y="70" width="146" height="64" rx="0" class="badf"/><rect x="442" y="70" width="146" height="64" rx="0" fill="none" class="bads" stroke-width="1.5"/>
+<rect x="588" y="70" width="146" height="64" rx="0" class="badf"/><rect x="588" y="70" width="146" height="64" rx="0" fill="none" class="bads" stroke-width="1.5"/>
+<text x="140" y="106.0" font-size="12" font-weight="600" class="ink" text-anchor="end">gyakori</text>
+<rect x="150" y="134" width="146" height="64" rx="0" class="tint"/><rect x="150" y="134" width="146" height="64" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="296" y="134" width="146" height="64" rx="0" class="c2f"/><rect x="296" y="134" width="146" height="64" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="442" y="134" width="146" height="64" rx="0" class="badf"/><rect x="442" y="134" width="146" height="64" rx="0" fill="none" class="bads" stroke-width="1.5"/>
+<rect x="588" y="134" width="146" height="64" rx="0" class="badf"/><rect x="588" y="134" width="146" height="64" rx="0" fill="none" class="bads" stroke-width="1.5"/>
+<text x="140" y="170.0" font-size="12" font-weight="600" class="ink" text-anchor="end">lehetséges</text>
+<rect x="150" y="198" width="146" height="64" rx="0" class="tint"/><rect x="150" y="198" width="146" height="64" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="296" y="198" width="146" height="64" rx="0" class="c2f"/><rect x="296" y="198" width="146" height="64" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="442" y="198" width="146" height="64" rx="0" class="c2f"/><rect x="442" y="198" width="146" height="64" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<rect x="588" y="198" width="146" height="64" rx="0" class="badf"/><rect x="588" y="198" width="146" height="64" rx="0" fill="none" class="bads" stroke-width="1.5"/>
+<text x="140" y="234.0" font-size="12" font-weight="600" class="ink" text-anchor="end">valószínűtlen</text>
+<rect x="150" y="262" width="146" height="64" rx="0" class="tint"/><rect x="150" y="262" width="146" height="64" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="296" y="262" width="146" height="64" rx="0" class="tint"/><rect x="296" y="262" width="146" height="64" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="442" y="262" width="146" height="64" rx="0" class="tint"/><rect x="442" y="262" width="146" height="64" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="588" y="262" width="146" height="64" rx="0" class="c2f"/><rect x="588" y="262" width="146" height="64" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="140" y="298.0" font-size="12" font-weight="600" class="ink" text-anchor="end">ritka</text>
+<text x="223.0" y="344" font-size="12" font-weight="600" class="ink" text-anchor="middle">elhanyagolható</text>
+<text x="369.0" y="344" font-size="12" font-weight="600" class="ink" text-anchor="middle">kisebb</text>
+<text x="515.0" y="344" font-size="12" font-weight="600" class="ink" text-anchor="middle">súlyos</text>
+<text x="661.0" y="344" font-size="12" font-weight="600" class="ink" text-anchor="middle">katasztrofális</text>
+<text x="442" y="366" font-size="12" font-weight="400" class="quiet" text-anchor="middle">hatás (kár eseményenként) →</text>
+<text x="34" y="198" font-size="12" class="quiet" text-anchor="middle" transform="rotate(-90 34 198)">valószínűség →</text>
+<text x="223.0" y="96" font-size="11" font-weight="600" class="ink" text-anchor="middle">összeomló folyamat</text>
+<text x="223.0" y="111" font-size="11" font-weight="400" class="quiet" text-anchor="middle">magától újraindul</text>
+<text x="515.0" y="160" font-size="11" font-weight="600" class="ink" text-anchor="middle">lemezhiba</text>
+<text x="515.0" y="175" font-size="11" font-weight="400" class="quiet" text-anchor="middle">(egyetlen lemez)</text>
+<text x="369.0" y="160" font-size="11" font-weight="600" class="acct" text-anchor="middle">lemezhiba</text>
+<text x="369.0" y="175" font-size="11" font-weight="400" class="quiet" text-anchor="middle">RAID 1-gyel</text>
+<text x="661.0" y="160" font-size="11" font-weight="600" class="ink" text-anchor="middle">konfigurációs hiba</text>
+<text x="661.0" y="175" font-size="11" font-weight="400" class="quiet" text-anchor="middle">minden szerveren</text>
+<text x="515.0" y="224" font-size="11" font-weight="600" class="ink" text-anchor="middle">áramszünet</text>
+<text x="515.0" y="239" font-size="11" font-weight="400" class="quiet" text-anchor="middle">a szerverteremben</text>
+<text x="661.0" y="224" font-size="11" font-weight="600" class="ink" text-anchor="middle">zsarolóvírus</text>
+<text x="661.0" y="239" font-size="11" font-weight="400" class="quiet" text-anchor="middle">mindent titkosít</text>
+<text x="661.0" y="288" font-size="11" font-weight="600" class="ink" text-anchor="middle">tűz vagy árvíz</text>
+<text x="661.0" y="303" font-size="11" font-weight="400" class="quiet" text-anchor="middle">az adatközpontban</text>
+<text x="223.0" y="288" font-size="11" font-weight="600" class="ink" text-anchor="middle">kiesik egy ventilátor</text>
+<text x="223.0" y="303" font-size="11" font-weight="400" class="quiet" text-anchor="middle">a másik tovább hűt</text>
+<path d="M472 190H434" fill="none" class="acc" stroke-width="1.5" marker-end="url(#rm)"/>
+<text x="476" y="194" font-size="10.5" font-weight="600" class="acct" text-anchor="start">csökkentés</text>
+<rect x="24" y="383" width="14" height="14" rx="2" class="tint"/><rect x="24" y="383" width="14" height="14" rx="2" fill="none" class="edge" stroke-width="1.25"/>
+<text x="44" y="395" font-size="11.5" font-weight="400" class="ink" text-anchor="start">alacsony: elfogadni, figyelni</text>
+<rect x="230" y="383" width="14" height="14" rx="2" class="c2f"/><rect x="230" y="383" width="14" height="14" rx="2" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="250" y="395" font-size="11.5" font-weight="400" class="ink" text-anchor="start">közepes: csökkenteni, ahol olcsó</text>
+<rect x="460" y="383" width="14" height="14" rx="2" class="badf"/><rect x="460" y="383" width="14" height="14" rx="2" fill="none" class="bads" stroke-width="1.5"/>
+<text x="480" y="395" font-size="11.5" font-weight="400" class="ink" text-anchor="start">magas: csökkenteni, áthárítani, elkerülni</text>
+<text x="24" y="424" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">A csökkentés elmozdítja a kockázatot: RAID 1 tükörrel a lemezhiba ugyanolyan valószínű, de kisebb a hatása.</text>
+</svg>

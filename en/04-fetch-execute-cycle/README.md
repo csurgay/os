@@ -27,8 +27,10 @@ By the end, students will be able to:
 
 - state the von Neumann principle and explain why it is efficient and why it is not secure;
 - name the main CPU registers (PC, MAR, MBR, CIR, ACC, SR) and their roles;
+- explain the address, data and control lines of a bus, the difference between memory-mapped and port-mapped I/O, and why a PC uses a hierarchy of buses and links instead of one shared bus;
 - describe the fetch phase in register transfer notation;
-- trace the execution of a short machine-code program step by step, on paper and in `gdb`;
+- trace the execution of a short machine-code program step by step, on paper and in `gdb`, with immediate and with direct addressing;
+- sort instructions into the four categories (processor–memory, processor–I/O, data processing, control), and read simple real 8-bit machine code;
 - explain how jumps and interrupts change the order of execution, and why the operating system needs the timer interrupt;
 - find these mechanisms on a running Linux system (`/proc/<pid>/maps`, `/proc/interrupts`, `vmstat`).
 
@@ -153,6 +155,64 @@ I/O devices connect to the same bus system. The CS signal decides whether the me
 
 </details>
 
+### Control lines: memory or I/O?
+
+The control bus of a real system carries more than CS and R/W. A classic arrangement, used in Intel 8080-based systems and in the model of Stallings (2018), has separate read and write lines for memory and for I/O, and an interrupt request line in the opposite direction:
+
+![CPU, memory and an I/O device on a shared address and data bus, with the control lines MR, MW, IOR, IOW and IRQ](system-bus.svg)
+
+| Line | Driven by | Meaning |
+| --- | --- | --- |
+| MR (memory read) | CPU | the address on the bus is a memory address; memory, put that cell's contents on the data bus |
+| MW (memory write) | CPU | memory, store the value on the data bus at this address |
+| IOR (I/O read) | CPU | the address on the bus is an I/O port number; the device that owns this port, put your data on the data bus |
+| IOW (I/O write) | CPU | the device that owns this port, take the value from the data bus |
+| IRQ (interrupt request) | I/O device | "I need attention": this is what the Check Interrupt step of the instruction cycle looks at |
+
+With separate I/O lines, devices have an address space of their own, the **I/O ports**, and the CPU needs separate instructions to reach them: `in` and `out` on x86, which has 65,536 ports (16-bit port numbers). This is **port-mapped** (or isolated) I/O. The alternative is the memory-mapped I/O described above: a device answers MR and MW at a range of ordinary addresses, and the normal load and store instructions reach it. Most modern devices are memory-mapped, and most RISC processors (ARM, RISC-V) have no port instructions at all. x86 keeps its ports for compatibility, and Linux lists them in `/proc/ioports` ([see below](#buses-and-io-ports-on-a-running-system)). Either way, user programs may not touch devices directly: the operating system does it for them (see the [Interrupts](../05-interrupts/) lecture).
+
+<details>
+<summary><b>Explained simply:</b> control line, MR, MW, IOR, IOW, IRQ, I/O port, port-mapped I/O, address space, in/out, RISC</summary>
+
+- **Control line:** a single wire of the control bus that carries one yes/no command, for example "memory, read now!".
+- **MR, MW** (Memory Read, Memory Write): the commands "memory, give me this cell" and "memory, store this value".
+- **IOR, IOW** (I/O Read, I/O Write): the same two commands, but addressed to devices instead of memory.
+- **IRQ** (Interrupt Request): the wire on which a device tells the CPU "I need attention", like raising your hand.
+- **I/O port:** a numbered "mailbox" of a device. The keyboard controller, for example, has port number 60h. Writing to a port sends a value to the device; reading from it gets a value back.
+- **Port-mapped I/O:** devices have their own house numbers on a separate street; the CPU uses special instructions (`in`, `out` on x86) to visit them. **Memory-mapped I/O:** devices live on the same street as memory, and ordinary instructions reach them.
+- **Address space:** the whole range of addresses that can be used, for example all 65,536 port numbers.
+- **RISC** (Reduced Instruction Set Computer): a processor design with fewer, simpler instructions, such as ARM (in almost every phone) and RISC-V.
+
+</details>
+
+## From one bus to a hierarchy of buses
+
+A single shared bus works for a small machine, but it becomes a problem when devices of very different speeds share it. Only one transfer can use the bus at a time, so a fast memory access must wait while a slow device holds the bus, and the more devices are attached, the slower the bus has to run (longer wires, more electrical load). The answer is to give each speed class its own bus and to join the buses with **bridges** (Stallings, 2018; Tanenbaum & Bos, 2015).
+
+![Panel A: the bus hierarchy of a late-1990s PC, with the PCI and ISA buses joined by bridges. Panel B: a modern PC, with the memory controller and PCIe root complex in the CPU and slow devices behind the chipset](bus-hierarchy.svg)
+
+**Panel A, a late-1990s PC.** The CPU reaches its level-2 cache over a dedicated cache bus and everything else over the local bus. The PCI bridge (the "north bridge") connects the local bus to main memory over the memory bus, and to the PCI bus (32 bits at 33 MHz, at most 133 MB/s). The faster devices sit on the PCI bus: SCSI and USB controllers, the network card and the graphics adapter. A second bridge, the ISA bridge (the "south bridge"), connects the PCI bus to the old ISA bus (16 bits at about 8 MHz, a few MB/s) for slow legacy devices such as a modem, a sound card and the printer port; the IDE disk controller was also part of this chip. A bridge passes a transfer to the other side only when the target is there, so the buses work in parallel: a slow transfer on the ISA bus does not block the CPU's accesses to memory.
+
+**Panel B, a PC today.** The memory controller and the PCI Express root complex have moved into the CPU package. PCI Express (PCIe) is no longer a shared bus at all, but a set of **point-to-point** serial links made of **lanes**: a graphics card typically gets 16 lanes, an NVMe SSD 4, and each link transfers independently of the others. Slower devices (USB, SATA disks, network, audio, extra PCIe slots) connect to the **chipset**, on Intel systems called the PCH (Platform Controller Hub), which reaches the CPU over a single link (DMI on Intel, a PCIe link on AMD). Software still sees the old structure: PCIe devices are discovered and configured exactly like PCI devices, which is why Linux tools still say "PCI".
+
+This is the same idea as the memory hierarchy of [lecture 7](../07-two-level-memory-and-cache/): what is fast and used often sits close to the CPU, and what is slow sits further away, where it cannot slow down the rest.
+
+<details>
+<summary><b>Explained simply:</b> bridge, north/south bridge, PCI, ISA, MHz, MB/s, SCSI, USB, IDE, legacy, PCI Express, lane, point-to-point, NVMe SSD, root complex, chipset, PCH, DMI, SATA</summary>
+
+- **Bridge:** a chip that connects two buses and passes messages between them only when needed, like a gate between two car parks. The **north bridge** was the one near the CPU (top of the drawing), the **south bridge** the one further down.
+- **PCI** (Peripheral Component Interconnect) and **ISA** (Industry Standard Architecture): two standard expansion buses of PCs. ISA comes from the IBM PC (1981), widened to 16 bits in the PC/AT (1984); PCI replaced it in the 1990s.
+- **MHz** (megahertz): million ticks per second. **MB/s:** megabytes per second, how much data a bus can move.
+- **SCSI, IDE, SATA:** ways of connecting disks. SCSI was used in servers, IDE in ordinary PCs; SATA is today's version of IDE.
+- **USB** (Universal Serial Bus): the connector for keyboards, mice, memory sticks and almost everything else.
+- **Legacy:** old technology kept only so that old devices and programs still work.
+- **PCI Express (PCIe):** the modern successor of PCI. Instead of one shared road, every device gets its own private road (**point-to-point link**) to the CPU or the chipset. A **lane** is two pairs of wires, one for each direction; more lanes mean a wider road.
+- **NVMe SSD:** a fast solid-state disk (no moving parts) that connects directly to PCIe lanes.
+- **Root complex:** the part of the CPU where the PCIe links start, the root of the tree of PCIe connections.
+- **Chipset, PCH** (Platform Controller Hub): the support chip on the motherboard that connects the slower devices. **DMI** (Direct Media Interface): Intel's link between the CPU and the PCH.
+
+</details>
+
 ## The instruction cycle
 
 The CPU repeats a single cycle: Fetch, Decode, Execute, then Check Interrupt.
@@ -240,7 +300,7 @@ Memory stores only numbers. The 19 at address 0 is LD 3 because the CPU fetches 
 
 When ADD executes, one ALU input is the ACC and the other is the operand field of the CIR. The result goes back into the ACC, while the decoder tells the ALU to add.
 
-**Addressing modes.** Here the operand of LD 3 is the value itself (an *immediate* operand), so ACC ← 3. If LD used direct (absolute) addressing, 3 would be a memory address, and ACC ← Mem[3] = 7. The same bit pattern therefore means different things depending on the addressing mode, and the opcode determines the addressing mode.
+**Addressing modes.** Here the operand of LD 3 is the value itself (an *immediate* operand), so ACC ← 3: LD 3 loads the number 3, not the contents of address 3. If LD used direct (absolute) addressing, 3 would be a memory address, and ACC ← Mem[3] = 7. The same bit pattern therefore means different things depending on the addressing mode, and the opcode determines the addressing mode.
 
 <details>
 <summary><b>Explained simply:</b> mnemonic, binary, decimal, accumulator, trace, immediate operand, direct addressing, addressing mode</summary>
@@ -251,6 +311,50 @@ When ADD executes, one ALU input is the ACC and the other is the operand field o
 - **Immediate operand:** the number in the instruction is the value itself. "LD 3" means "load the number 3".
 - **Direct addressing:** the number in the instruction is an address. "LD 3" would then mean "load whatever is stored in memory cell 3".
 - **Addressing mode:** the rule that says how to interpret the operand: as a value, as an address, or in some other way.
+
+</details>
+
+## A second example: direct addressing
+
+Real programs mostly work on variables stored in memory, so the operand of most instructions is an address. Stallings (2018) shows this on a hypothetical machine:
+
+- a memory word and an instruction are both 16 bits wide;
+- an instruction has a 4-bit opcode and a 12-bit address;
+- three opcodes are used: 0001 = load the AC from memory, 0101 = add a memory word to the AC, 0010 = store the AC to memory.
+
+All numbers are written in hexadecimal. One hex digit is exactly 4 bits, so the first digit of an instruction is its opcode and the other three are its address: 1940 is 0001 1001 0100 0000, that is, opcode 1 (load) and address 940.
+
+| Address | Contents | Meaning |
+| --- | --- | --- |
+| 300 | 1940 | LOAD 940: AC ← Mem[940] |
+| 301 | 5941 | ADD 941: AC ← [AC] + Mem[941] |
+| 302 | 2941 | STORE 941: Mem[941] ← [AC] |
+| … | | |
+| 940 | 0003 | data |
+| 941 | 0002 | data |
+
+**Tracing the run** (state after each complete instruction):
+
+| After | PC | IR | AC | Mem[941] |
+| --- | --- | --- | --- | --- |
+| start | 300 | – | – | 0002 |
+| LOAD 940 | 301 | 1940 | 0003 | 0002 |
+| ADD 941 | 302 | 5941 | 0005 | 0002 |
+| STORE 941 | 303 | 2941 | 0005 | 0005 |
+
+The program computes 3 + 2 = 5 again, but now the operands are fetched from memory and the result is written back. Each of these instructions therefore uses the bus twice: once to fetch the instruction, and once more to read or write its operand. An immediate operand needs no second access, because it arrives together with the instruction.
+
+**The address width sets the memory size.** A 12-bit address field can name $2^{12} = 4096$ different cells, so this machine can address 4K words (of 16 bits each, 8 KiB in total). The word width and the address width are independent design choices. The 4-bit operand of our teaching CPU, used as an address, could reach only $2^4 = 16$ cells; a 32-bit address reaches 4 GiB of byte-addressed memory.
+
+<details>
+<summary><b>Explained simply:</b> hexadecimal, AC, LOAD, STORE, word, address width, 4K, KiB, GiB</summary>
+
+- **Hexadecimal** (hex): writing numbers in base 16, with the digits 0–9 and A–F. One hex digit stands for exactly 4 bits, so hex is a compact way to write bit patterns.
+- **AC:** Stallings' name for the accumulator, the same as our ACC.
+- **LOAD, STORE:** load copies a value from memory into a register; store copies a register's value into memory.
+- **Word:** the natural unit of data the machine handles in one step, here 16 bits.
+- **Address width:** how many bits an address has. Every extra bit doubles the number of cells that can be named, like adding a digit to house numbers.
+- **4K, KiB, GiB:** 4K = 4 × 1024 = 4096. A KiB (kibibyte) is 1024 bytes; a GiB (gibibyte) is 1024 × 1024 × 1024 bytes, about a billion.
 
 </details>
 
@@ -268,7 +372,7 @@ A jump instruction changes the order of execution by overwriting the PC. A condi
 
 The condition "not zero" is Z = 0; it has no flag of its own and is tested by a separate jump instruction (on x86-64: `jz` and `jnz`). Processors also keep further flags, such as carry (CF), the unsigned counterpart of the overflow flag.
 
-**Unconditional jump: JMP 1000.** During execute, PC ← 1000. The next fetch takes the instruction from address 1000.
+**Unconditional jump: JMP 1000.** During execute, PC ← 1000. The next fetch takes the instruction from address 1000. A jump is therefore nothing more than a load into the PC: JMP 1000 does exactly what an imaginary "LD PC, 1000" would do, and a conditional jump is a load into the PC that happens only if the condition holds.
 
 **Conditional jump: JZ 900** (jump if zero). The execute phase checks the Z flag:
 
@@ -287,6 +391,62 @@ Loops and branches (`if`, `while`, `for`) are all implemented with conditional j
 - **Jump:** an instruction that changes the PC, so the program continues somewhere else instead of with the next instruction.
 - **Conditional jump:** jump only if a condition holds (for example "if the result was zero"). This is how computers make decisions.
 - **Loop, branch:** a loop repeats steps (`while`, `for`); a branch chooses between two paths (`if`). In C and most languages, these keywords become conditional jumps.
+
+</details>
+
+## Four categories of instructions
+
+Every instruction set, however large, consists of four kinds of instructions (Stallings, 2018):
+
+| Category | What it does | Examples in this lecture | x86-64 examples |
+| --- | --- | --- | --- |
+| Processor–memory | moves data between the CPU and memory | LOAD 940, STORE 941 | `mov 8(%rsp), %eax`, `mov %eax, 8(%rsp)` |
+| Processor–I/O | moves data between the CPU and an I/O device | (port-mapped I/O) | `in`, `out` |
+| Data processing | arithmetic or logic on data | ADD 2 | `add`, `and`, `cmp` |
+| Control | changes the order of execution | JMP 1000, JZ 900 | `jmp`, `jz`, `call`, `ret` |
+
+Real instructions often belong to more than one category: ADD 941 of the previous section both reads memory and adds. With memory-mapped I/O there is no separate processor–I/O category in practice: the processor–memory instructions do the job, because the device answers at a memory address.
+
+<details>
+<summary><b>Explained simply:</b> instruction set, call, ret, cmp</summary>
+
+- **Instruction set:** the complete list of instructions a processor understands, its "vocabulary".
+- **`call`, `ret`:** jump into a function and remember where to come back; jump back to that remembered place at the end of the function.
+- **`cmp`** (compare): subtracts two numbers only to set the flags, without keeping the result, so that a conditional jump can follow.
+
+</details>
+
+## Real 8-bit machine code: the Z80
+
+Our teaching CPU is invented, but real 8-bit processors work the same way. The Zilog Z80 (1976), a compatible extension of the Intel 8080, ran in many home computers of the 1980s (ZX Spectrum, Amstrad CPC, MSX), and its descendants are still used in embedded devices. It has an 8-bit accumulator A, a flag register F, six further 8-bit registers B, C, D, E, H and L (usable in pairs as the 16-bit registers BC, DE and HL), and a 16-bit PC, so it can address $2^{16} =$ 64 KiB of memory (Zilog, 2016). An instruction is 1 to 4 bytes long, and its first byte (sometimes the first two) is the opcode.
+
+A three-instruction program, placed at address 59h (the `h` suffix means hexadecimal):
+
+| Address | Bytes | Assembly | Effect | PC after the fetch |
+| --- | --- | --- | --- | --- |
+| 59h | `3C` | `INC A` | A ← [A] + 1 | 5Ah |
+| 5Ah | `0E FF` | `LD C,FFh` | C ← FFh (255) | 5Ch |
+| 5Ch | `C3 59 00` | `JP 0059h` | PC ← 0059h | 5Fh, then overwritten with 59h |
+
+- **`INC A` is one byte**, 3Ch = 0011 1100. Nothing in memory marks it as an instruction: it is fetched as one only because the PC holds 59h. The fetch advances the PC by 1.
+- **`LD C,FFh` is two bytes**: the opcode 0Eh followed by the immediate operand FFh. The fetch reads both bytes, so the PC advances by 2. This is the real form of our "LD 3": the operand travels with the instruction.
+- **`JP 0059h` is three bytes**: the opcode C3h and a 16-bit address, stored low byte first (59h, then 00h; the Z80 is *little-endian*). Executing it is just a load into the PC, so the program loops forever, incrementing A.
+
+Memory holds only bits, and the PC decides which bytes are instructions. The byte FFh at address 5Bh is data for `LD C`, but if a jump ever landed on 5Bh, the CPU would execute it as an instruction: on the Z80, FFh is `RST 38h`, a one-byte call to address 0038h. This is the "19 at address 0" lesson again, on a real CPU.
+
+x86 grew out of the same family. The Intel 8086 (1978) was designed so that 8080 programs could be translated to it mechanically: A became AL (the low byte of the accumulator AX), the pair BC became CX, DE became DX, and HL became BX. The 32-bit and 64-bit extensions kept these names (EAX, RAX and so on), so the accumulator of an 8-bit processor from 1974 lives on as the low byte of RAX. Even the encoding pattern survives: `mov $0xff, %cl` assembles to the two bytes `b1 ff`, an opcode followed by an immediate byte, exactly like `LD C,FFh`.
+
+<details>
+<summary><b>Explained simply:</b> Z80, 8080, 8086, home computer, embedded device, register pair, 59h, little-endian, RST, AL, AX</summary>
+
+- **Z80, 8080, 8086:** famous processor chips. The Intel 8080 (1974) and the Zilog Z80 (1976) are 8-bit processors; the Intel 8086 (1978) is the 16-bit ancestor of today's PC processors.
+- **Home computer:** the small computers of the 1980s that people plugged into their TV at home, such as the ZX Spectrum.
+- **Embedded device:** a computer hidden inside another product, for example in a washing machine or a calculator.
+- **Register pair:** two 8-bit registers used together as one 16-bit register, like two digits forming a two-digit number.
+- **59h:** the `h` at the end means the number is written in hexadecimal; 59h = 89 in decimal.
+- **Little-endian:** a multi-byte number is stored with its smallest byte first, like writing a date as day-month-year.
+- **`RST`** (restart): a one-byte instruction that calls a fixed address. It was designed for quick calls, for example into interrupt handlers.
+- **AL, AX:** AX is the 16-bit accumulator of the 8086; AL is its lower ("Low") half, AH its upper ("High") half.
 
 </details>
 
@@ -555,6 +715,82 @@ The bytes are identical in both cases. On the stack they are data, and the NX bi
 
 </details>
 
+### Buses and I/O ports on a running system
+
+`/proc/ioports` lists the port-mapped I/O space of an x86 machine, the 65,536 port numbers reached with `in` and `out`:
+
+```console
+$ cat /proc/ioports
+0000-0cf7 : PCI Bus 0000:00
+  0000-001f : dma1
+  0020-0021 : pic1
+  0040-0043 : timer0
+  0050-0053 : timer1
+  0060-0060 : keyboard
+  0064-0064 : keyboard
+  0070-0071 : rtc_cmos
+  0080-008f : dma page reg
+  00a0-00a1 : pic2
+  00c0-00df : dma2
+  00f0-00ff : fpu
+  03f8-03ff : serial
+0cf8-0cff : PCI conf1
+0d00-ffff : PCI Bus 0000:00
+```
+
+These are the fixed port addresses of the 1984 IBM PC/AT, from the ISA era of panel A: the DMA controllers, the two interrupt controllers (`pic1`, `pic2`, see the [Interrupts](../05-interrupts/) lecture), the timer, the keyboard controller, the real-time clock and the first serial port at 3F8h. Even this virtual machine still provides them. Ports CF8h–CFFh are the classic way to reach the PCI configuration space: the CPU writes a device's bus/device/function number to port CF8h and then reads or writes that device's configuration registers through port CFCh.
+
+The memory-mapped side is in `/proc/iomem`. Its top-level lines show where RAM ends and devices begin:
+
+```console
+$ grep -v '^ ' /proc/iomem
+00000000-00000fff : Reserved
+00001000-0009fbff : System RAM
+0009fc00-000fffff : Reserved
+00100000-bfffffff : System RAM
+c0001000-eebfffff : PCI Bus 0000:00
+eec00000-febfffff : Reserved
+fec00000-fec003ff : IOAPIC 0
+100000000-23fffffff : System RAM
+4000000000-7fffffffff : PCI Bus 0000:00
+```
+
+RAM stops at 3 GiB (BFFFFFFFh) and continues above 4 GiB: the addresses in between are taken by memory-mapped devices, among them the I/O APIC interrupt controller at FEC00000h. Memory-mapped I/O costs address space, which is one reason 32-bit PCs could rarely use a full 4 GiB of RAM.
+
+The PCI devices themselves appear under `/sys/bus/pci/devices`, named domain:bus:device.function, with a class code that tells what kind of device each is:
+
+```console
+$ grep . /sys/bus/pci/devices/*/class
+/sys/bus/pci/devices/0000:00:00.0/class:0x060000
+/sys/bus/pci/devices/0000:00:01.0/class:0xffff00
+/sys/bus/pci/devices/0000:00:02.0/class:0x018000
+/sys/bus/pci/devices/0000:00:03.0/class:0x018000
+/sys/bus/pci/devices/0000:00:04.0/class:0x018000
+/sys/bus/pci/devices/0000:00:05.0/class:0x018000
+/sys/bus/pci/devices/0000:00:06.0/class:0x018000
+/sys/bus/pci/devices/0000:00:07.0/class:0x018000
+/sys/bus/pci/devices/0000:00:08.0/class:0x020000
+/sys/bus/pci/devices/0000:00:09.0/class:0xffff00
+/sys/bus/pci/devices/0000:00:0a.0/class:0xffff00
+```
+
+Class 06 00 is a host bridge (the CPU's connection to the PCI world), 01 80 a storage controller (here six virtual disks), 02 00 an Ethernet network controller, and FF a device without a standard class. All of them sit on bus 00: a virtual machine has no physical hierarchy to imitate. On a physical PC, `lspci -tv` draws the real tree of root ports, bridges and devices (lab exercise 7; `lspci` was not installed on the measured system, so no output is shown here).
+
+<details>
+<summary><b>Explained simply:</b> /proc/ioports, /proc/iomem, DMA controller, real-time clock, serial port, configuration space, /sys, class code, host bridge, lspci</summary>
+
+- **`/proc/ioports`, `/proc/iomem`:** two of Linux's "window" files: the first lists which I/O port numbers belong to which device, the second which physical memory addresses are RAM and which belong to devices.
+- **DMA controller:** a helper chip that copies data between devices and memory without the CPU (explained in the next lecture).
+- **Real-time clock (RTC):** a small battery-powered clock that keeps the date and time even when the computer is switched off.
+- **Serial port:** an old, simple connector that sends data one bit after another; `serial` at 3F8h is the first one, called COM1 on Windows.
+- **Configuration space:** a small set of registers on every PCI device that says what the device is and lets the OS tell it which addresses to use.
+- **`/sys`:** another Linux "window" folder, organised as a tree of devices and drivers.
+- **Class code:** a number on every PCI device that says what kind of device it is: storage, network, bridge, graphics and so on.
+- **Host bridge:** the connection between the CPU and the PCI devices, the "front door" of the PCI tree.
+- **`lspci`:** a command that lists the PCI devices; with `-tv` it draws them as a tree with their names.
+
+</details>
+
 ### Interrupts on a running system
 
 `/proc/interrupts` counts interrupts per CPU core since boot:
@@ -602,6 +838,7 @@ Each context switch happens inside the kernel, reached through an interrupt or a
 4. **Addressing modes.** Remove the `$` from `mov $3, %eax`, assemble and run it. Explain the result using the words *direct addressing*, *page fault* and *SIGSEGV*.
 5. **NX.** Compile and run `nx.c` both ways. Then look at `/proc/<pid>/maps` of a running copy (add a `sleep(60)` before the call) and find the stack's permissions.
 6. **The timer.** Run `grep LOC /proc/interrupts` twice, 10 seconds apart. Roughly how many timer interrupts arrived per second on each core? Compare this with `CONFIG_HZ` (`grep CONFIG_HZ= /boot/config-$(uname -r)`). Then start a busy loop (`yes > /dev/null`) and measure again.
+7. **Buses and ports.** Run `cat /proc/ioports` and `grep -v '^ ' /proc/iomem`. Which devices use port-mapped I/O, and where does RAM stop and the device range begin? On a physical PC (not a virtual machine), run `lspci -tv` and draw the tree: which devices hang directly off the CPU's root ports, and which sit behind the chipset? Compare your drawing with panel B of the bus hierarchy figure.
 
 ## Review questions
 
@@ -617,6 +854,10 @@ Each context switch happens inside the kernel, reached through an interrupt or a
 10. `mov $3, %eax` and `mov 3, %eax` differ by one character. Why does only the second one crash?
 11. In `/proc/self/maps`, the heap is `rw-p`. What would happen if a program jumped into its heap? Which Linux mechanism reports the error to the program?
 12. What do a timer interrupt, a page fault and a `syscall` instruction have in common at CPU level, and how do they differ?
+13. A CPU puts the number 60h on the address bus. How does the system know whether memory cell 60h or I/O port 60h is meant? How is this decided on a machine with only memory-mapped I/O?
+14. Why did PCs move from a single shared bus to a hierarchy of buses joined by bridges, and what replaced the shared PCI bus in today's machines?
+15. In Stallings' hypothetical machine an instruction is 16 bits with a 4-bit opcode. How many different opcodes and how many memory words are possible? How many bus accesses does `ADD 941` need in total, and how many would an immediate "add 2" need?
+16. On a Z80, `LD C,FFh` (bytes `0E FF`) is stored at address 5Ah. What is the PC after it has been fetched? What would happen if a jump went to address 5Bh?
 
 <details>
 <summary><strong>Answer key (for instructors)</strong></summary>
@@ -633,6 +874,10 @@ Each context switch happens inside the kernel, reached through an interrupt or a
 10. With `$`, 3 is an immediate value placed in the register. Without it, 3 is a memory address; address 3 is not mapped in the process, so the access causes a page fault and the kernel sends SIGSEGV.
 11. The heap has no `x` permission, so the instruction fetch from it causes a page fault (an NX violation). The kernel turns it into a SIGSEGV signal, which by default terminates the program ("Segmentation fault").
 12. In all three the CPU saves its state, switches to kernel mode and continues at a kernel handler. They differ in their source: the timer interrupt comes from outside and is asynchronous, the page fault is an exception caused by the current instruction, and `syscall` is a deliberate request made by the program.
+13. By the control lines: with MR/MW active the address is a memory address, with IOR/IOW active it is a port number. The CPU activates IOR/IOW only for the special I/O instructions (`in`/`out` on x86). With only memory-mapped I/O there is just one address space: the address decoder assigns each address range either to RAM or to a device, so the address itself decides (the device's range is simply not RAM).
+14. Devices of very different speeds shared one bus, and only one transfer could use it at a time, so slow devices held up fast ones, and a bus with many devices had to run slowly. Separate buses for each speed class, joined by bridges, can work in parallel, with the fast ones (cache, memory) closest to the CPU. Today the shared PCI bus has been replaced by PCI Express point-to-point links, with the memory controller and the PCIe root complex inside the CPU and the slower devices behind the chipset.
+15. 4 bits give $2^4 = 16$ opcodes; 12 address bits give $2^{12} = 4096$ (4K) words. `ADD 941` needs two accesses: one to fetch the instruction and one to read Mem[941]. An immediate add needs only the instruction fetch, because the operand is part of the instruction.
+16. 5Ch, because the instruction is two bytes long (opcode and operand). Address 5Bh holds the operand FFh; if the PC pointed there, the CPU would fetch FFh as an opcode and execute it (`RST 38h`, a call to address 0038h). Memory does not distinguish instructions from data; only the PC does.
 
 </details>
 
@@ -642,8 +887,10 @@ Silberschatz, A., Galvin, P. B., & Gagne, G. (2018). *Operating system concepts*
 
 Stallings, W. (2018). *Operating systems: Internals and design principles* (9th ed.). Pearson.
 
+Tanenbaum, A. S., & Bos, H. (2015). *Modern operating systems* (4th ed.). Pearson.
+
+Zilog. (2016). *Z80 CPU user manual* (UM0080, Rev. 11). Zilog.
+
 ## Further reading
 
 Kóczy, A., & Kondorosi, K. (Eds.). (2000). *Operációs rendszerek mérnöki megközelítésben* [Operating systems: An engineering approach]. Panem.
-
-Tanenbaum, A. S., & Bos, H. (2015). *Modern operating systems* (4th ed.). Pearson.

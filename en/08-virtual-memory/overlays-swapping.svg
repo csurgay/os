@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="900" height="420" role="img" aria-label="Before paging: overlays (one program in phases) and swapping (whole jobs)">
+<title>Before paging: overlays (one program in phases) and swapping (whole jobs)</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="ov" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Before paging: overlays (one program in phases) and swapping (whole jobs)</text>
+<text x="24" y="62" font-size="13" font-weight="600" class="ink" text-anchor="start">Overlays: the resident part loads one phase at a time into the same overlay area</text>
+<rect x="40" y="80" width="120" height="50" rx="0" class="tint"/><rect x="40" y="80" width="120" height="50" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="100" y="110" font-size="11" font-weight="400" class="quiet" text-anchor="middle">free</text>
+<rect x="40" y="130" width="120" height="80" rx="0" class="accf"/><rect x="40" y="130" width="120" height="80" rx="0" fill="none" class="acc" stroke-width="2"/>
+<text x="100" y="174" font-size="12" font-weight="600" class="ink" text-anchor="middle">1. editor</text>
+<rect x="40" y="210" width="120" height="30" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="100" y="230" font-size="11" font-weight="400" class="ink" text-anchor="middle">resident part</text>
+<rect x="40" y="240" width="120" height="34" rx="0" class="tint"/><rect x="40" y="240" width="120" height="34" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="100" y="262" font-size="12" font-weight="600" class="ink" text-anchor="middle">OS</text>
+<rect x="40" y="310" width="40" height="30" rx="0" class="accf"/><rect x="40" y="310" width="40" height="30" rx="0" fill="none" class="acc" stroke-width="2"/>
+<text x="60" y="330" font-size="12" font-weight="600" class="ink" text-anchor="middle">1</text>
+<rect x="80" y="310" width="40" height="30" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="100" y="330" font-size="12" font-weight="400" class="quiet" text-anchor="middle">2</text>
+<rect x="120" y="310" width="40" height="30" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="140" y="330" font-size="12" font-weight="400" class="quiet" text-anchor="middle">3</text>
+<text x="100" y="358" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">program file on disk</text>
+<path d="M60 308C60 292 186 300 186 220S180 170 164 170" fill="none" class="edge" stroke-width="1.5" marker-end="url(#ov)"/>
+<rect x="210" y="80" width="120" height="50" rx="0" class="tint"/><rect x="210" y="80" width="120" height="50" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="270" y="110" font-size="11" font-weight="400" class="quiet" text-anchor="middle">free</text>
+<rect x="210" y="130" width="120" height="80" rx="0" class="c2f"/><rect x="210" y="130" width="120" height="80" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="270" y="174" font-size="12" font-weight="600" class="ink" text-anchor="middle">2. compiler</text>
+<rect x="210" y="210" width="120" height="30" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="270" y="230" font-size="11" font-weight="400" class="ink" text-anchor="middle">resident part</text>
+<rect x="210" y="240" width="120" height="34" rx="0" class="tint"/><rect x="210" y="240" width="120" height="34" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="270" y="262" font-size="12" font-weight="600" class="ink" text-anchor="middle">OS</text>
+<rect x="210" y="310" width="40" height="30" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="230" y="330" font-size="12" font-weight="400" class="quiet" text-anchor="middle">1</text>
+<rect x="250" y="310" width="40" height="30" rx="0" class="c2f"/><rect x="250" y="310" width="40" height="30" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="270" y="330" font-size="12" font-weight="600" class="ink" text-anchor="middle">2</text>
+<rect x="290" y="310" width="40" height="30" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="310" y="330" font-size="12" font-weight="400" class="quiet" text-anchor="middle">3</text>
+<text x="270" y="358" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">program file on disk</text>
+<path d="M270 308C270 292 356 300 356 220S350 170 334 170" fill="none" class="edge" stroke-width="1.5" marker-end="url(#ov)"/>
+<rect x="380" y="80" width="120" height="50" rx="0" class="tint"/><rect x="380" y="80" width="120" height="50" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="440" y="110" font-size="11" font-weight="400" class="quiet" text-anchor="middle">free</text>
+<rect x="380" y="130" width="120" height="80" rx="0" class="badf"/><rect x="380" y="130" width="120" height="80" rx="0" fill="none" class="bads" stroke-width="1.5"/>
+<text x="440" y="174" font-size="12" font-weight="600" class="ink" text-anchor="middle">3. linker</text>
+<rect x="380" y="210" width="120" height="30" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="440" y="230" font-size="11" font-weight="400" class="ink" text-anchor="middle">resident part</text>
+<rect x="380" y="240" width="120" height="34" rx="0" class="tint"/><rect x="380" y="240" width="120" height="34" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="440" y="262" font-size="12" font-weight="600" class="ink" text-anchor="middle">OS</text>
+<rect x="380" y="310" width="40" height="30" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="400" y="330" font-size="12" font-weight="400" class="quiet" text-anchor="middle">1</text>
+<rect x="420" y="310" width="40" height="30" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="440" y="330" font-size="12" font-weight="400" class="quiet" text-anchor="middle">2</text>
+<rect x="460" y="310" width="40" height="30" rx="0" class="badf"/><rect x="460" y="310" width="40" height="30" rx="0" fill="none" class="bads" stroke-width="1.5"/>
+<text x="480" y="330" font-size="12" font-weight="600" class="ink" text-anchor="middle">3</text>
+<text x="440" y="358" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">program file on disk</text>
+<path d="M480 308C480 292 526 300 526 220S520 170 504 170" fill="none" class="edge" stroke-width="1.5" marker-end="url(#ov)"/>
+<text x="24" y="388" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">The program itself (its resident part) decides when to load the next phase over the previous one;</text>
+<text x="24" y="404" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">the programmer must split the program so that no two phases are needed at the same time.</text>
+<text x="580" y="62" font-size="13" font-weight="600" class="ink" text-anchor="start">Swapping: the OS moves whole jobs</text>
+<rect x="580" y="80" width="120" height="70" rx="0" class="tint"/><rect x="580" y="80" width="120" height="70" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="640" y="120" font-size="11" font-weight="400" class="quiet" text-anchor="middle">free</text>
+<rect x="580" y="150" width="120" height="90" rx="0" class="accf"/><rect x="580" y="150" width="120" height="90" rx="0" fill="none" class="acc" stroke-width="2"/>
+<text x="640" y="200" font-size="12" font-weight="600" class="ink" text-anchor="middle">job 1</text>
+<rect x="580" y="240" width="120" height="34" rx="0" class="tint"/><rect x="580" y="240" width="120" height="34" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="640" y="262" font-size="12" font-weight="600" class="ink" text-anchor="middle">OS</text>
+<text x="640" y="290" font-size="11" font-weight="400" class="quiet" text-anchor="middle">before</text>
+<rect x="740" y="80" width="120" height="70" rx="0" class="tint"/><rect x="740" y="80" width="120" height="70" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="800" y="120" font-size="11" font-weight="400" class="quiet" text-anchor="middle">free</text>
+<rect x="740" y="150" width="120" height="90" rx="0" class="c2f"/><rect x="740" y="150" width="120" height="90" rx="0" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="800" y="200" font-size="12" font-weight="600" class="ink" text-anchor="middle">job 2</text>
+<rect x="740" y="240" width="120" height="34" rx="0" class="tint"/><rect x="740" y="240" width="120" height="34" rx="0" fill="none" class="edge" stroke-width="1.25"/>
+<text x="800" y="262" font-size="12" font-weight="600" class="ink" text-anchor="middle">OS</text>
+<text x="800" y="290" font-size="11" font-weight="400" class="quiet" text-anchor="middle">after</text>
+<rect x="680" y="310" width="100" height="34" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="684" y="314" width="44" height="26" class="accf"/><rect x="732" y="314" width="44" height="26" class="c2f"/>
+<text x="706" y="332" font-size="10.5" font-weight="400" class="ink" text-anchor="middle">job 1</text>
+<text x="754" y="332" font-size="10.5" font-weight="400" class="ink" text-anchor="middle">job 2</text>
+<text x="730" y="362" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">swap area on disk</text>
+<path d="M640 300C640 318 660 326 676 326" fill="none" class="edge" stroke-width="1.5" marker-end="url(#ov)"/>
+<text x="634" y="328" font-size="10.5" font-weight="400" class="quiet" text-anchor="end">swap out</text>
+<path d="M784 326C820 326 830 310 830 300" fill="none" class="edge" stroke-width="1.5" marker-end="url(#ov)"/>
+<text x="838" y="328" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">swap in</text>
+</svg>
