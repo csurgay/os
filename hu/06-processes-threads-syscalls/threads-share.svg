@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 422" width="760" height="422" role="img" aria-label="Egy folyamat, több szál: min osztoznak, és mi az egyes szálak sajátja">
+<title>Egy folyamat, több szál: min osztoznak, és mi az egyes szálak sajátja</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Egy folyamat, több szál: min osztoznak, és mi az egyes szálak sajátja</text>
+<rect x="24" y="48" width="712" height="314" rx="10" fill="none" class="edge" stroke-width="1.25"/>
+<text x="40" y="70" font-size="12.5" font-weight="600" class="ink" text-anchor="start">folyamat, PID 24450 (a threads bemutató)</text>
+<text x="40" y="92" font-size="12" font-weight="600" class="acct" text-anchor="start">minden szál közösen használja</text>
+<rect x="40" y="102" width="162" height="30" rx="4" class="accf"/><rect x="40" y="102" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="121.0" y="121.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">kód (text)</text>
+<rect x="212" y="102" width="162" height="30" rx="4" class="accf"/><rect x="212" y="102" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="293.0" y="121.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">globálisok: data, BSS</text>
+<rect x="384" y="102" width="162" height="30" rx="4" class="accf"/><rect x="384" y="102" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="465.0" y="121.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">heap</text>
+<rect x="556" y="102" width="162" height="30" rx="4" class="accf"/><rect x="556" y="102" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="637.0" y="121.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">memóriatérkép, laptáblák</text>
+<rect x="40" y="140" width="162" height="30" rx="4" class="accf"/><rect x="40" y="140" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="121.0" y="159.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">megnyitott fájlok (leírók)</text>
+<rect x="212" y="140" width="162" height="30" rx="4" class="accf"/><rect x="212" y="140" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="293.0" y="159.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">szignálkezelők</text>
+<rect x="384" y="140" width="162" height="30" rx="4" class="accf"/><rect x="384" y="140" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="465.0" y="159.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">PID, UID, GID</text>
+<rect x="556" y="140" width="162" height="30" rx="4" class="accf"/><rect x="556" y="140" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="637.0" y="159.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">aktuális könyvtár, korlátok</text>
+<text x="40" y="200" font-size="12" font-weight="600" class="c2" text-anchor="start">az egyes szálak sajátja</text>
+<rect x="40" y="210" width="162" height="140" rx="6" class="c2f"/><rect x="40" y="210" width="162" height="140" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="121.0" y="228" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">fő szál  (TID 24450)</text>
+<text x="52" y="250" font-size="11" font-weight="400" class="quiet" text-anchor="start">• regiszterek (PC, SP, …)</text>
+<text x="52" y="270" font-size="11" font-weight="400" class="quiet" text-anchor="start">• verem</text>
+<text x="52" y="290" font-size="11" font-weight="400" class="quiet" text-anchor="start">• TLS (szálankénti tároló)</text>
+<text x="52" y="310" font-size="11" font-weight="400" class="quiet" text-anchor="start">• szignálmaszk</text>
+<text x="52" y="330" font-size="11" font-weight="400" class="quiet" text-anchor="start">• állapot, prioritás, CPU</text>
+<rect x="212" y="210" width="162" height="140" rx="6" class="c2f"/><rect x="212" y="210" width="162" height="140" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="293.0" y="228" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">0. szál  (TID 24451)</text>
+<text x="224" y="250" font-size="11" font-weight="400" class="quiet" text-anchor="start">• regiszterek (PC, SP, …)</text>
+<text x="224" y="270" font-size="11" font-weight="400" class="quiet" text-anchor="start">• verem</text>
+<text x="224" y="290" font-size="11" font-weight="400" class="quiet" text-anchor="start">• TLS (szálankénti tároló)</text>
+<text x="224" y="310" font-size="11" font-weight="400" class="quiet" text-anchor="start">• szignálmaszk</text>
+<text x="224" y="330" font-size="11" font-weight="400" class="quiet" text-anchor="start">• állapot, prioritás, CPU</text>
+<rect x="384" y="210" width="162" height="140" rx="6" class="c2f"/><rect x="384" y="210" width="162" height="140" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="465.0" y="228" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">1. szál  (TID 24452)</text>
+<text x="396" y="250" font-size="11" font-weight="400" class="quiet" text-anchor="start">• regiszterek (PC, SP, …)</text>
+<text x="396" y="270" font-size="11" font-weight="400" class="quiet" text-anchor="start">• verem</text>
+<text x="396" y="290" font-size="11" font-weight="400" class="quiet" text-anchor="start">• TLS (szálankénti tároló)</text>
+<text x="396" y="310" font-size="11" font-weight="400" class="quiet" text-anchor="start">• szignálmaszk</text>
+<text x="396" y="330" font-size="11" font-weight="400" class="quiet" text-anchor="start">• állapot, prioritás, CPU</text>
+<rect x="556" y="210" width="162" height="140" rx="6" class="c2f"/><rect x="556" y="210" width="162" height="140" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="637.0" y="228" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">2. szál  (TID 24453)</text>
+<text x="568" y="250" font-size="11" font-weight="400" class="quiet" text-anchor="start">• regiszterek (PC, SP, …)</text>
+<text x="568" y="270" font-size="11" font-weight="400" class="quiet" text-anchor="start">• verem</text>
+<text x="568" y="290" font-size="11" font-weight="400" class="quiet" text-anchor="start">• TLS (szálankénti tároló)</text>
+<text x="568" y="310" font-size="11" font-weight="400" class="quiet" text-anchor="start">• szignálmaszk</text>
+<text x="568" y="330" font-size="11" font-weight="400" class="quiet" text-anchor="start">• állapot, prioritás, CPU</text>
+<text x="24" y="386" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">A Linux minden szálat tasknak hív; egy folyamat taskjainak közös a szálcsoport-azonosítója (ezt adja a getpid()),</text>
+<text x="24" y="404" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">a gettid() a task saját azonosítóját. Új szál: egy verem és egy task_struct; új folyamathoz saját címtartomány is kell.</text>
+</svg>

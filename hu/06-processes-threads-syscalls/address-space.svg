@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 498" width="760" height="498" role="img" aria-label="Egy folyamat: címtartomány, plusz a kernel nyilvántartása minden másról">
+<title>Egy folyamat: címtartomány, plusz a kernel nyilvántartása minden másról</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Egy folyamat: címtartomány, plusz a kernel nyilvántartása minden másról</text>
+<text x="24" y="62" font-size="13" font-weight="600" class="ink" text-anchor="start">Egy folyamat virtuális címtartománya (x86-64)</text>
+<rect x="128" y="74" width="222" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="138" y="87.0" font-size="12" font-weight="600" class="ink" text-anchor="start">kernel</text>
+<text x="138" y="101.0" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">felhasználói módban nem érhető el</text>
+<text x="120" y="93.0" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0xffff8000…</text>
+<rect x="128" y="126" width="222" height="40" rx="4" class="accf"/><rect x="128" y="126" width="222" height="40" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="138" y="144.0" font-size="12" font-weight="600" class="ink" text-anchor="start">verem</text>
+<text x="138" y="158.0" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">lokális változók, visszatérési címek</text>
+<text x="120" y="150.0" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x7ffc6e85…</text>
+<rect x="128" y="186" width="222" height="66" rx="4" class="c2f"/><rect x="128" y="186" width="222" height="66" rx="4" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="138" y="217.0" font-size="12" font-weight="600" class="ink" text-anchor="start">memórialeképezett terület</text>
+<text x="138" y="231.0" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">libc, ld.so, vDSO, nagy malloc,</text>
+<text x="120" y="223.0" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x7f5fde26…</text>
+<rect x="128" y="300" width="222" height="34" rx="4" class="accf"/><rect x="128" y="300" width="222" height="34" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="138" y="315.0" font-size="12" font-weight="600" class="ink" text-anchor="start">heap</text>
+<text x="138" y="329.0" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">malloc, a brk() növeli</text>
+<text x="120" y="321.0" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x562f7f5f…</text>
+<rect x="128" y="338" width="222" height="22" rx="4" class="tint"/><rect x="128" y="338" width="222" height="22" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="138" y="353" font-size="12" font-weight="600" class="ink" text-anchor="start">BSS</text>
+<text x="120" y="353.0" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x562f5a60…</text>
+<rect x="128" y="362" width="222" height="22" rx="4" class="tint"/><rect x="128" y="362" width="222" height="22" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="138" y="377" font-size="12" font-weight="600" class="ink" text-anchor="start">data</text>
+<rect x="128" y="386" width="222" height="30" rx="4" class="tint"/><rect x="128" y="386" width="222" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="138" y="399.0" font-size="12" font-weight="600" class="ink" text-anchor="start">text</text>
+<text x="138" y="413.0" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">gépi kód, csak olvasható</text>
+<text x="120" y="405.0" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x562f5a60…</text>
+<text x="138" y="246" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">szálvermek</text>
+<text x="342" y="377" font-size="10" font-weight="400" class="quiet" text-anchor="end">inicializált globálisok</text>
+<text x="342" y="353" font-size="10" font-weight="400" class="quiet" text-anchor="end">nullázott globálisok</text>
+<path d="M188 168V182" fill="none" class="edge" stroke-width="1.25" marker-end="url(#as)"/>
+<path d="M188 298V276" fill="none" class="edge" stroke-width="1.25" marker-end="url(#as)"/>
+<path d="M288 254V270" fill="none" class="edge" stroke-width="1.25" marker-end="url(#as)"/>
+<text x="202" y="289" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">a heap felfelé nő</text>
+<text x="302" y="268" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">lefelé</text>
+<text x="202" y="180" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">a verem lefelé nő</text>
+<text x="138" y="116" font-size="12" font-weight="400" class="quiet" text-anchor="start">· · ·</text>
+<text x="120" y="430" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x0</text>
+<text x="138" y="432" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">a 0. lap leképezetlen: nullmutató → hiba</text>
+<text x="392" y="62" font-size="13" font-weight="600" class="ink" text-anchor="start">A kernel nyilvántartása (Linux: task_struct)</text>
+<rect x="392" y="74" width="344" height="37" rx="4" class="tint"/><rect x="392" y="74" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="90" font-size="12" font-weight="600" class="ink" text-anchor="start">azonosítók</text>
+<text x="402" y="105" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">PID, a szülő PID-je, szálcsoport, munkamenet</text>
+<rect x="392" y="117" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="133" font-size="12" font-weight="600" class="ink" text-anchor="start">állapot és ütemezés</text>
+<text x="402" y="148" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">R, S, D, T, Z; prioritás, felhasznált CPU-idő</text>
+<rect x="392" y="160" width="344" height="37" rx="4" class="tint"/><rect x="392" y="160" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="176" font-size="12" font-weight="600" class="ink" text-anchor="start">mentett regiszterek</text>
+<text x="402" y="191" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">PC, veremmutató, jelzőbitek, általános regiszterek</text>
+<rect x="392" y="203" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="219" font-size="12" font-weight="600" class="ink" text-anchor="start">memóriatérkép</text>
+<text x="402" y="234" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">a régiók (VMA-k) listája és a laptáblák</text>
+<rect x="392" y="246" width="344" height="37" rx="4" class="tint"/><rect x="392" y="246" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="262" font-size="12" font-weight="600" class="ink" text-anchor="start">megnyitott fájlok</text>
+<text x="402" y="277" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">leírótábla: 0, 1, 2, …</text>
+<rect x="392" y="289" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="305" font-size="12" font-weight="600" class="ink" text-anchor="start">credentials</text>
+<text x="402" y="320" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">felhasználói és csoportazonosítók, capabilityk</text>
+<rect x="392" y="332" width="344" height="37" rx="4" class="tint"/><rect x="392" y="332" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="348" font-size="12" font-weight="600" class="ink" text-anchor="start">szignálok</text>
+<text x="402" y="363" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">kezelők, blokkolt és függőben lévő szignálok</text>
+<rect x="392" y="375" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="391" font-size="12" font-weight="600" class="ink" text-anchor="start">környezet</text>
+<text x="402" y="406" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">aktuális könyvtár, gyökér, korlátok, namespace-ek</text>
+<text x="24" y="462" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Bal oldalon: címek az előadás layout bemutatójából (az ASLR miatt minden futáskor változnak). A címtartomány kernelhez</text>
+<text x="24" y="480" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">tartozó fele minden folyamatban le van képezve, de védett; a jobb oldali nyilvántartás sosem hagyja el a kernelt.</text>
+</svg>

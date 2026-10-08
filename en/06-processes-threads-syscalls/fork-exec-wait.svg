@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 356" width="760" height="356" role="img" aria-label="How a shell runs a command: fork, exec, exit, wait">
+<title>How a shell runs a command: fork, exec, exit, wait</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="fw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker><marker id="fwa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="acct"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">How a shell runs a command: fork, exec, exit, wait</text>
+<text x="24" y="66" font-size="12" font-weight="600" class="ink" text-anchor="start">parent: the shell, PID 100</text>
+<line x1="24" y1="96" x2="150" y2="96" class="acc" stroke-width="3"/>
+<line x1="150" y1="96" x2="236" y2="96" class="acc" stroke-width="3"/>
+<line x1="236" y1="96" x2="610" y2="96" class="edge" stroke-width="2" stroke-dasharray="5 4"/>
+<line x1="610" y1="96" x2="736" y2="96" class="acc" stroke-width="3"/>
+<text x="423" y="88" font-size="11" font-weight="400" class="quiet" text-anchor="middle">waiting (state S), uses no CPU</text>
+<circle cx="150" cy="96" r="5" class="acct"/>
+<text x="150" y="86" font-size="12" font-weight="600" class="acct" text-anchor="middle">fork()</text>
+<path d="M150 100C150 166 160 196 196 196" fill="none" class="edge" stroke-width="2" marker-end="url(#fw)"/>
+<circle cx="236" cy="96" r="5" class="acct"/>
+<text x="236" y="118" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">waitpid(101)</text>
+<text x="24" y="200" font-size="12" font-weight="600" class="ink" text-anchor="start">child: PID 101</text>
+<line x1="200" y1="196" x2="320" y2="196" class="c2s" stroke-width="3"/>
+<text x="260" y="186" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">shell code (copy)</text>
+<circle cx="320" cy="196" r="5" class="c2"/>
+<text x="320" y="218" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">execve("/usr/bin/ls")</text>
+<line x1="320" y1="196" x2="520" y2="196" class="c2s" stroke-width="3"/>
+<text x="420" y="186" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">ls runs: same PID, new program</text>
+<circle cx="520" cy="196" r="5" class="c2"/>
+<text x="520" y="218" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">exit(0)</text>
+<line x1="520" y1="196" x2="610" y2="196" class="bads" stroke-width="2" stroke-dasharray="3 3"/>
+<text x="565" y="186" font-size="11" font-weight="600" class="bad" text-anchor="middle">zombie</text>
+<path d="M610 192V104" fill="none" class="acc" stroke-width="1.5" marker-end="url(#fwa)"/>
+<text x="618" y="142.0" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">SIGCHLD; wait returns</text>
+<text x="618" y="157.0" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">101, status 0: reaped</text>
+<text x="736" y="88" font-size="10.5" font-weight="400" class="quiet" text-anchor="end">next prompt</text>
+<text x="24" y="268" font-size="11.5" class="acct" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">fork()</text>
+<text x="110" y="268" font-size="11" font-weight="400" class="quiet" text-anchor="start">copies the caller (same program and open files, copy-on-write memory); returns 101 in the parent, 0 in the child</text>
+<text x="24" y="290" font-size="11.5" class="acct" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">execve()</text>
+<text x="110" y="290" font-size="11" font-weight="400" class="quiet" text-anchor="start">replaces the program in the calling process: new code, data, heap and stack; PID and open files stay</text>
+<text x="24" y="312" font-size="11.5" class="acct" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">exit()</text>
+<text x="110" y="312" font-size="11" font-weight="400" class="quiet" text-anchor="start">ends the process; the kernel frees its memory and keeps only the exit status (zombie)</text>
+<text x="24" y="334" font-size="11.5" class="acct" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">waitpid()</text>
+<text x="110" y="334" font-size="11" font-weight="400" class="quiet" text-anchor="start">blocks until a child has ended, returns its status and removes the zombie</text>
+</svg>

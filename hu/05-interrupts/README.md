@@ -352,7 +352,7 @@ Az eszköz mind a négy esetben ugyanolyan lassú. Az változik, hogy ebből az 
 
 ## Összerakva: egy laphiba, amelyhez a lemez kell
 
-Az előadás mechanizmusai ritkán működnek egymagukban. Egyetlen laphiba, amelynek a lemezre kell várnia, megmutatja, hogyan dolgoznak együtt, és összeköti ezt az előadást a folyamatállapotokkal és az ütemezéssel ([6. előadás](../06-concurrency-deadlocks-scheduling/)), valamint a virtuális memóriával ([8. előadás](../08-virtual-memory/)):
+Az előadás mechanizmusai ritkán működnek egymagukban. Egyetlen laphiba, amelynek a lemezre kell várnia, megmutatja, hogyan dolgoznak együtt, és összeköti ezt az előadást a folyamatállapotokkal és az ütemezéssel ([7. előadás](../07-concurrency-deadlocks-scheduling/)), valamint a virtuális memóriával ([9. előadás](../09-virtual-memory/)):
 
 ![Idővonal: az A folyamat laphibát okoz, a kernel DMA-olvasást indít és a B folyamatot futtatja, a lemez megszakítása után A ismét futásra kész](page-fault-chain.svg)
 

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 498" width="760" height="498" role="img" aria-label="A process: an address space plus the kernel's record of everything else">
+<title>A process: an address space plus the kernel's record of everything else</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">A process: an address space plus the kernel's record of everything else</text>
+<text x="24" y="62" font-size="13" font-weight="600" class="ink" text-anchor="start">Virtual address space of one process (x86-64)</text>
+<rect x="128" y="74" width="222" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="138" y="87.0" font-size="12" font-weight="600" class="ink" text-anchor="start">kernel</text>
+<text x="138" y="101.0" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">not accessible in user mode</text>
+<text x="120" y="93.0" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0xffff8000…</text>
+<rect x="128" y="126" width="222" height="40" rx="4" class="accf"/><rect x="128" y="126" width="222" height="40" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="138" y="144.0" font-size="12" font-weight="600" class="ink" text-anchor="start">stack</text>
+<text x="138" y="158.0" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">locals, return addresses</text>
+<text x="120" y="150.0" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x7ffc6e85…</text>
+<rect x="128" y="186" width="222" height="66" rx="4" class="c2f"/><rect x="128" y="186" width="222" height="66" rx="4" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="138" y="217.0" font-size="12" font-weight="600" class="ink" text-anchor="start">memory-mapped area</text>
+<text x="138" y="231.0" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">libc, ld.so, vDSO, big malloc,</text>
+<text x="120" y="223.0" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x7f5fde26…</text>
+<rect x="128" y="300" width="222" height="34" rx="4" class="accf"/><rect x="128" y="300" width="222" height="34" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="138" y="315.0" font-size="12" font-weight="600" class="ink" text-anchor="start">heap</text>
+<text x="138" y="329.0" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">malloc, grows with brk()</text>
+<text x="120" y="321.0" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x562f7f5f…</text>
+<rect x="128" y="338" width="222" height="22" rx="4" class="tint"/><rect x="128" y="338" width="222" height="22" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="138" y="353" font-size="12" font-weight="600" class="ink" text-anchor="start">BSS</text>
+<text x="120" y="353.0" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x562f5a60…</text>
+<rect x="128" y="362" width="222" height="22" rx="4" class="tint"/><rect x="128" y="362" width="222" height="22" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="138" y="377" font-size="12" font-weight="600" class="ink" text-anchor="start">data</text>
+<rect x="128" y="386" width="222" height="30" rx="4" class="tint"/><rect x="128" y="386" width="222" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="138" y="399.0" font-size="12" font-weight="600" class="ink" text-anchor="start">text</text>
+<text x="138" y="413.0" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">machine code, read-only</text>
+<text x="120" y="405.0" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x562f5a60…</text>
+<text x="138" y="246" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">thread stacks</text>
+<text x="342" y="377" font-size="10" font-weight="400" class="quiet" text-anchor="end">initialised globals</text>
+<text x="342" y="353" font-size="10" font-weight="400" class="quiet" text-anchor="end">zeroed globals</text>
+<path d="M188 168V182" fill="none" class="edge" stroke-width="1.25" marker-end="url(#as)"/>
+<path d="M188 298V276" fill="none" class="edge" stroke-width="1.25" marker-end="url(#as)"/>
+<path d="M288 254V270" fill="none" class="edge" stroke-width="1.25" marker-end="url(#as)"/>
+<text x="202" y="289" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">heap grows up</text>
+<text x="302" y="268" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">down</text>
+<text x="202" y="180" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">stack grows down</text>
+<text x="138" y="116" font-size="12" font-weight="400" class="quiet" text-anchor="start">· · ·</text>
+<text x="120" y="430" font-size="10.5" class="quiet" text-anchor="end" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x0</text>
+<text x="138" y="432" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">page 0 unmapped: null pointers fault</text>
+<text x="392" y="62" font-size="13" font-weight="600" class="ink" text-anchor="start">Kept by the kernel (Linux: task_struct)</text>
+<rect x="392" y="74" width="344" height="37" rx="4" class="tint"/><rect x="392" y="74" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="90" font-size="12" font-weight="600" class="ink" text-anchor="start">identity</text>
+<text x="402" y="105" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">PID, parent PID, thread group, session</text>
+<rect x="392" y="117" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="133" font-size="12" font-weight="600" class="ink" text-anchor="start">state and scheduling</text>
+<text x="402" y="148" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">R, S, D, T, Z; priority, CPU time used</text>
+<rect x="392" y="160" width="344" height="37" rx="4" class="tint"/><rect x="392" y="160" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="176" font-size="12" font-weight="600" class="ink" text-anchor="start">saved registers</text>
+<text x="402" y="191" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">PC, stack pointer, flags, general registers</text>
+<rect x="392" y="203" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="219" font-size="12" font-weight="600" class="ink" text-anchor="start">memory map</text>
+<text x="402" y="234" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">list of regions (VMAs) and the page tables</text>
+<rect x="392" y="246" width="344" height="37" rx="4" class="tint"/><rect x="392" y="246" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="262" font-size="12" font-weight="600" class="ink" text-anchor="start">open files</text>
+<text x="402" y="277" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">descriptor table: 0, 1, 2, …</text>
+<rect x="392" y="289" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="305" font-size="12" font-weight="600" class="ink" text-anchor="start">credentials</text>
+<text x="402" y="320" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">user and group IDs, capabilities</text>
+<rect x="392" y="332" width="344" height="37" rx="4" class="tint"/><rect x="392" y="332" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="348" font-size="12" font-weight="600" class="ink" text-anchor="start">signals</text>
+<text x="402" y="363" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">handlers, blocked and pending signals</text>
+<rect x="392" y="375" width="344" height="37" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="402" y="391" font-size="12" font-weight="600" class="ink" text-anchor="start">environment</text>
+<text x="402" y="406" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">current directory, root, limits, namespaces</text>
+<text x="24" y="462" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Left: addresses from the layout demo of this lecture (they change at every run, because of ASLR). The kernel's half of the</text>
+<text x="24" y="480" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">address space is mapped in every process but protected; the record on the right never leaves the kernel.</text>
+</svg>

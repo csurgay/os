@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 404" width="760" height="404" role="img" aria-label="Trusted execution environmentek: kiben kell még megbízni?">
+<title>Trusted execution environmentek: kiben kell még megbízni?</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Trusted execution environmentek: kiben kell még megbízni?</text>
+<text x="24" y="62" font-size="12.5" font-weight="600" class="ink" text-anchor="start">Arm TrustZone</text>
+<rect x="24" y="74" width="226" height="32" rx="6" class="c2f"/><rect x="24" y="74" width="226" height="32" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="137.0" y="94.14" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">normal world: alkalmazások</text>
+<rect x="24" y="112" width="226" height="32" rx="6" class="c2f"/><rect x="24" y="112" width="226" height="32" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="137.0" y="132.14" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">rich OS (Android, Linux)</text>
+<rect x="24" y="150" width="226" height="32" rx="6" class="accf"/><rect x="24" y="150" width="226" height="32" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="137.0" y="170.14" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">secure world: trusted appok</text>
+<rect x="24" y="188" width="226" height="32" rx="6" class="accf"/><rect x="24" y="188" width="226" height="32" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="137.0" y="208.14" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">trusted OS (pl. OP-TEE)</text>
+<rect x="24" y="226" width="226" height="32" rx="6" class="accf"/><rect x="24" y="226" width="226" height="32" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="137.0" y="246.14" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">secure monitor (EL3)</text>
+<text x="24" y="280" font-size="11" font-weight="400" class="quiet" text-anchor="start">a CPU váltja a világokat; a secure</text>
+<text x="24" y="297" font-size="11" font-weight="400" class="quiet" text-anchor="start">memória és eszközök láthatatlanok</text>
+<text x="24" y="314" font-size="11" font-weight="400" class="quiet" text-anchor="start">a normal world, még kernele számára is</text>
+<text x="270" y="62" font-size="12.5" font-weight="600" class="ink" text-anchor="start">Intel SGX enclave</text>
+<rect x="270" y="74" width="226" height="32" rx="6" class="c2f"/><rect x="270" y="74" width="226" height="32" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="383.0" y="94.14" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">alkalmazás</text>
+<rect x="270" y="112" width="226" height="32" rx="6" class="accf"/><rect x="270" y="112" width="226" height="32" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="383.0" y="132.14" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">enclave (titkosított lapok)</text>
+<rect x="270" y="150" width="226" height="32" rx="6" class="badf"/><rect x="270" y="150" width="226" height="32" rx="6" fill="none" class="bads" stroke-width="1.5"/>
+<text x="383.0" y="170.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">operációs rendszer</text>
+<rect x="270" y="188" width="226" height="32" rx="6" class="badf"/><rect x="270" y="188" width="226" height="32" rx="6" fill="none" class="bads" stroke-width="1.5"/>
+<text x="383.0" y="208.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">hypervisor</text>
+<rect x="270" y="226" width="226" height="32" rx="6" class="accf"/><rect x="270" y="226" width="226" height="32" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="383.0" y="246.14" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">CPU-tok</text>
+<text x="270" y="280" font-size="11" font-weight="400" class="quiet" text-anchor="start">csak a CPU és az enclave kódja</text>
+<text x="270" y="297" font-size="11" font-weight="400" class="quiet" text-anchor="start">megbízható; kliens-CPU-kon</text>
+<text x="270" y="314" font-size="11" font-weight="400" class="quiet" text-anchor="start">2021 óta elavult</text>
+<text x="516" y="62" font-size="12.5" font-weight="600" class="ink" text-anchor="start">Confidential VM (SEV-SNP, TDX)</text>
+<rect x="516" y="74" width="226" height="32" rx="6" class="accf"/><rect x="516" y="74" width="226" height="32" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="629.0" y="94.14" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">vendég alkalmazásai</text>
+<rect x="516" y="112" width="226" height="32" rx="6" class="accf"/><rect x="516" y="112" width="226" height="32" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="629.0" y="132.14" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">vendégkernel</text>
+<rect x="516" y="150" width="226" height="32" rx="6" class="badf"/><rect x="516" y="150" width="226" height="32" rx="6" fill="none" class="bads" stroke-width="1.5"/>
+<text x="629.0" y="170.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">hypervisor, gazda OS</text>
+<rect x="516" y="188" width="226" height="32" rx="6" class="badf"/><rect x="516" y="188" width="226" height="32" rx="6" fill="none" class="bads" stroke-width="1.5"/>
+<text x="629.0" y="208.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">felhőüzemeltető</text>
+<rect x="516" y="226" width="226" height="32" rx="6" class="accf"/><rect x="516" y="226" width="226" height="32" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="629.0" y="246.14" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">CPU + biztonsági processzora</text>
+<text x="516" y="280" font-size="11" font-weight="400" class="quiet" text-anchor="start">az egész VM titkosított és sértetlen-</text>
+<text x="516" y="297" font-size="11" font-weight="400" class="quiet" text-anchor="start">ségvédett a gazdával szemben;</text>
+<text x="516" y="314" font-size="11" font-weight="400" class="quiet" text-anchor="start">induláskor attestation</text>
+<rect x="24" y="344" width="18" height="14" rx="3" class="accf"/><rect x="24" y="344" width="18" height="14" rx="3" fill="none" class="acc" stroke-width="2"/>
+<text x="48" y="356" font-size="11.5" font-weight="400" class="ink" text-anchor="start">megbízható (a TCB része)</text>
+<rect x="234" y="344" width="18" height="14" rx="3" class="badf"/><rect x="234" y="344" width="18" height="14" rx="3" fill="none" class="bads" stroke-width="1.5"/>
+<text x="258" y="356" font-size="11.5" font-weight="400" class="ink" text-anchor="start">nem megbízható: lehet rosszindulatú</text>
+<rect x="474" y="344" width="18" height="14" rx="3" class="c2f"/><rect x="474" y="344" width="18" height="14" rx="3" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="498" y="356" font-size="11.5" font-weight="400" class="ink" text-anchor="start">közönséges, a szokásos elkülönítéssel</text>
+<text x="24" y="386" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Az Apple Secure Enclave még tovább megy: külön processzormag saját boot ROM-mal és OS-sel, ugyanazon a chipen.</text>
+</svg>

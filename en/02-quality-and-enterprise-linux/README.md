@@ -384,7 +384,7 @@ The figure shows the engineering trade-off of the whole lecture in one picture: 
 
 ## Container images: the family in containers
 
-Today much enterprise software is not installed on a server directly but delivered as a **container image**: a packaged file system with an application and the parts of a distribution it needs, from which containers are started and which is downloaded from a **registry**. What containers and images are, and how the kernel isolates them, is the subject of [lecture 11](../11-virtualization-containerization/). This section looks only at how the Enterprise Linux family is present in the world of containers, in a form that shows the commercial ideas of this lecture from a new angle.
+Today much enterprise software is not installed on a server directly but delivered as a **container image**: a packaged file system with an application and the parts of a distribution it needs, from which containers are started and which is downloaded from a **registry**. What containers and images are, and how the kernel isolates them, is the subject of [lecture 13](../13-virtualization-containerization/). This section looks only at how the Enterprise Linux family is present in the world of containers, in a form that shows the commercial ideas of this lecture from a new angle.
 
 ### Base images and registries
 
@@ -411,7 +411,7 @@ Red Hat applied the same idea to the operating system itself. In **image mode fo
 <details>
 <summary><b>Explained simply:</b> container, container image, registry, UBI, OpenShift, package manager, dnf, microdnf, systemd, OCI, technology preview, bootc, atomic update, roll back</summary>
 
-- **Container:** a program (or a few) started from an image; it runs on the computer's own kernel, but fenced off so that it sees only its own files, processes and network (lecture 11).
+- **Container:** a program (or a few) started from an image; it runs on the computer's own kernel, but fenced off so that it sees only its own files, processes and network (lecture 13).
 - **Container image:** a packaged, ready-to-start set of files (an application with the libraries and tools it needs) from which containers are started, like a template.
 - **Registry:** a server that stores images, like an app store for containers.
 - **UBI** (Universal Base Image): Red Hat's freely shareable container base images, built from RHEL packages.

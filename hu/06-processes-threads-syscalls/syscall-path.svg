@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 542" width="760" height="542" role="img" aria-label="Egy rendszerhívás útja x86-64-es Linuxon, és a vDSO rövidítése">
+<title>Egy rendszerhívás útja x86-64-es Linuxon, és a vDSO rövidítése</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="sp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker><marker id="spa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="acct"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Egy rendszerhívás útja x86-64-es Linuxon, és a vDSO rövidítése</text>
+<text x="24" y="60" font-size="12.5" font-weight="600" class="quiet" text-anchor="start">felhasználói mód</text>
+<line x1="24" y1="240" x2="736" y2="240" class="grid" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="24" y="262" font-size="12.5" font-weight="600" class="quiet" text-anchor="start">kernelmód</text>
+<rect x="24" y="74" width="176" height="144" rx="6" class="tint"/><rect x="24" y="74" width="176" height="144" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="36" y="94" font-size="12" font-weight="600" class="ink" text-anchor="start">program</text>
+<text x="36" y="120" font-size="11" class="ink" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">n = write(1, buf, 3);</text>
+<text x="36" y="190" font-size="11" class="ink" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">clock_gettime(…);</text>
+<rect x="236" y="74" width="196" height="70" rx="6" class="c2f"/><rect x="236" y="74" width="196" height="70" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="248" y="92" font-size="12" font-weight="600" class="ink" text-anchor="start">libc wrapper write()</text>
+<text x="248" y="112" font-size="11" class="ink" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">mov  $1, %eax</text>
+<text x="248" y="130" font-size="11" class="acct" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">syscall</text>
+<rect x="236" y="156" width="196" height="62" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="248" y="175" font-size="12" font-weight="600" class="ink" text-anchor="start">vDSO: __vdso_clock_gettime</text>
+<text x="248" y="192" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">a kernel által frissített órát</text>
+<text x="248" y="207" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">olvassa: nincs módváltás</text>
+<path d="M200 116H232" fill="none" class="edge" stroke-width="1.5" marker-end="url(#sp)"/>
+<path d="M200 186H232" fill="none" class="edge" stroke-width="1.5" marker-end="url(#sp)"/>
+<path d="M432 96H560V280" fill="none" class="acc" stroke-width="1.8" marker-end="url(#spa)"/>
+<text x="572" y="92" font-size="11.5" font-weight="600" class="acct" text-anchor="start">syscall utasítás:</text>
+<text x="572" y="108" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">kernelmódba vált, és a kernel</text>
+<text x="572" y="123" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">belépési pontjára ugrik</text>
+<text x="572" y="138" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">(a cím egy MSR-ben van)</text>
+<rect x="480" y="284" width="256" height="44" rx="6" class="accf"/><rect x="480" y="284" width="256" height="44" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="608.0" y="302.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">entry_SYSCALL_64</text>
+<text x="608.0" y="317.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">regiszterek mentése, váltás a kernelveremre</text>
+<rect x="480" y="340" width="256" height="44" rx="6" class="accf"/><rect x="480" y="340" width="256" height="44" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="608.0" y="358.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">sys_call_table[rax]  (1 = write)</text>
+<text x="608.0" y="373.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">ksys_write() → VFS → pipe, fájl vagy tty</text>
+<path d="M608 328V336" fill="none" class="edge" stroke-width="1.25" marker-end="url(#sp)"/>
+<path d="M480 362H456V136H436" fill="none" class="edge" stroke-width="1.5" marker-end="url(#sp)"/>
+<text x="444" y="300" font-size="11.5" font-weight="600" class="ink" text-anchor="end">sysret:</text>
+<text x="444" y="316" font-size="10.5" font-weight="400" class="quiet" text-anchor="end">eredmény az rax-ban,</text>
+<text x="444" y="331" font-size="10.5" font-weight="400" class="quiet" text-anchor="end">vagy −errno</text>
+<text x="24" y="300" font-size="11" font-weight="400" class="quiet" text-anchor="start">A kernel a hívó folyamat nevében fut:</text>
+<text x="24" y="316" font-size="11" font-weight="400" class="quiet" text-anchor="start">ugyanaz a PID, saját kernelverem;</text>
+<text x="24" y="332" font-size="11" font-weight="400" class="quiet" text-anchor="start">az idő rendszeridőnek (sys) számít.</text>
+<line x1="24" y1="402" x2="736" y2="402" class="grid" stroke-width="1"/>
+<text x="24" y="426" font-size="12" font-weight="600" class="ink" text-anchor="start">Az x86-64 rendszerhívási konvenciója</text>
+<text x="24" y="450" font-size="11" class="acct" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">rax</text>
+<text x="116" y="450" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">be: a szám, ki: az eredmény</text>
+<text x="324" y="450" font-size="11" class="acct" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">rdi rsi rdx</text>
+<text x="416" y="450" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">1–3. argumentum</text>
+<text x="24" y="470" font-size="11" class="acct" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">r10 r8 r9</text>
+<text x="116" y="470" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">4–6. argumentum</text>
+<text x="324" y="470" font-size="11" class="acct" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">rcx r11</text>
+<text x="416" y="470" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">a syscall felülírja</text>
+<text x="24" y="506" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">A wrapper a −4095 és −1 közötti eredményt errno-vá alakítja, és −1-et ad vissza; minden más a valódi eredmény.</text>
+<text x="24" y="524" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">A vDSO kis könyvtár, amelyet a kernel minden folyamatba leképez a csak kerneladatokat olvasó hívásokhoz.</text>
+</svg>

@@ -191,7 +191,7 @@ Egyetlen közös sín elég egy kis gépnek, de gondot okoz, amikor nagyon elté
 
 **B rész: egy mai PC.** A memóriavezérlő és a PCI Express root complex beköltözött a CPU tokjába. A PCI Express (PCIe) már egyáltalán nem közös sín, hanem **pont–pont** (point-to-point) soros kapcsolatok összessége, amelyek **sávokból** (lane) állnak: egy grafikus kártya jellemzően 16 sávot kap, egy NVMe SSD 4-et, és minden kapcsolat a többitől függetlenül visz át adatot. A lassabb eszközök (USB, SATA-lemezek, hálózat, hang, további PCIe-foglalatok) a **chipsetre** csatlakoznak, amelyet Intel rendszereken PCH-nak (Platform Controller Hub) hívnak, és amely egyetlen kapcsolaton éri el a CPU-t (Intelen DMI, AMD-n egy PCIe-kapcsolat). A szoftver még mindig a régi szerkezetet látja: a PCIe-eszközöket pontosan úgy kell felderíteni és konfigurálni, mint a PCI-eszközöket, ezért írnak a Linux eszközei még mindig „PCI”-t.
 
-Ez ugyanaz a gondolat, mint a [7. előadás](../07-two-level-memory-and-cache/) memóriahierarchiája: ami gyors és gyakran használt, az a CPU közelében van, ami lassú, az távolabb, ahol nem lassíthatja a többit.
+Ez ugyanaz a gondolat, mint a [8. előadás](../08-two-level-memory-and-cache/) memóriahierarchiája: ami gyors és gyakran használt, az a CPU közelében van, ami lassú, az távolabb, ahol nem lassíthatja a többit.
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> híd, északi/déli híd, PCI, ISA, MHz, MB/s, SCSI, USB, IDE, örökölt (legacy), PCI Express, sáv, pont–pont, NVMe SSD, root complex, chipset, PCH, DMI, SATA</summary>

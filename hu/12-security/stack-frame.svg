@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 428" width="760" height="428" role="img" aria-label="A verembeli buffer overflow azt írja felül, ami a puffer fölött van">
+<title>A verembeli buffer overflow azt írja felül, ami a puffer fölött van</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="sf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker><marker id="sfb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="bad"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">A verembeli buffer overflow azt írja felül, ami a puffer fölött van</text>
+<text x="24" y="62" font-size="12" font-weight="600" class="ink" text-anchor="start">gcc -fno-stack-protector (overflow-plain)</text>
+<text x="24" y="80" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">magasabb címek</text>
+<rect x="24" y="122" width="200" height="30" rx="4" class="badf"/><rect x="24" y="122" width="200" height="30" rx="4" fill="none" class="bads" stroke-width="1.5"/>
+<text x="32" y="141" font-size="11.5" font-weight="600" class="ink" text-anchor="start">a main kerete (alsó bájtok)</text>
+<text x="232" y="135" font-size="10.5" class="bad" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">AAAAAAAA 00</text>
+<text x="232" y="148" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">még 8 bájt és a 0</text>
+<rect x="24" y="156" width="200" height="30" rx="4" class="badf"/><rect x="24" y="156" width="200" height="30" rx="4" fill="none" class="bads" stroke-width="1.5"/>
+<text x="32" y="175" font-size="11.5" font-weight="600" class="ink" text-anchor="start">visszatérési cím</text>
+<text x="232" y="169" font-size="10.5" class="bad" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x4141414141414141</text>
+<text x="232" y="182" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">korábban main+50</text>
+<rect x="24" y="190" width="200" height="30" rx="4" class="badf"/><rect x="24" y="190" width="200" height="30" rx="4" fill="none" class="bads" stroke-width="1.5"/>
+<text x="32" y="209" font-size="11.5" font-weight="600" class="ink" text-anchor="start">elmentett rbp</text>
+<text x="232" y="203" font-size="10.5" class="bad" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x4141414141414141</text>
+<rect x="24" y="224" width="200" height="30" rx="4" class="badf"/><rect x="24" y="224" width="200" height="30" rx="4" fill="none" class="bads" stroke-width="1.5"/>
+<text x="32" y="243" font-size="11.5" font-weight="600" class="ink" text-anchor="start">buf[8..15]</text>
+<text x="232" y="237" font-size="10.5" class="bad" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">AAAAAAAA</text>
+<rect x="24" y="258" width="200" height="30" rx="4" class="badf"/><rect x="24" y="258" width="200" height="30" rx="4" fill="none" class="bads" stroke-width="1.5"/>
+<text x="32" y="277" font-size="11.5" font-weight="600" class="ink" text-anchor="start">buf[0..7]</text>
+<text x="232" y="271" font-size="10.5" class="bad" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">AAAAAAAA</text>
+<text x="24" y="304" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">alacsonyabb címek (a verem lefelé nő)</text>
+<path d="M16 286L16 128" fill="none" class="bads" stroke-width="1.6" marker-end="url(#sfb)"/>
+<rect x="24" y="318" width="332" height="46" rx="6" class="badf"/><rect x="24" y="318" width="332" height="46" rx="6" fill="none" class="bads" stroke-width="1.5"/>
+<text x="190.0" y="337.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">a ret a 0x4141414141414141 címet veszi ki:</text>
+<text x="190.0" y="352.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">nem érvényes cím, SIGSEGV</text>
+<text x="400" y="62" font-size="12" font-weight="600" class="ink" text-anchor="start">gcc -fstack-protector-strong (overflow-canary)</text>
+<text x="400" y="80" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">magasabb címek</text>
+<rect x="400" y="88" width="200" height="30" rx="4" class="badf"/><rect x="400" y="88" width="200" height="30" rx="4" fill="none" class="bads" stroke-width="1.5"/>
+<text x="408" y="107" font-size="11.5" font-weight="600" class="ink" text-anchor="start">visszatérési cím</text>
+<text x="608" y="101" font-size="10.5" class="bad" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x0000555555555200</text>
+<text x="608" y="114" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">alsó bájtja nullázva</text>
+<rect x="400" y="122" width="200" height="30" rx="4" class="badf"/><rect x="400" y="122" width="200" height="30" rx="4" fill="none" class="bads" stroke-width="1.5"/>
+<text x="408" y="141" font-size="11.5" font-weight="600" class="ink" text-anchor="start">elmentett rbp</text>
+<text x="608" y="135" font-size="10.5" class="bad" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x4141414141414141</text>
+<rect x="400" y="156" width="200" height="30" rx="4" class="badf"/><rect x="400" y="156" width="200" height="30" rx="4" fill="none" class="bads" stroke-width="1.5"/>
+<text x="408" y="175" font-size="11.5" font-weight="600" class="ink" text-anchor="start">canary (véletlen, alsó bájt 00)</text>
+<text x="608" y="169" font-size="10.5" class="bad" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0x4141414141414141</text>
+<rect x="400" y="190" width="200" height="30" rx="4" class="badf"/><rect x="400" y="190" width="200" height="30" rx="4" fill="none" class="bads" stroke-width="1.5"/>
+<text x="408" y="209" font-size="11.5" font-weight="600" class="ink" text-anchor="start">kitöltés (padding)</text>
+<text x="608" y="203" font-size="10.5" class="bad" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">AAAAAAAA</text>
+<rect x="400" y="224" width="200" height="30" rx="4" class="badf"/><rect x="400" y="224" width="200" height="30" rx="4" fill="none" class="bads" stroke-width="1.5"/>
+<text x="408" y="243" font-size="11.5" font-weight="600" class="ink" text-anchor="start">buf[8..15]</text>
+<text x="608" y="237" font-size="10.5" class="bad" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">AAAAAAAA</text>
+<rect x="400" y="258" width="200" height="30" rx="4" class="badf"/><rect x="400" y="258" width="200" height="30" rx="4" fill="none" class="bads" stroke-width="1.5"/>
+<text x="408" y="277" font-size="11.5" font-weight="600" class="ink" text-anchor="start">buf[0..7]</text>
+<text x="608" y="271" font-size="10.5" class="bad" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">AAAAAAAA</text>
+<text x="400" y="304" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">alacsonyabb címek (a verem lefelé nő)</text>
+<path d="M392 286L392 162" fill="none" class="bads" stroke-width="1.6" marker-end="url(#sfb)"/>
+<rect x="400" y="318" width="332" height="46" rx="6" class="accf"/><rect x="400" y="318" width="332" height="46" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="566.0" y="337.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">ellenőrzés a leave/ret előtt: a canary változott</text>
+<text x="566.0" y="352.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">→ __stack_chk_fail → abort; a ret nem fut le</text>
+<text x="24" y="392" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">A strcpy 40 'A' bájtot és egy lezáró 0-t másol egy 16 bájtos pufferbe, alacsony címtől a magas felé (mért elrendezés, gcc 13 -O0).</text>
+<text x="24" y="410" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">A canary a lokális pufferek és az elmentett regiszterek között ül, így egy lineáris túlcsordulás előbb őt változtatja meg.</text>
+</svg>

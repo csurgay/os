@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 376" width="760" height="376" role="img" aria-label="Az operációs rendszer munka közben: melyik eszköz melyik réteget látja">
+<title>Az operációs rendszer munka közben: melyik eszköz melyik réteget látja</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="ob" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Az operációs rendszer munka közben: melyik eszköz melyik réteget látja</text>
+<text x="24" y="60" font-size="12" font-weight="600" class="ink" text-anchor="start">egy futó program rétegei</text>
+<text x="356" y="60" font-size="12" font-weight="600" class="ink" text-anchor="start">eszközök egy réteghez</text>
+<text x="606" y="60" font-size="12" font-weight="600" class="ink" text-anchor="start">minden réteghez</text>
+<rect x="24" y="70" width="280" height="42" rx="4" class="c2f"/><rect x="24" y="70" width="280" height="42" rx="4" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="164.0" y="87.82" font-size="12" font-weight="600" class="ink" text-anchor="middle">alkalmazáskód</text>
+<text x="164.0" y="102.82" font-size="12" font-weight="400" class="quiet" text-anchor="middle">a saját függvényeid</text>
+<rect x="356" y="70" width="226" height="42" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="366" y="87" font-size="10.5" font-weight="400" class="ink" text-anchor="start">gdb: megállít, memóriát vizsgál</text>
+<text x="366" y="103" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">valgrind: memóriahibákat keres</text>
+<path d="M352 91H308" fill="none" class="edge" stroke-width="1.25" marker-end="url(#ob)"/>
+<rect x="24" y="120" width="280" height="42" rx="4" class="c2f"/><rect x="24" y="120" width="280" height="42" rx="4" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="164.0" y="137.82" font-size="12" font-weight="600" class="ink" text-anchor="middle">könyvtárak</text>
+<text x="164.0" y="152.82" font-size="12" font-weight="400" class="quiet" text-anchor="middle">libc, libstdc++, …</text>
+<rect x="356" y="120" width="226" height="42" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="366" y="146" font-size="10.5" font-weight="400" class="ink" text-anchor="start">ltrace: megosztott könyvtárak hívásai</text>
+<path d="M352 141H308" fill="none" class="edge" stroke-width="1.25" marker-end="url(#ob)"/>
+<rect x="24" y="170" width="280" height="42" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="164.0" y="187.82" font-size="12" font-weight="600" class="ink" text-anchor="middle">rendszerhívás-interfész</text>
+<text x="164.0" y="202.82" font-size="12" font-weight="400" class="quiet" text-anchor="middle">write, openat, clone, …</text>
+<rect x="356" y="170" width="226" height="42" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="366" y="187" font-size="10.5" font-weight="400" class="ink" text-anchor="start">strace: minden rendszerhívás és</text>
+<text x="366" y="203" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">eredménye; -c számol, -T időt mér</text>
+<path d="M352 191H308" fill="none" class="edge" stroke-width="1.25" marker-end="url(#ob)"/>
+<rect x="24" y="220" width="280" height="42" rx="4" class="accf"/><rect x="24" y="220" width="280" height="42" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="164.0" y="237.82" font-size="12" font-weight="600" class="ink" text-anchor="middle">kernel</text>
+<text x="164.0" y="252.82" font-size="12" font-weight="400" class="quiet" text-anchor="middle">ütemező, VFS, hálózat, memória</text>
+<rect x="356" y="220" width="226" height="42" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="366" y="237" font-size="10.5" font-weight="400" class="ink" text-anchor="start">/proc, /sys: a folyamatok és a</text>
+<text x="366" y="253" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">kernel állapota és számlálói</text>
+<path d="M352 241H308" fill="none" class="edge" stroke-width="1.25" marker-end="url(#ob)"/>
+<rect x="24" y="270" width="280" height="42" rx="4" class="tint"/><rect x="24" y="270" width="280" height="42" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="164.0" y="287.82" font-size="12" font-weight="600" class="ink" text-anchor="middle">hardver</text>
+<text x="164.0" y="302.82" font-size="12" font-weight="400" class="quiet" text-anchor="middle">CPU, gyorsítótárak, eszközök</text>
+<rect x="356" y="270" width="226" height="42" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="366" y="287" font-size="10.5" font-weight="400" class="ink" text-anchor="start">perf stat: hardveres eseményszámlálók</text>
+<text x="366" y="303" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">(ciklusok, utasítások, cache-hiányok)</text>
+<path d="M352 291H308" fill="none" class="edge" stroke-width="1.25" marker-end="url(#ob)"/>
+<rect x="606" y="70" width="130" height="116" rx="6" class="accf"/><rect x="606" y="70" width="130" height="116" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="616" y="90" font-size="12" font-weight="600" class="ink" text-anchor="start">perf record</text>
+<text x="616" y="109" font-size="11" font-weight="400" class="quiet" text-anchor="start">másodpercenként</text>
+<text x="616" y="128" font-size="11" font-weight="400" class="quiet" text-anchor="start">sokszor mintát vesz</text>
+<text x="616" y="147" font-size="11" font-weight="400" class="quiet" text-anchor="start">a hívási veremből,</text>
+<text x="616" y="166" font-size="11" font-weight="400" class="quiet" text-anchor="start">mindkét módban</text>
+<rect x="606" y="194" width="130" height="116" rx="6" class="accf"/><rect x="606" y="194" width="130" height="116" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="616" y="214" font-size="12" font-weight="600" class="ink" text-anchor="start">eBPF, bpftrace</text>
+<text x="616" y="233" font-size="11" font-weight="400" class="quiet" text-anchor="start">kis, ellenőrzött</text>
+<text x="616" y="252" font-size="11" font-weight="400" class="quiet" text-anchor="start">programok bármely</text>
+<text x="616" y="271" font-size="11" font-weight="400" class="quiet" text-anchor="start">probe-on; számlálás</text>
+<text x="616" y="290" font-size="11" font-weight="400" class="quiet" text-anchor="start">a kernelen belül</text>
+<text x="24" y="340" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">A gdb és az strace a ptrace-t használja: a kernel minden eseménynél megállítja a folyamatot, ami pontos, de lassú. A perf és</text>
+<text x="24" y="358" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">az eBPF a kernelen belülről, kis többletterheléssel figyel, ezért forgalmas éles rendszereken is használható.</text>
+</svg>

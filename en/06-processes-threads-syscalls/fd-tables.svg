@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 398" width="760" height="398" role="img" aria-label="ls /etc | grep ^host &gt;hosts.txt: the descriptor tables minish builds before exec">
+<title>ls /etc | grep ^host &gt;hosts.txt: the descriptor tables minish builds before exec</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="fd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">ls /etc | grep ^host &gt;hosts.txt: the descriptor tables minish builds before exec</text>
+<text x="24" y="60" font-size="12" font-weight="600" class="ink" text-anchor="start">per process: descriptor table</text>
+<text x="300" y="60" font-size="12" font-weight="600" class="ink" text-anchor="start">kernel: open file descriptions</text>
+<text x="560" y="60" font-size="12" font-weight="600" class="ink" text-anchor="start">kernel: objects</text>
+<text x="24" y="86" font-size="11.5" font-weight="600" class="acct" text-anchor="start">ls (child 1)</text>
+<rect x="24" y="92" width="150" height="24" rx="3" class="tint"/><rect x="24" y="92" width="150" height="24" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<text x="34" y="108" font-size="11" class="ink" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0  stdin</text>
+<rect x="24" y="120" width="150" height="24" rx="3" class="tint"/><rect x="24" y="120" width="150" height="24" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<text x="34" y="136" font-size="11" class="ink" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">1  stdout</text>
+<rect x="24" y="148" width="150" height="24" rx="3" class="tint"/><rect x="24" y="148" width="150" height="24" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<text x="34" y="164" font-size="11" class="ink" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">2  stderr</text>
+<text x="24" y="226" font-size="11.5" font-weight="600" class="acct" text-anchor="start">grep (child 2)</text>
+<rect x="24" y="232" width="150" height="24" rx="3" class="tint"/><rect x="24" y="232" width="150" height="24" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<text x="34" y="248" font-size="11" class="ink" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">0  stdin</text>
+<rect x="24" y="260" width="150" height="24" rx="3" class="tint"/><rect x="24" y="260" width="150" height="24" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<text x="34" y="276" font-size="11" class="ink" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">1  stdout</text>
+<rect x="24" y="288" width="150" height="24" rx="3" class="tint"/><rect x="24" y="288" width="150" height="24" rx="3" fill="none" class="edge" stroke-width="1.25"/>
+<text x="34" y="304" font-size="11" class="ink" text-anchor="start" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">2  stderr</text>
+<rect x="300" y="84" width="200" height="34" rx="4" class="c2f"/><rect x="300" y="84" width="200" height="34" rx="4" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="400.0" y="97.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">pipe, write end</text>
+<text x="400.0" y="112.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">write only</text>
+<rect x="300" y="136" width="200" height="34" rx="4" class="c2f"/><rect x="300" y="136" width="200" height="34" rx="4" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="400.0" y="149.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">pipe, read end</text>
+<text x="400.0" y="164.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">read only</text>
+<rect x="300" y="204" width="200" height="34" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="400.0" y="217.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">terminal</text>
+<text x="400.0" y="232.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">read/write, shared by all</text>
+<rect x="300" y="270" width="200" height="34" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="400.0" y="283.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">hosts.txt</text>
+<text x="400.0" y="298.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">write only, offset 0</text>
+<rect x="560" y="110" width="176" height="34" rx="4" class="accf"/><rect x="560" y="110" width="176" height="34" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="648.0" y="123.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">pipe buffer</text>
+<text x="648.0" y="138.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">64 KiB in kernel memory</text>
+<rect x="560" y="204" width="176" height="34" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="648.0" y="217.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">terminal device</text>
+<text x="648.0" y="232.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">/dev/pts/0</text>
+<rect x="560" y="270" width="176" height="34" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="648.0" y="283.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">inode of hosts.txt</text>
+<text x="648.0" y="298.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">on the file system</text>
+<path d="M174 104.0C234 104.0 240 221.0 298 221.0" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fd)"/>
+<path d="M174 132.0C234 132.0 240 101.0 298 101.0" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fd)"/>
+<path d="M174 160.0C234 160.0 240 221.0 298 221.0" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fd)"/>
+<path d="M174 244.0C234 244.0 240 153.0 298 153.0" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fd)"/>
+<path d="M174 272.0C234 272.0 240 287.0 298 287.0" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fd)"/>
+<path d="M174 300.0C234 300.0 240 221.0 298 221.0" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fd)"/>
+<path d="M500 101.0C530 101.0 530 127 558 127" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fd)"/>
+<path d="M500 153.0C530 153.0 530 127 558 127" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fd)"/>
+<path d="M500 221.0C530 221.0 530 221 558 221" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fd)"/>
+<path d="M500 287.0C530 287.0 530 287 558 287" fill="none" class="edge" stroke-width="1.25" marker-end="url(#fd)"/>
+<text x="24" y="344" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">pipe() gives the shell both ends; after fork, child 1 runs dup2(write end, 1) and child 2 runs dup2(read end, 0);</text>
+<text x="24" y="362" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">child 2 also opens hosts.txt and runs dup2(fd, 1). Every extra descriptor is closed, then each child calls execve():</text>
+<text x="24" y="380" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">ls and grep just use descriptors 0, 1 and 2, and never learn about the pipe or the file.</text>
+</svg>

@@ -384,7 +384,7 @@ Az ábra egyetlen képben mutatja meg az egész előadás mérnöki kompromisszu
 
 ## Konténer image-ek: a család konténerekben
 
-Ma sok vállalati szoftvert nem közvetlenül a szerverre telepítenek, hanem **konténer image**-ként (container image) szállítanak: ez egy becsomagolt fájlrendszer, amely az alkalmazást és a disztribúciónak azokat a részeit tartalmazza, amelyekre szüksége van; ebből indulnak a konténerek, és egy **registryből** töltik le (a registry az a szerver, amely az image-eket tárolja és név alapján kiszolgálja). Hogy mik a konténerek és az image-ek, és hogyan szigeteli el őket a kernel, azt a [11. előadás](../11-virtualization-containerization/) tárgyalja. Ez a szakasz csak azt nézi meg, hogyan van jelen az Enterprise Linux család a konténerek világában, olyan formában, amely az előadás üzleti gondolatait új szögből mutatja.
+Ma sok vállalati szoftvert nem közvetlenül a szerverre telepítenek, hanem **konténer image**-ként (container image) szállítanak: ez egy becsomagolt fájlrendszer, amely az alkalmazást és a disztribúciónak azokat a részeit tartalmazza, amelyekre szüksége van; ebből indulnak a konténerek, és egy **registryből** töltik le (a registry az a szerver, amely az image-eket tárolja és név alapján kiszolgálja). Hogy mik a konténerek és az image-ek, és hogyan szigeteli el őket a kernel, azt a [13. előadás](../13-virtualization-containerization/) tárgyalja. Ez a szakasz csak azt nézi meg, hogyan van jelen az Enterprise Linux család a konténerek világában, olyan formában, amely az előadás üzleti gondolatait új szögből mutatja.
 
 ### Alap image-ek és registryk
 
@@ -411,7 +411,7 @@ A Red Hat ugyanezt a gondolatot magára az operációs rendszerre is alkalmazta.
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> konténer, konténer image, registry, UBI, OpenShift, csomagkezelő, dnf, microdnf, systemd, OCI, technológiai előzetes, bootc, atomi frissítés, visszaállás</summary>
 
-- **Konténer:** egy image-ből elindított program (vagy néhány program); a számítógép saját kernelén fut, de elkerítve, így csak a saját fájljait, folyamatait és hálózatát látja (11. előadás).
+- **Konténer:** egy image-ből elindított program (vagy néhány program); a számítógép saját kernelén fut, de elkerítve, így csak a saját fájljait, folyamatait és hálózatát látja (13. előadás).
 - **Konténer image:** becsomagolt, indításra kész fájlkészlet (egy alkalmazás a szükséges könyvtáraival és eszközeivel), amelyből a konténerek elindulnak, mint egy sablon.
 - **Registry:** image-eket tároló szerver, mint egy alkalmazásbolt a konténerek számára.
 - **UBI** (Universal Base Image): a Red Hat szabadon megosztható, RHEL-csomagokból épített konténer-alap image-ei.

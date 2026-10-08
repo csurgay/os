@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 430" width="760" height="430" role="img" aria-label="A bizalmi lánc: minden lépcső ellenőrzi (Secure Boot) és megméri (TPM) a következőt">
+<title>A bizalmi lánc: minden lépcső ellenőrzi (Secure Boot) és megméri (TPM) a következőt</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="bc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker><marker id="bca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="acct"/></marker><marker id="bcb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="bad"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">A bizalmi lánc: minden lépcső ellenőrzi (Secure Boot) és megméri (TPM) a következőt</text>
+<rect x="24" y="92" width="128" height="62" rx="6" class="accf"/><rect x="24" y="92" width="128" height="62" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="88.0" y="112.32" font-size="12" font-weight="600" class="ink" text-anchor="middle">UEFI firmware</text>
+<text x="88.0" y="127.32" font-size="12" font-weight="400" class="quiet" text-anchor="middle">flashben; bizalmi</text>
+<text x="88.0" y="142.32" font-size="12" font-weight="400" class="quiet" text-anchor="middle">gyökér, kulcsokkal</text>
+<path d="M153 123L169 123" fill="none" class="edge" stroke-width="1.5" marker-end="url(#bc)"/>
+<rect x="170" y="92" width="128" height="62" rx="6" class="tint"/><rect x="170" y="92" width="128" height="62" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="234.0" y="112.32" font-size="12" font-weight="600" class="ink" text-anchor="middle">shim</text>
+<text x="234.0" y="127.32" font-size="12" font-weight="400" class="quiet" text-anchor="middle">aláírója a</text>
+<text x="234.0" y="142.32" font-size="12" font-weight="400" class="quiet" text-anchor="middle">Microsoft UEFI CA</text>
+<path d="M299 123L315 123" fill="none" class="edge" stroke-width="1.5" marker-end="url(#bc)"/>
+<rect x="316" y="92" width="128" height="62" rx="6" class="tint"/><rect x="316" y="92" width="128" height="62" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="380.0" y="112.32" font-size="12" font-weight="600" class="ink" text-anchor="middle">GRUB vagy</text>
+<text x="380.0" y="127.32" font-size="12" font-weight="400" class="quiet" text-anchor="middle">systemd-boot</text>
+<text x="380.0" y="142.32" font-size="12" font-weight="400" class="quiet" text-anchor="middle">distro aláírásával</text>
+<path d="M445 123L461 123" fill="none" class="edge" stroke-width="1.5" marker-end="url(#bc)"/>
+<rect x="462" y="92" width="128" height="62" rx="6" class="tint"/><rect x="462" y="92" width="128" height="62" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="526.0" y="112.32" font-size="12" font-weight="600" class="ink" text-anchor="middle">kernel +</text>
+<text x="526.0" y="127.32" font-size="12" font-weight="400" class="quiet" text-anchor="middle">initramfs</text>
+<text x="526.0" y="142.32" font-size="12" font-weight="400" class="quiet" text-anchor="middle">aláírt kernel</text>
+<path d="M591 123L607 123" fill="none" class="edge" stroke-width="1.5" marker-end="url(#bc)"/>
+<rect x="608" y="92" width="128" height="62" rx="6" class="tint"/><rect x="608" y="92" width="128" height="62" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="672.0" y="112.32" font-size="12" font-weight="600" class="ink" text-anchor="middle">init</text>
+<text x="672.0" y="127.32" font-size="12" font-weight="400" class="quiet" text-anchor="middle">(systemd)</text>
+<text x="672.0" y="142.32" font-size="12" font-weight="400" class="quiet" text-anchor="middle">felhasználói tér</text>
+<text x="24" y="64" font-size="11.5" font-weight="600" class="acct" text-anchor="start">Secure Boot: a következő lépcső aláírásának ellenőrzése indítás előtt; ha nem egyezik, nincs rendszerindítás</text>
+<path d="M88.0 72L88.0 88" fill="none" class="acc" stroke-width="1.25" marker-end="url(#bca)"/>
+<path d="M234.0 72L234.0 88" fill="none" class="acc" stroke-width="1.25" marker-end="url(#bca)"/>
+<path d="M380.0 72L380.0 88" fill="none" class="acc" stroke-width="1.25" marker-end="url(#bca)"/>
+<path d="M526.0 72L526.0 88" fill="none" class="acc" stroke-width="1.25" marker-end="url(#bca)"/>
+<text x="24" y="176" font-size="11.5" font-weight="600" class="c2" text-anchor="start">Measured boot: a következő lépcső hash-ének bemérése egy TPM-regiszterbe (PCR) indítás előtt</text>
+<path d="M88.0 156L88.0 162" fill="none" class="c2s" stroke-width="1.3"/>
+<path d="M88.0 184L88.0 222" fill="none" class="c2s" stroke-width="1.3" marker-end="url(#bc)" stroke-dasharray="4 3"/>
+<text x="94.0" y="208" font-size="10.5" font-weight="600" class="quiet" text-anchor="start">PCR 0, 2</text>
+<path d="M234.0 156L234.0 162" fill="none" class="c2s" stroke-width="1.3"/>
+<path d="M234.0 184L234.0 222" fill="none" class="c2s" stroke-width="1.3" marker-end="url(#bc)" stroke-dasharray="4 3"/>
+<text x="240.0" y="208" font-size="10.5" font-weight="600" class="quiet" text-anchor="start">PCR 4, 7</text>
+<path d="M380.0 156L380.0 162" fill="none" class="c2s" stroke-width="1.3"/>
+<path d="M380.0 184L380.0 222" fill="none" class="c2s" stroke-width="1.3" marker-end="url(#bc)" stroke-dasharray="4 3"/>
+<text x="386.0" y="208" font-size="10.5" font-weight="600" class="quiet" text-anchor="start">PCR 4, 8</text>
+<path d="M526.0 156L526.0 162" fill="none" class="c2s" stroke-width="1.3"/>
+<path d="M526.0 184L526.0 222" fill="none" class="c2s" stroke-width="1.3" marker-end="url(#bc)" stroke-dasharray="4 3"/>
+<text x="532.0" y="208" font-size="10.5" font-weight="600" class="quiet" text-anchor="start">PCR 9 vagy 11</text>
+<rect x="24" y="224" width="566" height="64" rx="8" class="c2f"/><rect x="24" y="224" width="566" height="64" rx="8" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="36" y="246" font-size="12" font-weight="600" class="ink" text-anchor="start">TPM: PCR[n] ← SHA-256(PCR[n] ‖ az új komponens hash-e)</text>
+<text x="36" y="264" font-size="11" font-weight="400" class="quiet" text-anchor="start">Egy PCR-t csak kiterjeszteni lehet, beállítani soha. Végső értéke a lefutott</text>
+<text x="36" y="280" font-size="11" font-weight="400" class="quiet" text-anchor="start">összes komponens ujjlenyomata, sorrendben. Az event log minden lépést rögzít.</text>
+<rect x="24" y="306" width="270" height="58" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="159.0" y="324.64" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">sealing</text>
+<text x="159.0" y="339.14" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">a lemezkulcsot csak egyező PCR-eknél</text>
+<text x="159.0" y="353.64" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">adja ki (TPM-hez kötött titkosítás)</text>
+<rect x="320" y="306" width="270" height="58" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="455.0" y="324.64" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">távoli attestation</text>
+<text x="455.0" y="339.14" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">a TPM aláír egy quote-ot a PCR-ekről;</text>
+<text x="455.0" y="353.64" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">az ellenőrző összeveti őket</text>
+<path d="M160 290L160 304" fill="none" class="edge" stroke-width="1.4" marker-end="url(#bc)"/>
+<path d="M455 290L455 304" fill="none" class="edge" stroke-width="1.4" marker-end="url(#bc)"/>
+<text x="612" y="244" font-size="11.5" font-weight="600" class="ink" text-anchor="start">A Secure Boot</text>
+<text x="612" y="262" font-size="11.5" font-weight="600" class="ink" text-anchor="start">megállítja az</text>
+<text x="612" y="284" font-size="11.5" font-weight="600" class="ink" text-anchor="start">aláíratlan kódot; a</text>
+<text x="612" y="302" font-size="11.5" font-weight="600" class="ink" text-anchor="start">measured boot csak</text>
+<text x="612" y="320" font-size="11.5" font-weight="600" class="ink" text-anchor="start">rögzít, mások döntenek.</text>
+<text x="24" y="394" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">A PCR-számozás a TCG PC Client profilt és a Linux TPM PCR registryt követi: 0 firmware-kód, 2 option ROM-ok, 4 boot loader,</text>
+<text x="24" y="412" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">7 a Secure Boot állapota és kulcsai, 8 GRUB-parancsok, 9 a GRUB által betöltött fájlok (a kernel), 11 unified kernel image-ek.</text>
+</svg>

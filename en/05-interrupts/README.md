@@ -352,7 +352,7 @@ The device is equally slow in all four cases. What changes is how much of that t
 
 ## Putting it together: a page fault that needs the disk
 
-The mechanisms of this lecture rarely act alone. A single page fault that has to wait for the disk shows them working together, and connects this lecture with process states and scheduling ([lecture 6](../06-concurrency-deadlocks-scheduling/)) and with virtual memory ([lecture 8](../08-virtual-memory/)):
+The mechanisms of this lecture rarely act alone. A single page fault that has to wait for the disk shows them working together, and connects this lecture with process states and scheduling ([lecture 7](../07-concurrency-deadlocks-scheduling/)) and with virtual memory ([lecture 9](../09-virtual-memory/)):
 
 ![Timeline: process A page-faults, the kernel starts a DMA read and runs process B, the disk interrupt makes A ready again](page-fault-chain.svg)
 

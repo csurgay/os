@@ -1,0 +1,12 @@
+echo hello from a child process
+ls /etc >etc.txt
+wc -l <etc.txt
+ls /etc | grep ^host | sort -r
+echo appended >>etc.txt
+tail -1 etc.txt
+nosuchprogram
+ls /nonexistent
+cd /proc/self
+pwd
+grep ^Name status
+exit

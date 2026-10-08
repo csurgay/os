@@ -191,7 +191,7 @@ A single shared bus works for a small machine, but it becomes a problem when dev
 
 **Panel B, a PC today.** The memory controller and the PCI Express root complex have moved into the CPU package. PCI Express (PCIe) is no longer a shared bus at all, but a set of **point-to-point** serial links made of **lanes**: a graphics card typically gets 16 lanes, an NVMe SSD 4, and each link transfers independently of the others. Slower devices (USB, SATA disks, network, audio, extra PCIe slots) connect to the **chipset**, on Intel systems called the PCH (Platform Controller Hub), which reaches the CPU over a single link (DMI on Intel, a PCIe link on AMD). Software still sees the old structure: PCIe devices are discovered and configured exactly like PCI devices, which is why Linux tools still say "PCI".
 
-This is the same idea as the memory hierarchy of [lecture 7](../07-two-level-memory-and-cache/): what is fast and used often sits close to the CPU, and what is slow sits further away, where it cannot slow down the rest.
+This is the same idea as the memory hierarchy of [lecture 8](../08-two-level-memory-and-cache/): what is fast and used often sits close to the CPU, and what is slow sits further away, where it cannot slow down the rest.
 
 <details>
 <summary><b>Explained simply:</b> bridge, north/south bridge, PCI, ISA, MHz, MB/s, SCSI, USB, IDE, legacy, PCI Express, lane, point-to-point, NVMe SSD, root complex, chipset, PCH, DMI, SATA</summary>

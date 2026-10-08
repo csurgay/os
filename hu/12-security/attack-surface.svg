@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 436" width="760" height="436" role="img" aria-label="Fenyegetésmodell: támadók, határok és a megbízható számítási bázis">
+<title>Fenyegetésmodell: támadók, határok és a megbízható számítási bázis</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker><marker id="asb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="bad"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Fenyegetésmodell: támadók, határok és a megbízható számítási bázis</text>
+<rect x="24" y="50" width="172" height="42" rx="6" class="badf"/><rect x="24" y="50" width="172" height="42" rx="6" fill="none" class="bads" stroke-width="1.5"/>
+<text x="110.0" y="67.82" font-size="12" font-weight="600" class="ink" text-anchor="middle">távoli támadó</text>
+<text x="110.0" y="82.82" font-size="12" font-weight="400" class="quiet" text-anchor="middle">hálózati kérések</text>
+<rect x="204" y="50" width="172" height="42" rx="6" class="badf"/><rect x="204" y="50" width="172" height="42" rx="6" fill="none" class="bads" stroke-width="1.5"/>
+<text x="290.0" y="67.82" font-size="12" font-weight="600" class="ink" text-anchor="middle">helyi felhasználó, app</text>
+<text x="290.0" y="82.82" font-size="12" font-weight="400" class="quiet" text-anchor="middle">saját kódot futtat</text>
+<rect x="384" y="50" width="172" height="42" rx="6" class="badf"/><rect x="384" y="50" width="172" height="42" rx="6" fill="none" class="bads" stroke-width="1.5"/>
+<text x="470.0" y="67.82" font-size="12" font-weight="600" class="ink" text-anchor="middle">rosszindulatú eszköz</text>
+<text x="470.0" y="82.82" font-size="12" font-weight="400" class="quiet" text-anchor="middle">DMA, firmware</text>
+<rect x="564" y="50" width="172" height="42" rx="6" class="badf"/><rect x="564" y="50" width="172" height="42" rx="6" fill="none" class="bads" stroke-width="1.5"/>
+<text x="650.0" y="67.82" font-size="12" font-weight="600" class="ink" text-anchor="middle">fizikai hozzáférés</text>
+<text x="650.0" y="82.82" font-size="12" font-weight="400" class="quiet" text-anchor="middle">lopott laptop, evil maid</text>
+<text x="24" y="124" font-size="12" font-weight="600" class="quiet" text-anchor="start">felhasználói tér (felhasználói mód)</text>
+<rect x="24" y="132" width="480" height="62" rx="8" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="36" y="142" width="148" height="42" rx="6" class="c2f"/><rect x="36" y="142" width="148" height="42" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="110.0" y="159.82" font-size="12" font-weight="600" class="ink" text-anchor="middle">webszerver</text>
+<text x="110.0" y="174.82" font-size="12" font-weight="400" class="quiet" text-anchor="middle">UID www-data</text>
+<rect x="190" y="142" width="148" height="42" rx="6" class="c2f"/><rect x="190" y="142" width="148" height="42" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="264.0" y="159.82" font-size="12" font-weight="600" class="ink" text-anchor="middle">sandboxolt app</text>
+<text x="264.0" y="174.82" font-size="12" font-weight="400" class="quiet" text-anchor="middle">seccomp, MAC</text>
+<rect x="344" y="142" width="148" height="42" rx="6" class="c2f"/><rect x="344" y="142" width="148" height="42" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="418.0" y="159.82" font-size="12" font-weight="600" class="ink" text-anchor="middle">a te shelled</text>
+<text x="418.0" y="174.82" font-size="12" font-weight="400" class="quiet" text-anchor="middle">UID 1000</text>
+<line x1="24" y1="212" x2="504" y2="212" class="bads" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="24" y="206" font-size="11" font-weight="600" class="bad" text-anchor="start">rendszerhívási határ:</text>
+<text x="194" y="206" font-size="11" font-weight="600" class="bad" text-anchor="start">az egyetlen ajtó a kernelbe (5. előadás)</text>
+<rect x="24" y="222" width="480" height="52" rx="8" class="accf"/><rect x="24" y="222" width="480" height="52" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="264.0" y="244" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">kernel: referenciamonitor, driverek, fájlrendszerek</text>
+<text x="264.0" y="262" font-size="11" font-weight="400" class="quiet" text-anchor="middle">kernelmód; egyetlen hiba itt minden fenti ellenőrzést semmissé tehet</text>
+<rect x="24" y="282" width="480" height="46" rx="8" class="accf"/><rect x="24" y="282" width="480" height="46" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="264.0" y="302" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">firmware, boot loader, CPU és mikrokódja, TPM</text>
+<text x="264.0" y="318" font-size="11" font-weight="400" class="quiet" text-anchor="middle">megbízunk benne, még mielőtt a kernel elindulna</text>
+<path d="M516 222L526 222L526 328L516 328" fill="none" class="acc" stroke-width="1.5"/>
+<text x="536" y="262" font-size="12" font-weight="600" class="acct" text-anchor="start">megbízható számítási bázis</text>
+<text x="536" y="280" font-size="11" font-weight="400" class="quiet" text-anchor="start">minden, aminek működnie kell</text>
+<text x="536" y="296" font-size="11" font-weight="400" class="quiet" text-anchor="start">a szabályok érvényesüléséhez</text>
+<path d="M110 92L110 140" fill="none" class="bads" stroke-width="1.4" marker-end="url(#asb)"/>
+<path d="M280 92L270 140" fill="none" class="bads" stroke-width="1.4" marker-end="url(#asb)"/>
+<path d="M154 184C170 200 180 210 190 224" fill="none" class="bads" stroke-width="1.4" marker-end="url(#asb)"/>
+<path d="M480 92C480 160 560 200 508 238" fill="none" class="bads" stroke-width="1.4" marker-end="url(#asb)" stroke-dasharray="4 3"/>
+<path d="M720 92L720 314L508 314" fill="none" class="bads" stroke-width="1.4" marker-end="url(#asb)" stroke-dasharray="4 3"/>
+<text x="24" y="356" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Tipikus támadás: (1) egy hálózati szolgáltatás hibájának kihasználása, kódfuttatás a felhasználójaként; (2) egy kernel- vagy</text>
+<text x="24" y="374" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">setuid-hiba kihasználása, hogy root legyen (jogosultság-kiterjesztés); (3) megtelepedés, pl. a rendszerindítási láncban.</text>
+<text x="24" y="392" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Az eszközök közvetlenül a memóriát támadják (IOMMU), a fizikai támadók a lemezt (titkosítás) és a rendszerindítást (Secure Boot).</text>
+<text x="24" y="418" font-size="11.5" font-weight="600" class="ink" text-anchor="start">Célok: bizalmasság (titkok olvasása), sértetlenség (kód vagy adat módosítása), rendelkezésre állás (összeomlasztás, kimerítés).</text>
+</svg>

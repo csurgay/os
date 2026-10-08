@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 652" width="920" height="652" role="img" aria-label="Egy read() útja a linuxos I/O-vermen keresztül, és vissza">
+<title>Egy read() útja a linuxos I/O-vermen keresztül, és vissza</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="io" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker><marker id="io2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="acct"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Egy read() útja a linuxos I/O-vermen keresztül, és vissza</text>
+<rect x="24" y="48" width="560" height="48" rx="6" class="tint"/><rect x="24" y="48" width="560" height="48" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="38" y="70" font-size="12.5" font-weight="600" class="ink" text-anchor="start">alkalmazás</text>
+<text x="38" y="88" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">read(fd, buf, 4096): egy rendszerhívás</text>
+<path d="M16 106H592" fill="none" class="edge" stroke-width="1" stroke-dasharray="5 4"/>
+<text x="596" y="102" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">felhasználói tér</text>
+<text x="596" y="116" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">kernel</text>
+<rect x="24" y="116" width="560" height="48" rx="6" class="tint"/><rect x="24" y="116" width="560" height="48" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="38" y="138" font-size="12.5" font-weight="600" class="ink" text-anchor="start">VFS</text>
+<text x="38" y="156" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">megkeresi a megnyitott fájlt, és meghívja a fájlrendszerét</text>
+<rect x="24" y="176" width="560" height="48" rx="6" class="c2f"/><rect x="24" y="176" width="560" height="48" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="38" y="198" font-size="12.5" font-weight="600" class="ink" text-anchor="start">page cache</text>
+<text x="38" y="216" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">a lap megvan: átmásolja a buf-ba, és visszatér, I/O nélkül</text>
+<rect x="24" y="236" width="560" height="48" rx="6" class="tint"/><rect x="24" y="236" width="560" height="48" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="38" y="258" font-size="12.5" font-weight="600" class="ink" text-anchor="start">fájlrendszer (ext4, XFS ...)</text>
+<text x="38" y="276" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">fájlbeli pozícióból lemezblokk (extentek); bio-t épít: blokk, hossz, lapok</text>
+<rect x="24" y="296" width="560" height="196" rx="6" class="accf"/><rect x="24" y="296" width="560" height="196" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="38" y="318" font-size="12.5" font-weight="600" class="ink" text-anchor="start">blokkréteg (blk-mq)</text>
+<text x="38" y="336" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">plug: egy taszk bio-it összegyűjti, a szomszédosakat kérésekké vonja össze</text>
+<rect x="64" y="348" width="100" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="114" y="368" font-size="11" font-weight="600" class="ink" text-anchor="middle">CPU 0 sora</text>
+<rect x="194" y="348" width="100" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="244" y="368" font-size="11" font-weight="600" class="ink" text-anchor="middle">CPU 1 sora</text>
+<rect x="324" y="348" width="100" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="374" y="368" font-size="11" font-weight="600" class="ink" text-anchor="middle">CPU 2 sora</text>
+<rect x="454" y="348" width="100" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="504" y="368" font-size="11" font-weight="600" class="ink" text-anchor="middle">CPU 3 sora</text>
+<rect x="64" y="392" width="490" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="309" y="412" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">I/O-ütemező (opcionális): none · mq-deadline · bfq · kyber</text>
+<rect x="134" y="440" width="120" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="194" y="460" font-size="11" font-weight="600" class="ink" text-anchor="middle">0. hardveres sor</text>
+<rect x="354" y="440" width="120" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="414" y="460" font-size="11" font-weight="600" class="ink" text-anchor="middle">1. hardveres sor</text>
+<path d="M114 378V390" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<path d="M244 378V390" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<path d="M374 378V390" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<path d="M504 378V390" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<path d="M114 422L194 438" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<path d="M244 422L194 438" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<path d="M374 422L414 438" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<path d="M504 422L414 438" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<text x="38" y="486" font-size="10.5" font-weight="400" class="quiet" text-anchor="start">CPU-nkénti szoftveres sorok táplálják a hardveres sorokat: nincs közös zár az összes CPU-nak</text>
+<rect x="24" y="504" width="560" height="48" rx="6" class="tint"/><rect x="24" y="504" width="560" height="48" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="38" y="526" font-size="12.5" font-weight="600" class="ink" text-anchor="start">eszközmeghajtó (NVMe, virtio-blk, SCSI ...)</text>
+<text x="38" y="544" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">minden kérésből eszközparancsot készít, és az eszköz sorába teszi</text>
+<rect x="24" y="564" width="560" height="48" rx="6" class="c2f"/><rect x="24" y="564" width="560" height="48" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="38" y="586" font-size="12.5" font-weight="600" class="ink" text-anchor="start">háttértár</text>
+<text x="38" y="604" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">végrehajtja a parancsot, DMA-val bemásolja az adatot a lapba</text>
+<path d="M144 97V107" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<path d="M144 165V175" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<path d="M144 225V235" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<path d="M144 285V295" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<path d="M144 493V503" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<path d="M144 553V563" fill="none" class="edge" stroke-width="1.25" marker-end="url(#io)"/>
+<text x="640" y="52" font-size="12.5" font-weight="600" class="acct" text-anchor="start">az út visszafelé (elkészülés)</text>
+<text x="640" y="600" font-size="11.5" font-weight="400" class="ink" text-anchor="start">megszakítás az eszköztől (MSI-X), vagy</text>
+<text x="640" y="616" font-size="11.5" font-weight="400" class="ink" text-anchor="start">polling a nagyon gyors eszközöknél</text>
+<text x="640" y="520" font-size="11.5" font-weight="400" class="ink" text-anchor="start">meghajtó: a kérés elkészült</text>
+<text x="640" y="444" font-size="11.5" font-weight="400" class="ink" text-anchor="start">a bio-k lezárva (a kezelőben vagy a</text>
+<text x="640" y="460" font-size="11.5" font-weight="400" class="ink" text-anchor="start">BLOCK softirq-ben), a lap naprakész</text>
+<text x="640" y="200" font-size="11.5" font-weight="400" class="ink" text-anchor="start">a várakozó folyamat felébred,</text>
+<text x="640" y="216" font-size="11.5" font-weight="400" class="ink" text-anchor="start">az adat a buf-ba másolódik</text>
+<text x="640" y="76" font-size="11.5" font-weight="400" class="ink" text-anchor="start">a read() visszatér</text>
+<path d="M590 588H632" fill="none" class="acc" stroke-width="1.5" marker-end="url(#io2)"/>
+<path d="M730 586V530" fill="none" class="acc" stroke-width="1.5" marker-end="url(#io2)"/>
+<path d="M730 506V474" fill="none" class="acc" stroke-width="1.5" marker-end="url(#io2)"/>
+<path d="M730 432V226" fill="none" class="acc" stroke-width="1.5" marker-end="url(#io2)"/>
+<path d="M730 186V88" fill="none" class="acc" stroke-width="1.5" marker-end="url(#io2)"/>
+<text x="24" y="636" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Közben az olvasó folyamat várakozó állapotban alszik, a CPU pedig más folyamatokat futtat.</text>
+</svg>

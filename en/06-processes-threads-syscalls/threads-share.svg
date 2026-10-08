@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 422" width="760" height="422" role="img" aria-label="One process, several threads: what they share and what each one owns">
+<title>One process, several threads: what they share and what each one owns</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">One process, several threads: what they share and what each one owns</text>
+<rect x="24" y="48" width="712" height="314" rx="10" fill="none" class="edge" stroke-width="1.25"/>
+<text x="40" y="70" font-size="12.5" font-weight="600" class="ink" text-anchor="start">process PID 24450 (the threads demo)</text>
+<text x="40" y="92" font-size="12" font-weight="600" class="acct" text-anchor="start">shared by all threads</text>
+<rect x="40" y="102" width="162" height="30" rx="4" class="accf"/><rect x="40" y="102" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="121.0" y="121.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">code (text)</text>
+<rect x="212" y="102" width="162" height="30" rx="4" class="accf"/><rect x="212" y="102" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="293.0" y="121.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">globals: data, BSS</text>
+<rect x="384" y="102" width="162" height="30" rx="4" class="accf"/><rect x="384" y="102" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="465.0" y="121.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">heap</text>
+<rect x="556" y="102" width="162" height="30" rx="4" class="accf"/><rect x="556" y="102" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="637.0" y="121.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">memory map, page tables</text>
+<rect x="40" y="140" width="162" height="30" rx="4" class="accf"/><rect x="40" y="140" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="121.0" y="159.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">open files (descriptors)</text>
+<rect x="212" y="140" width="162" height="30" rx="4" class="accf"/><rect x="212" y="140" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="293.0" y="159.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">signal handlers</text>
+<rect x="384" y="140" width="162" height="30" rx="4" class="accf"/><rect x="384" y="140" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="465.0" y="159.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">PID, user and group IDs</text>
+<rect x="556" y="140" width="162" height="30" rx="4" class="accf"/><rect x="556" y="140" width="162" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="637.0" y="159.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">current directory, limits</text>
+<text x="40" y="200" font-size="12" font-weight="600" class="c2" text-anchor="start">owned by each thread</text>
+<rect x="40" y="210" width="162" height="140" rx="6" class="c2f"/><rect x="40" y="210" width="162" height="140" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="121.0" y="228" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">main thread  (TID 24450)</text>
+<text x="52" y="250" font-size="11" font-weight="400" class="quiet" text-anchor="start">• registers: PC, SP, flags</text>
+<text x="52" y="270" font-size="11" font-weight="400" class="quiet" text-anchor="start">• stack</text>
+<text x="52" y="290" font-size="11" font-weight="400" class="quiet" text-anchor="start">• thread-local storage</text>
+<text x="52" y="310" font-size="11" font-weight="400" class="quiet" text-anchor="start">• signal mask</text>
+<text x="52" y="330" font-size="11" font-weight="400" class="quiet" text-anchor="start">• state, priority, CPU</text>
+<rect x="212" y="210" width="162" height="140" rx="6" class="c2f"/><rect x="212" y="210" width="162" height="140" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="293.0" y="228" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">thread 0  (TID 24451)</text>
+<text x="224" y="250" font-size="11" font-weight="400" class="quiet" text-anchor="start">• registers: PC, SP, flags</text>
+<text x="224" y="270" font-size="11" font-weight="400" class="quiet" text-anchor="start">• stack</text>
+<text x="224" y="290" font-size="11" font-weight="400" class="quiet" text-anchor="start">• thread-local storage</text>
+<text x="224" y="310" font-size="11" font-weight="400" class="quiet" text-anchor="start">• signal mask</text>
+<text x="224" y="330" font-size="11" font-weight="400" class="quiet" text-anchor="start">• state, priority, CPU</text>
+<rect x="384" y="210" width="162" height="140" rx="6" class="c2f"/><rect x="384" y="210" width="162" height="140" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="465.0" y="228" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">thread 1  (TID 24452)</text>
+<text x="396" y="250" font-size="11" font-weight="400" class="quiet" text-anchor="start">• registers: PC, SP, flags</text>
+<text x="396" y="270" font-size="11" font-weight="400" class="quiet" text-anchor="start">• stack</text>
+<text x="396" y="290" font-size="11" font-weight="400" class="quiet" text-anchor="start">• thread-local storage</text>
+<text x="396" y="310" font-size="11" font-weight="400" class="quiet" text-anchor="start">• signal mask</text>
+<text x="396" y="330" font-size="11" font-weight="400" class="quiet" text-anchor="start">• state, priority, CPU</text>
+<rect x="556" y="210" width="162" height="140" rx="6" class="c2f"/><rect x="556" y="210" width="162" height="140" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="637.0" y="228" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">thread 2  (TID 24453)</text>
+<text x="568" y="250" font-size="11" font-weight="400" class="quiet" text-anchor="start">• registers: PC, SP, flags</text>
+<text x="568" y="270" font-size="11" font-weight="400" class="quiet" text-anchor="start">• stack</text>
+<text x="568" y="290" font-size="11" font-weight="400" class="quiet" text-anchor="start">• thread-local storage</text>
+<text x="568" y="310" font-size="11" font-weight="400" class="quiet" text-anchor="start">• signal mask</text>
+<text x="568" y="330" font-size="11" font-weight="400" class="quiet" text-anchor="start">• state, priority, CPU</text>
+<text x="24" y="386" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Linux calls each thread a task; all tasks of a process share one thread-group ID, which getpid() returns, while gettid()</text>
+<text x="24" y="404" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">returns the task's own ID. A new thread costs a stack and a task_struct; a new process also needs its own address space.</text>
+</svg>
