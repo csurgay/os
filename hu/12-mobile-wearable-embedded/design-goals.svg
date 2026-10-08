@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 946 412" width="946" height="412" role="img" aria-label="A szerverteremtől a szenzorig: ugyanazok az OS-ötletek, más prioritások">
+<title>A szerverteremtől a szenzorig: ugyanazok az OS-ötletek, más prioritások</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="dg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="acct"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">A szerverteremtől a szenzorig: ugyanazok az OS-ötletek, más prioritások</text>
+<rect x="139" y="56" width="152" height="34" rx="6" class="accf"/><rect x="139" y="56" width="152" height="34" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="215.0" y="77.5" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">Szerver</text>
+<rect x="297" y="56" width="152" height="34" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="373.0" y="77.5" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">Asztali gép, laptop</text>
+<rect x="455" y="56" width="152" height="34" rx="6" class="c2f"/><rect x="455" y="56" width="152" height="34" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="531.0" y="77.5" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">Telefon</text>
+<rect x="613" y="56" width="152" height="34" rx="6" class="c2f"/><rect x="613" y="56" width="152" height="34" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="689.0" y="77.5" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">Óra</text>
+<rect x="771" y="56" width="152" height="34" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="847.0" y="77.5" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">Mikrovezérlő</text>
+<text x="24" y="123" font-size="12" font-weight="600" class="ink" text-anchor="start">Teljesítménykeret</text>
+<rect x="139" y="103" width="152" height="32" rx="4" class="tint"/><rect x="139" y="103" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="215.0" y="123" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">több száz W</text>
+<rect x="297" y="103" width="152" height="32" rx="4" class="tint"/><rect x="297" y="103" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="373.0" y="123" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">10–100 W</text>
+<rect x="455" y="103" width="152" height="32" rx="4" class="tint"/><rect x="455" y="103" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="531.0" y="123" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">1–5 W tartósan</text>
+<rect x="613" y="103" width="152" height="32" rx="4" class="tint"/><rect x="613" y="103" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="689.0" y="123" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">tíz–száz mW</text>
+<rect x="771" y="103" width="152" height="32" rx="4" class="tint"/><rect x="771" y="103" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="847.0" y="123" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">alva µW, ébren mW</text>
+<text x="24" y="161" font-size="12" font-weight="600" class="ink" text-anchor="start">Memória</text>
+<rect x="139" y="141" width="152" height="32" rx="4" class="tint"/><rect x="139" y="141" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="215.0" y="161" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">száz GiB-tól TiB-ig</text>
+<rect x="297" y="141" width="152" height="32" rx="4" class="tint"/><rect x="297" y="141" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="373.0" y="161" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">8–64 GiB</text>
+<rect x="455" y="141" width="152" height="32" rx="4" class="tint"/><rect x="455" y="141" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="531.0" y="161" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">4–16 GiB</text>
+<rect x="613" y="141" width="152" height="32" rx="4" class="tint"/><rect x="613" y="141" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="689.0" y="161" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">0,5–2 GiB</text>
+<rect x="771" y="141" width="152" height="32" rx="4" class="tint"/><rect x="771" y="141" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="847.0" y="161" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">KiB-tól pár MiB-ig</text>
+<text x="24" y="199" font-size="12" font-weight="600" class="ink" text-anchor="start">Energiaforrás</text>
+<rect x="139" y="179" width="152" height="32" rx="4" class="tint"/><rect x="139" y="179" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="215.0" y="199" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">hálózat, redundáns</text>
+<rect x="297" y="179" width="152" height="32" rx="4" class="tint"/><rect x="297" y="179" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="373.0" y="199" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">hálózat vagy órák</text>
+<rect x="455" y="179" width="152" height="32" rx="4" class="tint"/><rect x="455" y="179" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="531.0" y="199" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">akkumulátor, egy nap</text>
+<rect x="613" y="179" width="152" height="32" rx="4" class="tint"/><rect x="613" y="179" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="689.0" y="199" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">akkumulátor, 1–3 nap</text>
+<rect x="771" y="179" width="152" height="32" rx="4" class="tint"/><rect x="771" y="179" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="847.0" y="199" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">akkumulátor, évekig</text>
+<text x="24" y="237" font-size="12" font-weight="600" class="ink" text-anchor="start">Fő cél</text>
+<rect x="139" y="217" width="152" height="32" rx="4" class="tint"/><rect x="139" y="217" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="215.0" y="237" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">throughput, uptime</text>
+<rect x="297" y="217" width="152" height="32" rx="4" class="tint"/><rect x="297" y="217" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="373.0" y="237" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">válaszkészség</text>
+<rect x="455" y="217" width="152" height="32" rx="4" class="tint"/><rect x="455" y="217" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="531.0" y="237" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">feladatonkénti energia</text>
+<rect x="613" y="217" width="152" height="32" rx="4" class="tint"/><rect x="613" y="217" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="689.0" y="237" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">mindig ébren, olcsón</text>
+<rect x="771" y="217" width="152" height="32" rx="4" class="tint"/><rect x="771" y="217" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="847.0" y="237" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">határidők, µW alvás</text>
+<text x="24" y="275" font-size="12" font-weight="600" class="ink" text-anchor="start">Ki vár?</text>
+<rect x="139" y="255" width="152" height="32" rx="4" class="tint"/><rect x="139" y="255" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="215.0" y="275" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">sok távoli felhasználó</text>
+<rect x="297" y="255" width="152" height="32" rx="4" class="tint"/><rect x="297" y="255" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="373.0" y="275" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">egy felhasználó</text>
+<rect x="455" y="255" width="152" height="32" rx="4" class="tint"/><rect x="455" y="255" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="531.0" y="275" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">egy felhasználó, úton</text>
+<rect x="613" y="255" width="152" height="32" rx="4" class="tint"/><rect x="613" y="255" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="689.0" y="275" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">egy pillantás az órára</text>
+<rect x="771" y="255" width="152" height="32" rx="4" class="tint"/><rect x="771" y="255" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="847.0" y="275" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">egy fizikai folyamat</text>
+<text x="24" y="313" font-size="12" font-weight="600" class="ink" text-anchor="start">Jellemző OS</text>
+<rect x="139" y="293" width="152" height="32" rx="4" class="tint"/><rect x="139" y="293" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="215.0" y="313" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">Linux, Windows Server</text>
+<rect x="297" y="293" width="152" height="32" rx="4" class="tint"/><rect x="297" y="293" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="373.0" y="313" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">Windows, macOS, Linux</text>
+<rect x="455" y="293" width="152" height="32" rx="4" class="tint"/><rect x="455" y="293" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="531.0" y="313" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">Android, iOS</text>
+<rect x="613" y="293" width="152" height="32" rx="4" class="tint"/><rect x="613" y="293" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="689.0" y="313" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">Wear OS, watchOS, RTOS</text>
+<rect x="771" y="293" width="152" height="32" rx="4" class="tint"/><rect x="771" y="293" width="152" height="32" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="847.0" y="313" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">FreeRTOS, Zephyr</text>
+<path d="M146 350H916" fill="none" class="acc" stroke-width="2" marker-end="url(#dg)"/>
+<text x="146" y="370" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">kevesebb energia és memória, több határidő; az OS-nek energiát, hőt, rádiókat és szenzorokat is kezelnie kell</text>
+<text x="24" y="394" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Tipikus 2026-os eszközök nagyságrendjei, nem határok: minden osztályban vannak sokkal kisebb és sokkal nagyobb eszközök is.</text>
+</svg>

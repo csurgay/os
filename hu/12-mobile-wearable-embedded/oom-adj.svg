@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 478" width="800" height="478" role="img" aria-label="Az Android fontosság szerint rangsorolja a folyamatokat; a low memory killer alulról kezdi">
+<title>Az Android fontosság szerint rangsorolja a folyamatokat; a low memory killer alulról kezdi</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="ol" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="bad"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Az Android fontosság szerint rangsorolja a folyamatokat; a low memory killer alulról kezdi</text>
+<text x="126" y="72" font-size="12.5" font-weight="600" class="ink" text-anchor="end">-1000</text>
+<rect x="140" y="52" width="370" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="150" y="72" font-size="12" font-weight="400" class="ink" text-anchor="start">natív daemonok (init, lmkd …)</text>
+<text x="502" y="72" font-size="11" font-weight="400" class="quiet" text-anchor="end">sosem áll le</text>
+<text x="126" y="106" font-size="12.5" font-weight="600" class="ink" text-anchor="end">-900</text>
+<rect x="140" y="86" width="370" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="150" y="106" font-size="12" font-weight="400" class="ink" text-anchor="start">system_server</text>
+<text x="126" y="140" font-size="12.5" font-weight="600" class="ink" text-anchor="end">-800</text>
+<rect x="140" y="120" width="370" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="150" y="140" font-size="12" font-weight="400" class="ink" text-anchor="start">perzisztens alkalm. (telefon, SystemUI)</text>
+<text x="126" y="174" font-size="12.5" font-weight="600" class="ink" text-anchor="end">0</text>
+<rect x="140" y="154" width="370" height="30" rx="4" class="accf"/><rect x="140" y="154" width="370" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="150" y="174" font-size="12" font-weight="400" class="ink" text-anchor="start">előtér: a képernyőn lévő alkalmazás</text>
+<text x="126" y="208" font-size="12.5" font-weight="600" class="ink" text-anchor="end">100</text>
+<rect x="140" y="188" width="370" height="30" rx="4" class="accf"/><rect x="140" y="188" width="370" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="150" y="208" font-size="12" font-weight="400" class="ink" text-anchor="start">látható (pl. egy párbeszédablak mögött)</text>
+<text x="126" y="242" font-size="12.5" font-weight="600" class="ink" text-anchor="end">200</text>
+<rect x="140" y="222" width="370" height="30" rx="4" class="accf"/><rect x="140" y="222" width="370" height="30" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="150" y="242" font-size="12" font-weight="400" class="ink" text-anchor="start">érzékelhető (zene szól)</text>
+<text x="126" y="276" font-size="12.5" font-weight="600" class="ink" text-anchor="end">500</text>
+<rect x="140" y="256" width="370" height="30" rx="4" class="tint"/><rect x="140" y="256" width="370" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="150" y="276" font-size="12" font-weight="400" class="ink" text-anchor="start">szolgáltatás (háttérmunka)</text>
+<text x="126" y="310" font-size="12.5" font-weight="600" class="ink" text-anchor="end">600</text>
+<rect x="140" y="290" width="370" height="30" rx="4" class="tint"/><rect x="140" y="290" width="370" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="150" y="310" font-size="12" font-weight="400" class="ink" text-anchor="start">kezdőképernyő (a launcher)</text>
+<text x="126" y="344" font-size="12.5" font-weight="600" class="ink" text-anchor="end">700</text>
+<rect x="140" y="324" width="370" height="30" rx="4" class="tint"/><rect x="140" y="324" width="370" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="150" y="344" font-size="12" font-weight="400" class="ink" text-anchor="start">előző alkalmazás</text>
+<text x="126" y="378" font-size="12.5" font-weight="600" class="ink" text-anchor="end">800</text>
+<rect x="140" y="358" width="370" height="30" rx="4" class="tint"/><rect x="140" y="358" width="370" height="30" rx="4" fill="none" class="edge" stroke-width="1.25"/>
+<text x="150" y="378" font-size="12" font-weight="400" class="ink" text-anchor="start">régebbi szolgáltatások</text>
+<text x="126" y="412" font-size="12.5" font-weight="600" class="ink" text-anchor="end">900</text>
+<rect x="140" y="392" width="370" height="30" rx="4" class="c2f"/><rect x="140" y="392" width="370" height="30" rx="4" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="150" y="412" font-size="12" font-weight="400" class="ink" text-anchor="start">cached alkalmazások: 900 … 999</text>
+<text x="502" y="412" font-size="11" font-weight="400" class="quiet" text-anchor="end">a legutóbbi 900-on</text>
+<text x="126" y="46" font-size="11" font-weight="600" class="quiet" text-anchor="end">oom_score_adj</text>
+<path d="M540 422V160" fill="none" class="bads" stroke-width="2" marker-end="url(#ol)"/>
+<text x="552" y="418" font-size="12" font-weight="600" class="bad" text-anchor="start">elsőként leállítva</text>
+<text x="552" y="382" font-size="11" font-weight="400" class="quiet" text-anchor="start">nagyobb nyomásnál:</text>
+<text x="552" y="398" font-size="11" font-weight="400" class="quiet" text-anchor="start">feljebb is leállít</text>
+<text x="552" y="172" font-size="12" font-weight="600" class="bad" text-anchor="start">utolsóként leállítva</text>
+<text x="552" y="188" font-size="11" font-weight="400" class="quiet" text-anchor="start">(csak kritikus</text>
+<text x="552" y="204" font-size="11" font-weight="400" class="quiet" text-anchor="start">nyomásnál)</text>
+<text x="24" y="444" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">A system_server ActivityManagere minden alkalmazás értékét a /proc/PID/oom_score_adj fájlba írja, valahányszor az állapota változik.</text>
+<text x="24" y="462" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Az lmkd figyeli a memórianyomást (PSI), és alulról kezdve állít le; a kernel OOM killere végső esetben ugyanezeket az értékeket használja.</text>
+</svg>

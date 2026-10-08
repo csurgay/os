@@ -6,7 +6,7 @@ Egyetemi operációsrendszer-kurzus előadásanyaga linuxos (x86-64) példákkal
 
 | | |
 | --- | --- |
-| **[English](en/)** | eleven lectures, from the history of operating systems to access control, virtualization and containers |
-| **[Magyar](hu/)** | tizenegy előadás, az operációs rendszerek történetétől a hozzáférés-szabályozásig, a virtualizációig és a konténerekig |
+| **[English](en/)** | twelve lectures, from the history of operating systems to virtualization, containers and mobile, wearable and embedded systems |
+| **[Magyar](hu/)** | tizenkét előadás, az operációs rendszerek történetétől a virtualizációig, a konténerekig és a mobil, viselhető és beágyazott rendszerekig |
 
 License / Licenc: [LICENSE](LICENSE).

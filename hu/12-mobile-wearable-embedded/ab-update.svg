@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 376" width="800" height="376" role="img" aria-label="Seamless update: telepítés a futó rendszer mellé, váltás újraindításkor, visszaállás hiba esetén">
+<title>Seamless update: telepítés a futó rendszer mellé, váltás újraindításkor, visszaállás hiba esetén</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker><marker id="aba" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="acct"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Seamless update: telepítés a futó rendszer mellé, váltás újraindításkor, visszaállás hiba esetén</text>
+<text x="24" y="62" font-size="12.5" font-weight="600" class="ink" text-anchor="start">Hagyományos A/B: minden partícióból két példány</text>
+<rect x="24" y="74" width="176" height="150" rx="8" class="accf"/><rect x="24" y="74" width="176" height="150" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="112" y="94" font-size="13" font-weight="600" class="ink" text-anchor="middle">slot A</text>
+<rect x="38" y="104" width="148" height="28" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="112.0" y="122.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">boot_a</text>
+<rect x="38" y="138" width="148" height="28" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="112.0" y="156.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">system_a</text>
+<rect x="38" y="172" width="148" height="28" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="112.0" y="190.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">vendor_a</text>
+<text x="112" y="242" font-size="11" font-weight="400" class="quiet" text-anchor="middle">fut (régi változat)</text>
+<rect x="214" y="74" width="176" height="150" rx="8" class="c2f"/><rect x="214" y="74" width="176" height="150" rx="8" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="302" y="94" font-size="13" font-weight="600" class="ink" text-anchor="middle">slot B</text>
+<rect x="228" y="104" width="148" height="28" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="302.0" y="122.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">boot_b</text>
+<rect x="228" y="138" width="148" height="28" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="302.0" y="156.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">system_b</text>
+<rect x="228" y="172" width="148" height="28" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="302.0" y="190.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">vendor_b</text>
+<text x="302" y="242" font-size="11" font-weight="400" class="quiet" text-anchor="middle">ide íródik a frissítés a háttérben</text>
+<path d="M200 160H214" fill="none" class="acc" stroke-width="1.75" marker-end="url(#aba)"/>
+<text x="24" y="270" font-size="11.5" font-weight="400" class="ink" text-anchor="start">Újraindítás: a bootloader B-re vált.</text>
+<text x="24" y="288" font-size="11.5" font-weight="400" class="ink" text-anchor="start">B többször nem indul el: vissza A-ra.</text>
+<text x="24" y="306" font-size="11.5" font-weight="400" class="ink" text-anchor="start">Ár: kétszeres hely a rendszernek.</text>
+<text x="430" y="62" font-size="12.5" font-weight="600" class="ink" text-anchor="start">Virtual A/B (Android 11+): egy példány plusz egy snapshot</text>
+<rect x="430" y="74" width="176" height="150" rx="8" class="accf"/><rect x="430" y="74" width="176" height="150" rx="8" fill="none" class="acc" stroke-width="2"/>
+<text x="518" y="94" font-size="13" font-weight="600" class="ink" text-anchor="middle">alappartíciók</text>
+<rect x="444" y="104" width="148" height="28" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="518.0" y="122.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">system</text>
+<rect x="444" y="138" width="148" height="28" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="518.0" y="156.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">vendor</text>
+<rect x="444" y="172" width="148" height="28" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="518.0" y="190.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">product</text>
+<text x="518" y="242" font-size="11" font-weight="400" class="quiet" text-anchor="middle">fut (régi változat)</text>
+<rect x="626" y="104" width="150" height="96" rx="8" class="c2f"/><rect x="626" y="104" width="150" height="96" rx="8" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="701" y="126" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">copy-on-write</text>
+<text x="701" y="144" font-size="11" font-weight="400" class="quiet" text-anchor="middle">snapshot a /data-ban:</text>
+<text x="701" y="160" font-size="11" font-weight="400" class="quiet" text-anchor="middle">csak a megváltozott</text>
+<text x="701" y="176" font-size="11" font-weight="400" class="quiet" text-anchor="middle">blokkok, tömörítve</text>
+<path d="M626 152H610" fill="none" class="acc" stroke-width="1.75" marker-end="url(#aba)"/>
+<text x="430" y="270" font-size="11.5" font-weight="400" class="ink" text-anchor="start">Újraindítás: a kernel az alap + snapshotot mutatja új változatként.</text>
+<text x="430" y="288" font-size="11.5" font-weight="400" class="ink" text-anchor="start">Sikeres indulás: a snapshotot merge-eli az alapba.</text>
+<text x="430" y="306" font-size="11.5" font-weight="400" class="ink" text-anchor="start">Sikertelen indulás: a snapshot elvész, a régi változat marad.</text>
+<text x="24" y="340" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Mindkettő érintetlenül hagyja a futó rendszert a telepítés alatt, így az egyetlen kiesés egy újraindítás. A verified boot ellenőrzi</text>
+<text x="24" y="358" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">a boot image-et futtatás előtt és minden rendszerblokkot olvasáskor (dm-verity); a rollback protection elutasítja a régebbi változatokat.</text>
+</svg>

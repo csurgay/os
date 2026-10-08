@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 410" width="760" height="410" role="img" aria-label="Task set B (U = 0.97): rate-monotonic misses a deadline, EDF meets them all" xmlns:c2pa="http://c2pa.org/manifest"><metadata><c2pa:manifest>AAAWgmp1bWIAAAAeanVtZGMycGEAEQAQgAAAqgA4m3EDYzJwYQAAABZcanVtYgAAAEdqdW1kYzJtYQARABCAAACqADibcQN1cm46YzJwYTphNDQwNWM0ZC1jMWEyLTQ2YzEtYTQ3Ni1mY2JlOGZiOTNmNjQAAAADl2p1bWIAAAApanVtZGMyYXMAEQAQgAAAqgA4m3EDYzJwYS5hc3NlcnRpb25zAAAAALxqdW1iAAAARGp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuaW5ncmVkaWVudC52MwAAAAAYYzJzaPwJOUXggRaahj+IbPMPGOQAAABwY2JvcqNpZGM6Zm9ybWF0bWltYWdlL3N2Zyt4bWxqaW5zdGFuY2VJRHgseG1wOmlpZDpiNTE2MzllYy00MmM0LTRkZGMtYjdiYy05MWI5Mjc0MzMzZWRscmVsYXRpb25zaGlwaHBhcmVudE9mAAAB4mp1bWIAAABBanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5hY3Rpb25zLnYyAAAAABhjMnNoYPIwONAix/DihkcejrOYzAAAAZljYm9yomdhY3Rpb25zgqJmYWN0aW9ua2MycGEub3BlbmVkanBhcmFtZXRlcnOha2luZ3JlZGllbnRzgaJjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggb0igda16icZoiX5ax8nNg7e2ZnxQzS9P89fZSm+/4g2kZmFjdGlvbngdY29tLmFudGhyb3BpYy5jbGF1ZGUucHJvdmlkZWRqcGFyYW1ldGVyc6F4H2NvbS5hbnRocm9waWMub3JpZ2luLWNvbmZpZGVuY2VndW5rbm93bmtkZXNjcmlwdGlvbnhmQ2xhdWRlIHByb3ZpZGVkIHRoaXMgZmlsZSBhdCB0aGUgcmVxdWVzdCBvZiBhIHVzZXIgYW5kIG1heSBoYXZlIGNyZWF0ZWQgb3IgbW9kaWZpZWQgdGhlIGZpbGUgY29udGVudHMubXNvZnR3YXJlQWdlbnShZG5hbWVmQ2xhdWRlcmFsbEFjdGlvbnNJbmNsdWRlZPUAAADIanVtYgAAAEBqdW1kY2JvcgARABCAAACqADibcRNjMnBhLmhhc2guZGF0YQAAAAAYYzJzaKyzaUdFvdcWlBzRFfJetJQAAACAY2JvcqVjYWxnZnNoYTI1NmNwYWRNAAAAAAAAAAAAAAAAAGRoYXNoWCCHE7p+rZevFiL00NW3x8HF21s7aKM8yvsmJQ84DzSPN2RuYW1lbmp1bWJmIG1hbmlmZXN0amV4Y2x1c2lvbnOBomVzdGFydBj6Zmxlbmd0aBkeBAAAAj5qdW1iAAAAJ2p1bWRjMmNsABEAEIAAAKoAOJtxA2MycGEuY2xhaW0udjIAAAACD2Nib3KlY2FsZ2ZzaGEyNTZpc2lnbmF0dXJleE1zZWxmI2p1bWJmPS9jMnBhL3VybjpjMnBhOmE0NDA1YzRkLWMxYTItNDZjMS1hNDc2LWZjYmU4ZmI5M2Y2NC9jMnBhLnNpZ25hdHVyZWppbnN0YW5jZUlEeCx4bXA6aWlkOjA1MzVmZTJkLWEyNTgtNDMwMi1hYTY4LTg3NzUyZTMyYTBhOHJjcmVhdGVkX2Fzc2VydGlvbnODomN1cmx4LXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaW5ncmVkaWVudC52M2RoYXNoWCBvSKB1rXqJxmiJflrHyc2Dt7ZmfFDNL0/z19lKb7/iDaJjdXJseCpzZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmFjdGlvbnMudjJkaGFzaFggB0h36bwnibzO6MdisRBha+l8qmpkb2jQBhsqSbJx+4WiY3VybHgpc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5oYXNoLmRhdGFkaGFzaFggb7dfXA5tR4MUJTwC8v5UR46Q3/cOMRJZ/M8EXV8mR1F0Y2xhaW1fZ2VuZXJhdG9yX2luZm+jZG5hbWVvQW50aHJvcGljIEZpbGVzZ3ZlcnNpb25lMS4wLjBrc3BlY1ZlcnNpb25lMi40LjAAABA4anVtYgAAAChqdW1kYzJjcwARABCAAACqADibcQNjMnBhLnNpZ25hdHVyZQAAABAIY2JvctKEWQISogEmGCFZAgowggIGMIIBjaADAgECAhRA5aAK7sI50L64g/oGQgU9Z1UTADAKBggqhkjOPQQDAzBJMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEuMCwGA1UEAxMlQW50aHJvcGljIENvbnRlbnQgQ3JlZGVudGlhbHMgUm9vdCBDQTAeFw0yNjA4MDcxODQzNTZaFw0yODA4MDYxOTQzNTZaMEQxFzAVBgNVBAoTDkFudGhyb3BpYywgUEJDMSkwJwYDVQQDEyBBbnRocm9waWMgQ2xhdWRlIENvbnRlbnQgU2lnbmluZzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJh6CmvLUBgFFNU0vUKlOVtE6djd17L5SuwX0LemFisBM3dkd/3cyjxFA3Qo5S46fX0/ihY0VZ7mfb9KF703t5OjWDBWMA4GA1UdDwEB/wQEAwIHgDAVBgNVHSUEDjAMBgorBgEEAYPoXgIBMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUzlHiBIFOZFsj+OPEz5o+nMHXXMIwCgYIKoZIzj0EAwMDZwAwZAIwMXMdFJ4BetLLVY7ORuE9noqbbAZOZn/aArXyTwFAZfKrPzxF2vPoJNf1+UCdg1XGAjBwX1zd9WGqYkqmL5SFqw1QySjr1zJfpJM9+1rdDwSPLMOPOjKuiXjoU/pUUeG9RwmhY3BhZFkNngAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPZYQPbGQUk1yw0pbaFNYtDLlJv93ji6AqEa/GhjPg2NgFnB183SL4owSGydl4zNjG2TYe54YUK7N4qnowXChuZp37s=</c2pa:manifest></metadata>
+<title>Task set B (U = 0.97): rate-monotonic misses a deadline, EDF meets them all</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Task set B (U = 0.97): rate-monotonic misses a deadline, EDF meets them all</text>
+<text x="24" y="76" font-size="14" font-weight="600" class="ink" text-anchor="start">RM</text>
+<text x="80" y="106" font-size="12" font-weight="600" class="ink" text-anchor="end">T1</text>
+<line x1="90.0" y1="116.0" x2="720.0" y2="116.0" class="edge" stroke-width="1.25"/>
+<rect x="90.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="108.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="180.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="198.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="270.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="288.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="360.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="378.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="450.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="468.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="540.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="558.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="630.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="648.5" y="98.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<line x1="90.0" y1="88.0" x2="90.0" y2="116.0" class="edge" stroke-width="1.25"/>
+<path d="M87.0 92L90.0 86L93.0 92" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="180.0" y1="88.0" x2="180.0" y2="116.0" class="edge" stroke-width="1.25"/>
+<path d="M177.0 92L180.0 86L183.0 92" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="270.0" y1="88.0" x2="270.0" y2="116.0" class="edge" stroke-width="1.25"/>
+<path d="M267.0 92L270.0 86L273.0 92" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="360.0" y1="88.0" x2="360.0" y2="116.0" class="edge" stroke-width="1.25"/>
+<path d="M357.0 92L360.0 86L363.0 92" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="450.0" y1="88.0" x2="450.0" y2="116.0" class="edge" stroke-width="1.25"/>
+<path d="M447.0 92L450.0 86L453.0 92" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="540.0" y1="88.0" x2="540.0" y2="116.0" class="edge" stroke-width="1.25"/>
+<path d="M537.0 92L540.0 86L543.0 92" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="630.0" y1="88.0" x2="630.0" y2="116.0" class="edge" stroke-width="1.25"/>
+<path d="M627.0 92L630.0 86L633.0 92" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="720.0" y1="88.0" x2="720.0" y2="116.0" class="edge" stroke-width="1.25"/>
+<path d="M717.0 92L720.0 86L723.0 92" fill="none" class="edge" stroke-width="1.25"/>
+<text x="80" y="146" font-size="12" font-weight="600" class="ink" text-anchor="end">T2</text>
+<line x1="90.0" y1="156.0" x2="720.0" y2="156.0" class="edge" stroke-width="1.25"/>
+<rect x="126.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="144.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="162.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="216.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="234.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="252.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="306.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="342.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="396.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="414.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="432.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="486.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="504.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="522.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="576.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="594.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="612.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="666.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="684.5" y="138.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<line x1="90.0" y1="128.0" x2="90.0" y2="156.0" class="edge" stroke-width="1.25"/>
+<path d="M87.0 132L90.0 126L93.0 132" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="216.0" y1="128.0" x2="216.0" y2="156.0" class="edge" stroke-width="1.25"/>
+<path d="M213.0 132L216.0 126L219.0 132" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="342.0" y1="128.0" x2="342.0" y2="156.0" class="edge" stroke-width="1.25"/>
+<path d="M339.0 132L342.0 126L345.0 132" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="468.0" y1="128.0" x2="468.0" y2="156.0" class="edge" stroke-width="1.25"/>
+<path d="M465.0 132L468.0 126L471.0 132" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="594.0" y1="128.0" x2="594.0" y2="156.0" class="edge" stroke-width="1.25"/>
+<path d="M591.0 132L594.0 126L597.0 132" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="720.0" y1="128.0" x2="720.0" y2="156.0" class="edge" stroke-width="1.25"/>
+<path d="M717.0 132L720.0 126L723.0 132" fill="none" class="edge" stroke-width="1.25"/>
+<circle cx="216.0" cy="147" r="8" fill="none" class="bads" stroke-width="2"/>
+<text x="228" y="128" font-size="11" font-weight="600" class="bad" text-anchor="start">deadline missed</text>
+<text x="90" y="178" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">0</text>
+<text x="180" y="178" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">5</text>
+<text x="270" y="178" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">10</text>
+<text x="360" y="178" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">15</text>
+<text x="450" y="178" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">20</text>
+<text x="540" y="178" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">25</text>
+<text x="630" y="178" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">30</text>
+<text x="720" y="178" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">35</text>
+<text x="24" y="226" font-size="14" font-weight="600" class="ink" text-anchor="start">EDF</text>
+<text x="80" y="256" font-size="12" font-weight="600" class="ink" text-anchor="end">T1</text>
+<line x1="90.0" y1="266.0" x2="720.0" y2="266.0" class="edge" stroke-width="1.25"/>
+<rect x="90.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="108.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="198.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="216.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="306.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="324.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="360.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="378.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="450.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="468.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="558.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="576.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="630.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<rect x="648.5" y="248.0" width="17.0" height="18.0" class="acct" fill-opacity="0.8"/>
+<line x1="90.0" y1="238.0" x2="90.0" y2="266.0" class="edge" stroke-width="1.25"/>
+<path d="M87.0 242L90.0 236L93.0 242" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="180.0" y1="238.0" x2="180.0" y2="266.0" class="edge" stroke-width="1.25"/>
+<path d="M177.0 242L180.0 236L183.0 242" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="270.0" y1="238.0" x2="270.0" y2="266.0" class="edge" stroke-width="1.25"/>
+<path d="M267.0 242L270.0 236L273.0 242" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="360.0" y1="238.0" x2="360.0" y2="266.0" class="edge" stroke-width="1.25"/>
+<path d="M357.0 242L360.0 236L363.0 242" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="450.0" y1="238.0" x2="450.0" y2="266.0" class="edge" stroke-width="1.25"/>
+<path d="M447.0 242L450.0 236L453.0 242" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="540.0" y1="238.0" x2="540.0" y2="266.0" class="edge" stroke-width="1.25"/>
+<path d="M537.0 242L540.0 236L543.0 242" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="630.0" y1="238.0" x2="630.0" y2="266.0" class="edge" stroke-width="1.25"/>
+<path d="M627.0 242L630.0 236L633.0 242" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="720.0" y1="238.0" x2="720.0" y2="266.0" class="edge" stroke-width="1.25"/>
+<path d="M717.0 242L720.0 236L723.0 242" fill="none" class="edge" stroke-width="1.25"/>
+<text x="80" y="296" font-size="12" font-weight="600" class="ink" text-anchor="end">T2</text>
+<line x1="90.0" y1="306.0" x2="720.0" y2="306.0" class="edge" stroke-width="1.25"/>
+<rect x="126.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="144.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="162.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="180.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="234.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="252.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="270.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="288.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="342.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="396.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="414.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="432.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="486.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="504.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="522.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="540.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="594.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="612.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="666.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<rect x="684.5" y="288.0" width="17.0" height="18.0" class="c2" fill-opacity="0.8"/>
+<line x1="90.0" y1="278.0" x2="90.0" y2="306.0" class="edge" stroke-width="1.25"/>
+<path d="M87.0 282L90.0 276L93.0 282" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="216.0" y1="278.0" x2="216.0" y2="306.0" class="edge" stroke-width="1.25"/>
+<path d="M213.0 282L216.0 276L219.0 282" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="342.0" y1="278.0" x2="342.0" y2="306.0" class="edge" stroke-width="1.25"/>
+<path d="M339.0 282L342.0 276L345.0 282" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="468.0" y1="278.0" x2="468.0" y2="306.0" class="edge" stroke-width="1.25"/>
+<path d="M465.0 282L468.0 276L471.0 282" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="594.0" y1="278.0" x2="594.0" y2="306.0" class="edge" stroke-width="1.25"/>
+<path d="M591.0 282L594.0 276L597.0 282" fill="none" class="edge" stroke-width="1.25"/>
+<line x1="720.0" y1="278.0" x2="720.0" y2="306.0" class="edge" stroke-width="1.25"/>
+<path d="M717.0 282L720.0 276L723.0 282" fill="none" class="edge" stroke-width="1.25"/>
+<text x="90" y="328" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">0</text>
+<text x="180" y="328" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">5</text>
+<text x="270" y="328" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">10</text>
+<text x="360" y="328" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">15</text>
+<text x="450" y="328" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">20</text>
+<text x="540" y="328" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">25</text>
+<text x="630" y="328" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">30</text>
+<text x="720" y="328" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">35</text>
+<text x="24" y="376" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">T1: C = 2, T = 5;  T2: C = 4, T = 7;  deadline = next release (the ticks). Under RM, T1 always wins, so T2 gets only</text>
+<text x="24" y="394" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">3 of its 4 units before t = 7. EDF runs whichever job's deadline is nearer and finishes every job in time (U = 0.97 ≤ 1).</text>
+</svg>

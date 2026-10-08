@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 930 308" width="930" height="308" role="img" aria-label="Az okosóra megosztja a munkát: a mikrovezérlő ébren marad, az alkalmazásprocesszor többnyire alszik">
+<title>Az okosóra megosztja a munkát: a mikrovezérlő ébren marad, az alkalmazásprocesszor többnyire alszik</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="wr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Az okosóra megosztja a munkát: a mikrovezérlő ébren marad, az alkalmazásprocesszor többnyire alszik</text>
+<rect x="24" y="70" width="150" height="150" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="99" y="90" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">Szenzorok</text>
+<text x="99" y="112" font-size="11" font-weight="400" class="quiet" text-anchor="middle">gyorsulásmérő</text>
+<text x="99" y="132" font-size="11" font-weight="400" class="quiet" text-anchor="middle">pulzus (PPG)</text>
+<text x="99" y="152" font-size="11" font-weight="400" class="quiet" text-anchor="middle">giroszkóp</text>
+<text x="99" y="172" font-size="11" font-weight="400" class="quiet" text-anchor="middle">barométer</text>
+<text x="99" y="192" font-size="11" font-weight="400" class="quiet" text-anchor="middle">érintés, gombok</text>
+<rect x="214" y="60" width="220" height="170" rx="6" class="c2f"/><rect x="214" y="60" width="220" height="170" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="324" y="82" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">Kis fogyasztású mikrovezérlő</text>
+<text x="324" y="98" font-size="11" font-weight="400" class="quiet" text-anchor="middle">RTOS, mindig ébren, milliwattok</text>
+<text x="232" y="124" font-size="11.5" font-weight="400" class="ink" text-anchor="start">· szenzorokat olvas és kötegel</text>
+<text x="232" y="144" font-size="11.5" font-weight="400" class="ink" text-anchor="start">· lépést számol, esést észlel</text>
+<text x="232" y="164" font-size="11.5" font-weight="400" class="ink" text-anchor="start">· ambient számlapot rajzol</text>
+<text x="232" y="184" font-size="11.5" font-weight="400" class="ink" text-anchor="start">· egyszerű értesítéseket mutat</text>
+<text x="232" y="204" font-size="11.5" font-weight="400" class="ink" text-anchor="start">· szükség esetén ébreszti az AP-t</text>
+<rect x="474" y="60" width="240" height="170" rx="6" class="accf"/><rect x="474" y="60" width="240" height="170" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="594" y="82" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">Alkalmazásprocesszor</text>
+<text x="594" y="98" font-size="11" font-weight="400" class="quiet" text-anchor="middle">Wear OS vagy watchOS, többnyire alszik</text>
+<text x="492" y="124" font-size="11.5" font-weight="400" class="ink" text-anchor="start">· alkalmazásokat és UI-t futtat</text>
+<text x="492" y="144" font-size="11.5" font-weight="400" class="ink" text-anchor="start">· térkép, fizetés, hang</text>
+<text x="492" y="164" font-size="11.5" font-weight="400" class="ink" text-anchor="start">· feldolgozza a kötegelt adatokat</text>
+<text x="492" y="184" font-size="11.5" font-weight="400" class="ink" text-anchor="start">· a teljes kijelzőt frissíti</text>
+<text x="492" y="204" font-size="11.5" font-weight="400" class="ink" text-anchor="start">· a telefonnal és a felhővel beszél</text>
+<path d="M174 145H210" fill="none" class="edge" stroke-width="1.25" marker-end="url(#wr)"/>
+<path d="M434 130H470" fill="none" class="edge" stroke-width="1.25" marker-end="url(#wr)"/>
+<path d="M474 160H438" fill="none" class="edge" stroke-width="1.25" marker-end="url(#wr)"/>
+<text x="452" y="252" font-size="11" font-weight="400" class="quiet" text-anchor="middle">ébresztés / átadás</text>
+<rect x="754" y="80" width="150" height="130" rx="6" class="tint"/><rect x="754" y="80" width="150" height="130" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="829.0" y="118.5" font-size="12.5" font-weight="600" class="ink" text-anchor="middle">Telefon</text>
+<text x="829.0" y="134.0" font-size="12.5" font-weight="400" class="quiet" text-anchor="middle">Bluetooth LE-n át:</text>
+<text x="829.0" y="149.5" font-size="12.5" font-weight="400" class="quiet" text-anchor="middle">internet, nehéz munka,</text>
+<text x="829.0" y="165.0" font-size="12.5" font-weight="400" class="quiet" text-anchor="middle">értesítések,</text>
+<text x="829.0" y="180.5" font-size="12.5" font-weight="400" class="quiet" text-anchor="middle">alkalmazástelepítés</text>
+<path d="M714 135H750" fill="none" class="edge" stroke-width="1.25" marker-end="url(#wr)"/>
+<path d="M754 160H718" fill="none" class="edge" stroke-width="1.25" marker-end="url(#wr)"/>
+<text x="24" y="272" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Az egészségügyi adatok titkosítva maradnak az órán és a telefonon; az alkalmazások csak a felhasználó engedélyével kapják meg (Health Connect, HealthKit).</text>
+<text x="24" y="290" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">A Wear OS ezt a megosztást hibrid interfésznek hívja; más eszközökben ugyanez szenzorhubként vagy mindig ébren lévő társprocesszorként jelenik meg.</text>
+</svg>
