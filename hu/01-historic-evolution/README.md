@@ -2,10 +2,6 @@
 
 *Operációs rendszerek előadás: miért léteznek operációs rendszerek – problémák és megoldások láncolataként elmesélve a lyukkártyától az okostelefonig, minden ötlet Linuxos (x86-64) bemutatásával*
 
-Következő: [Minőség, üzleti szempontok és az Enterprise Linux ökoszisztéma](../02-quality-and-enterprise-linux/).
-
-> **Hogyan olvasd ezt az előadást?** Ahol új rövidítés vagy fogalom jelenik meg, utána egy **Egyszerűen elmagyarázva** feliratú doboz következik. Kattints rá, és kinyílik egy köznapi nyelvű magyarázat. Ha már ismered a fogalmakat, nyugodtan átugorhatod ezeket a dobozokat.
-
 ## Tanulási célok
 
 A modern operációs rendszerek szinte minden szolgáltatását azért találták ki, hogy megszüntessenek egy-egy, a saját korukra jellemző szűk keresztmetszetet. Az előadás ezeket a szűk keresztmetszeteket követi sorban. Minden lépés egy újabb darabot ad az operációs rendszerhez, és ezek a darabok ma is mind megvannak abban a Linuxban, Windowsban, macOS-ben vagy Androidban, amelyet használsz.
@@ -160,7 +156,7 @@ Innentől a történet problémák sorozataként olvasható, a 0. lépéstől, a
 | X | nem minden munka egyformán sürgős | prioritásos ütemezés | prioritások, `nice` |
 | XI | az adatoknak túl kell élniük a programot | fájlrendszerek | fájlrendszerek |
 | XII | bárkinek lehet saját számítógépe | minimális OS minimális hardveren | (a szolgáltatások visszatértek) |
-| XIII | a számítógépek összekapcsolódnak | hálózatkezelés | a hálózati protokollkészlet |
+| XIII | a számítógépek összekapcsolódnak | hálózatkezelés | a hálózati stack |
 | XIV | a számítógépek kicsik és akkuról működnek | energiagazdálkodás | energiakezelés, energiatudatos ütemezés |
 
 <details>
@@ -298,7 +294,7 @@ Minden program a saját, privát memóriáját látja, a **virtuális memóriáj
 
 - **Védelem:** egy program csak azokat a kereteket érheti el, amelyeket az OS hozzárendelt. PR1-nek egyszerűen nincs módja megnevezni PR2 memóriáját.
 - **Rugalmasság:** egy program lapjai bárhol lehetnek a fizikai memóriában, bármilyen sorrendben, így a memória kis darabokban osztható szét.
-- **Több memória, mint amennyi van:** az éppen nem szükséges lapok kiírhatók lemezre (az ábrán 16 GB **lapozóterület**, swap), és visszatölthetők, amikor a program hozzájuk nyúl. Az Atlason a lassú memória egy mágnesdob volt; a felhasználó „egy nagyon nagy, gyors memóriát” látott.
+- **Több memória, mint amennyi van:** az éppen nem szükséges lapok kiírhatók lemezre (az ábrán 16 GB **swap**), és visszatölthetők, amikor a program hozzájuk nyúl. Az Atlason a lassú memória egy mágnesdob volt; a felhasználó „egy nagyon nagy, gyors memóriát” látott.
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> CPU-igényes, I/O-igényes, tétlen, kihasználtság, mag, Atlas, Ferranti, lap, keret, swap, dob, laphiba, folyamat, bázis- és határregiszter, spooling, DMA, OS/360</summary>
@@ -310,7 +306,7 @@ Minden program a saját, privát memóriáját látja, a **virtuális memóriáj
 - **Atlas, Ferranti:** az Atlas az 1960-as évek elejének brit számítógépe volt, kora egyik legerősebb gépe. A Ferranti az a brit elektronikai cég, amely a Manchesteri Egyetemmel közösen építette.
 - **Virtuális memória:** minden program saját, „látszat” memóriát kap, és az OS meg a hardver a háttérben dönti el, hogy melyik darab valójában hol van. Mint egy szálloda, ahol minden vendég kártyáján az áll, hogy „1-es szoba”, de a recepció mindenkit más valódi szobába küld.
 - **Lap, keret:** a lap a program virtuális memóriájának rögzített méretű darabja (ma általában 4 KB); a keret egy lapnyi hely a valódi memóriachipekben.
-- **Swap** (lapozóterület): hely a lemezen, ahová az OS azokat a lapokat teszi félre, amelyek nem férnek el a valódi memóriában.
+- **Swap:** hely a lemezen, ahová az OS azokat a lapokat teszi félre, amelyek nem férnek el a valódi memóriában.
 - **Dob:** korai tárolóeszköz, mágneses anyaggal bevont forgó fémhenger; lassabb, de nagyobb, mint a főmemória.
 - **GB** (gigabájt): körülbelül egymilliárd bájt. Egy **bájt** 8 bit, egy betű tárolásához elég.
 - **Laphiba** (page fault): ez történik, amikor egy program olyan laphoz nyúl, amely éppen nincs a RAM-ban: a hardver megállítja a programot, az OS behozza a lapot a lemezről, a program pedig úgy folytatódik, mintha mi sem történt volna.
@@ -334,7 +330,7 @@ Két fogalompárt könnyű összekeverni. A **kötegelt** és az **interaktív**
 
 ### IX. Válaszidő: preemptív ütemezés
 
-A kötegelt rendszereket az érdekelte, hány munka készül el naponta (**átbocsátóképesség**, throughput). A terminál előtt ülő embert az érdekli, milyen gyorsan válaszol a gép az egyes parancsaira (**válaszidő**, response time). Ha egy felhasználó hosszú számítása a befejezéséig magánál tarthatná a CPU-t, mindenki másnak várnia kellene. A **preemptív (kiszorításos) ütemezés** ezt oldja meg: egy időzítő-megszakítás rendszeresen elveszi a CPU-t a futó programtól, és az ütemező kiválasztja a következőt, így minden program sorban kap egy rövid **időszeletet**.
+A kötegelt rendszereket az érdekelte, hány munka készül el naponta (**áteresztőképesség**, throughput). A terminál előtt ülő embert az érdekli, milyen gyorsan válaszol a gép az egyes parancsaira (**válaszidő**, response time). Ha egy felhasználó hosszú számítása a befejezéséig magánál tarthatná a CPU-t, mindenki másnak várnia kellene. A **preemptív (kiszorításos) ütemezés** ezt oldja meg: egy időzítő-megszakítás rendszeresen elveszi a CPU-t a futó programtól, és az ütemező kiválasztja a következőt, így minden program sorban kap egy rövid **időszeletet**.
 
 ### X. Prioritásos ütemezés
 
@@ -351,13 +347,13 @@ A legnagyratörőbb időosztásos projekt a **Multics** volt, amelyet 1965-ben i
 A Bell Labsnél ezután Ken Thompson és Dennis Ritchie egy sokkal **egyszerűbb** rendszert írt, eleinte egy kicsi PDP-7 számítógépre: a **Unixot** (a neve szójáték a Multics nevére). A Unix a lényeget (időosztás, hierarchikus fájlrendszer, folyamatok) egy kicsi **kernelben** tartotta, minden mást – még a parancsértelmezőt (a shellt) is – közönséges programokba tett ki. 1973-ban átírták az új C programozási nyelvre, így könnyen át lehetett vinni más számítógépekre (Ritchie & Thompson, 1974). Az egyszerűség szándékos volt. Tom Van Vleck, a Multics egyik fejlesztője úgy emlékszik, hogy az ő Multics-kódjának fele hibakezelés volt, Ritchie pedig azt mondta neki, hogy a Unix mindezt elhagyta: súlyos hiba esetén egy `panic()` nevű rutin egyszerűen leállította a gépet, és valaki újraindította (Van Vleck, n.d.). A Linux „kernel panic” üzenete ma is ezt a nevet viseli.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> többfelhasználós, gazdagép, CTSS, időosztás, átbocsátóképesség, válaszidő, preemptív, időszelet, prioritás, kvóta, perzisztens, könyvtár (mappa), kernel, shell, Unix, C, MIT, Bell Labs, PDP-7, Multics, hierarchikus fájlrendszer, védelmi gyűrűk, kernel panic</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> többfelhasználós, gazdagép, CTSS, időosztás, áteresztőképesség, válaszidő, preemptív, időszelet, prioritás, kvóta, perzisztens, könyvtár (mappa), kernel, shell, Unix, C, MIT, Bell Labs, PDP-7, Multics, hierarchikus fájlrendszer, védelmi gyűrűk, kernel panic</summary>
 
 - **Többfelhasználós** (multi-user): sok ember használja egyszerre ugyanazt a számítógépet, mindenki a saját felhasználói fiókjával.
 - **Gazdagép** (host): az a központi számítógép, amelyhez sok terminál kapcsolódik.
 - **CTSS:** Compatible Time-Sharing System, korai időosztásos rendszer az MIT-n.
 - **Időosztás** (time sharing): a processzor olyan gyors váltogatása a felhasználók között, hogy mindegyikük úgy érzi, egyedül használja – mint egy sakknagymester szimultánja 30 ellenféllel, aki tábláról táblára jár.
-- **Átbocsátóképesség** (throughput): mennyi munka készül el óránként vagy naponta. **Válaszidő** (response time): mennyit vár egy ember egyetlen válaszra.
+- **Áteresztőképesség** (throughput): mennyi munka készül el óránként vagy naponta. **Válaszidő** (response time): mennyit vár egy ember egyetlen válaszra.
 - **Preemptív** (kiszorításos): az OS bármikor elveheti a processzort egy programtól, anélkül hogy megkérdezné.
 - **Időszelet** (time slice): az a rövid idő, amíg egy program futhat, mielőtt a következő sorra kerül; jellemzően néhány ezredmásodperc.
 - **Prioritás:** mennyire sürgős valami. A mentőautónak elsőbbsége van egy szállítókocsival szemben.
@@ -423,14 +419,14 @@ Az előadás fogalmaival: az operációs rendszer **visszaesett egy közös szub
 
 ### XIII. Hálózatok
 
-Az 1980-as évektől, mindenki számára pedig az 1990-es évektől, a számítógépeket összekötötték egymással. Az OS-be bekerült egy **hálózati protokollkészlet** (network stack), és vele egy újfajta kitettség: a támadónak már nem kellett a gép előtt ülnie. A biztonság, amely egykor azt jelentette, hogy egy számítógép felhasználóit elválasztjuk egymástól, most azt jelentette, hogy minden hálózatba kötött gépet meg kell védeni az egész világgal szemben; ezt az 1988-as Morris-féreg tette fájdalmasan világossá, amely egyetlen nap alatt több ezer internetes számítógépre terjedt át. Magát a Linuxot 1991-ben hozta létre Linus Torvalds, és önkéntesek fejlesztették tovább az interneten keresztül.
+Az 1980-as évektől, mindenki számára pedig az 1990-es évektől, a számítógépeket összekötötték egymással. Az OS-be bekerült egy **hálózati stack** (network stack), és vele egy újfajta kitettség: a támadónak már nem kellett a gép előtt ülnie. A biztonság, amely egykor azt jelentette, hogy egy számítógép felhasználóit elválasztjuk egymástól, most azt jelentette, hogy minden hálózatba kötött gépet meg kell védeni az egész világgal szemben; ezt az 1988-as Morris-féreg tette fájdalmasan világossá, amely egyetlen nap alatt több ezer internetes számítógépre terjedt át. Magát a Linuxot 1991-ben hozta létre Linus Torvalds, és önkéntesek fejlesztették tovább az interneten keresztül.
 
 ### XIV. Kicsi és hordozható
 
 A laptopok, majd később a telefonok és táblagépek (az iPhone 2007-ben, a Linux kernelt futtató Android 2008-ban) olyan korlátot hoztak, amely a nagyszámítógépeknél sosem létezett: az **akkumulátoros üzemidőt**. Az energiagazdálkodás az 1990-es években vált a laptopokon OS-feladattá, a telefonokon pedig központi kérdés lett. Az OS ma az **energiafogyasztást** is kezeli: lekapcsolja a hardver nem használt részeit, lelassítja a CPU-t, ha nincs szükség a teljes sebességre, és eldönti, mely programok futhatnak egyáltalán a háttérben. A hatásfok új jelentést kapott: hasznos munka egységnyi energiára vetítve.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> beszerzési ár, piacra jutási idő, KB, hajlékonylemez, DOS, MS-DOS, multitasking, GUI, hálózati protokollkészlet, akkumulátoros üzemidő, CP/M, BIOS, PhD, DRI, SCP, BASIC, 8086/8088, Engelbart, NDA, jogdíj, licenc, kompatibilis, klón, Xerox PARC, Alto, Ethernet, Smalltalk, részvények, Lisa, Macintosh, look and feel</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> beszerzési ár, piacra jutási idő, KB, hajlékonylemez, DOS, MS-DOS, multitasking, GUI, hálózati stack, akkumulátoros üzemidő, CP/M, BIOS, PhD, DRI, SCP, BASIC, 8086/8088, Engelbart, NDA, jogdíj, licenc, kompatibilis, klón, Xerox PARC, Alto, Ethernet, Smalltalk, részvények, Lisa, Macintosh, look and feel</summary>
 
 - **Beszerzési ár** (initial cost): az az ár, amelyet valamiért induláskor kifizetünk. **Piacra jutási idő** (time to market): milyen gyorsan lehet egy terméket elkészíteni és árusítani.
 - **KB** (kilobájt): körülbelül ezer bájt, nagyjából fél oldal egyszerű szövegnek elég. 16 KB nagyjából milliószor kevesebb egy mai telefon memóriájánál.
@@ -438,7 +434,7 @@ A laptopok, majd később a telefonok és táblagépek (az iPhone 2007-ben, a Li
 - **Hajlékonylemez** (floppy): vékony, hajlékony mágneslemez műanyag tokban, a korai személyi számítógépeken az adatok tárolásának és hordozásának fő eszköze.
 - **DOS** (Disk Operating System, lemezes operációs rendszer), **MS-DOS:** a korai IBM-kompatibilis személyi számítógépek operációs rendszere. MS = Microsoft.
 - **Multitasking:** több program egyidejű futtatása; a személyi számítógépeken ez a szó ugyanazt jelentette, mint a multiprogramozás.
-- **Hálózati protokollkészlet** (network stack): az OS azon része, amely adatokat küld és fogad a hálózaton; egymásra épülő („egymásra rakott”) rétegekből áll.
+- **Hálózati stack** (network stack): az OS azon része, amely adatokat küld és fogad a hálózaton; egymásra épülő („egymásra rakott”) rétegekből áll.
 - **Linux:** 1991-ben indult szabad, Unix-szerű operációs rendszer. Ez fut a legtöbb szerveren, az androidos telefonokon és sok más eszközön.
 - **Akkumulátoros üzemidő** (battery life): mennyi ideig működik egy eszköz, mielőtt tölteni kell.
 - **CP/M** (Control Program for Microcomputers): az 1970-es évek végének vezető operációs rendszere a kis számítógépeken.
@@ -463,7 +459,7 @@ A laptopok, majd később a telefonok és táblagépek (az iPhone 2007-ben, a Li
 
 ### A tizennégy lépés után
 
-A történet nem állt meg a telefonoknál. Három későbbi fordulattal a későbbi előadások foglalkoznak (a konténerekkel a [következő](../02-quality-and-enterprise-linux/#konténerképek-a-család-konténerekben)): a **virtualizációval**, amely teljes operációs rendszereket futtat programként egy másik OS-en (úttörője az IBM volt az 1960-as évek végén, majd 1972-ben a VM/370-nel; a PC-kre 1999 körül a VMware hozta el); a **felhő-számítástechnikával** (cloud computing) és a **konténerekkel** (container), amelyek virtualizált gépeket és elszigetelt alkalmazáscsomagokat adnak bérbe óradíjért; valamint a **többmagos** (multicore) processzorokkal (kb. 2005-től), amelyek minden PC-t és telefont többprocesszoros géppé tettek.
+A történet nem állt meg a telefonoknál. Három későbbi fordulattal a későbbi előadások foglalkoznak (a virtualizációval és a konténerekkel a [11. előadás](../11-virtualization-containerization/)): a **virtualizációval**, amely teljes operációs rendszereket futtat programként egy másik OS-en (úttörője az IBM volt az 1960-as évek végén, majd 1972-ben a VM/370-nel; a PC-kre 1999 körül a VMware hozta el); a **felhőalapú számítástechnikával** (cloud computing) és a **konténerekkel** (container), amelyek virtualizált gépeket és elszigetelt alkalmazáscsomagokat adnak bérbe óradíjért; valamint a **többmagos** (multicore) processzorokkal (kb. 2005-től), amelyek minden PC-t és telefont többprocesszoros géppé tettek.
 
 E történet fővonala mellett speciális operációsrendszer-fajták is kifejlődtek. A **valós idejű operációs rendszerek** garantálják, hogy a feladatok rögzített határidőn belül befejeződjenek, például ipari vezérlőkben vagy egy autó fékrendszerében. A **beágyazott rendszerek** olyan eszközökben futnak, amelyek egyáltalán nem néznek ki számítógépnek, a mosógépektől a routerekig; a világ számítógépeinek többsége ma beágyazott. Az **elosztott rendszerek** a hálózattal összekötött sok számítógépet úgy dolgoztatják együtt, mintha egyetlen gép lennének.
 
@@ -471,7 +467,7 @@ E történet fővonala mellett speciális operációsrendszer-fajták is kifejl�
 <summary><b>Egyszerűen elmagyarázva:</b> virtualizáció, felhő, konténer, többmagos, valós idejű OS, beágyazott rendszer, elosztott rendszer</summary>
 
 - **Virtualizáció:** szoftver, amely egyetlen valódi számítógépet több különálló számítógépként működtet, mindegyiken saját operációs rendszerrel.
-- **Felhő-számítástechnika** (cloud computing): valaki más adatközpontjának számítógépeit használjuk az interneten keresztül, és annyit fizetünk, amennyit használunk.
+- **Felhőalapú számítástechnika** (cloud computing): valaki más adatközpontjának számítógépeit használjuk az interneten keresztül, és annyit fizetünk, amennyit használunk.
 - **Konténer** (container): könnyűsúlyú csomag, amely egy alkalmazást mindazzal együtt tartalmaz, amire szüksége van, és elkülönítve tartja az ugyanazon az OS-en futó többi alkalmazástól.
 - **Többmagos** (multicore): olyan processzorchip, amelyen több teljes CPU (mag) van.
 - **Valós idejű OS:** olyan OS, amely garantálja, hogy a feladatok időben befejeződnek, mindig – nem csak átlagosan gyorsan.
@@ -594,7 +590,7 @@ Hogy pontosan hol ér véget az operációs rendszer, az definíció kérdése. 
 Az operációs rendszerek több, egymástól független szempont szerint csoportosíthatók:
 
 - **Licenc:** nyílt forráskódú (Linux, FreeBSD, az Android Open Source Project), amelynek forráskódját bárki elolvashatja, módosíthatja és továbbadhatja, vagy zárt, szabadalmaztatott (Windows, iOS), amelynek forrását a gyártó titokban tartja. Vegyes esetek is vannak: a macOS magja (Darwin) nyílt forráskódú, a többi része nem.
-- **Platform:** nagygép, szerver, asztali gép, mobil eszköz, beágyazott vagy valós idejű rendszer; a platform dönti el, mi a legfontosabb, a szerver átbocsátóképességétől a telefon akkumulátor-üzemidején át az autóban garantált határidőkig.
+- **Platform:** nagygép, szerver, asztali gép, mobil eszköz, beágyazott vagy valós idejű rendszer; a platform dönti el, mi a legfontosabb, a szerver áteresztőképességétől a telefon akkumulátor-üzemidején át az autóban garantált határidőkig.
 - **Felület:** parancssoros (CLI) vagy grafikus (GUI). A legtöbb rendszer mindkettőt kínálja; a szervereket általában parancssorból kezelik.
 - **Felhasználók és feladatok:** dolgozhat-e egyszerre több felhasználó, és futhat-e egyszerre több program.
 - **A kernel felépítése:** monolitikus, mikrokernel vagy hibrid (lásd alább).
@@ -608,7 +604,7 @@ A két „hány” szempont egy kis táblázatot ad, amelynek egyik sarka gyakor
 
 Az egyszerre dolgozó több felhasználónak egyszerre futó több programra van szüksége, mindegyiküknek legalább egyre, így egy többfelhasználós, de egyfeladatos rendszernek kevés értelme van; az a kötegelt monitor, amely sok felhasználó munkáit egymás után futtatja, minden egyes pillanatban egyfelhasználós. Figyeljük meg, hogy az „egyfelhasználós” azt írja le, hogyan használnak egy rendszert, nem azt, mire képes: az Android és az iOS sok folyamatot futtat, és külön felhasználói azonosítókkal választja el egymástól az alkalmazásokat, de egyszerre egy embert szolgál ki.
 
-**A kernel felépítése.** **Monolitikus kernelben** az összes OS-szolgáltatás (folyamat- és memóriakezelés, fájlrendszerek, a hálózati protokollkészlet, eszközmeghajtók) együtt fut kernelmódban, egyetlen címtartományban. A köztük lévő hívások közönséges függvényhívások, így gyors, de bármelyik meghajtó hibája összeomlaszthatja az egész rendszert. A Unix és a Linux monolitikus; a Linux ehhez **betölthető modulokat** ad, így a meghajtók a rendszer futása közben betölthetők és eltávolíthatók, de egy betöltött modul továbbra is a kernelen belül fut. A **mikrokernel** csak a legszükségesebbet tartja kernelmódban (címtartományok, szálak, üzenetküldés a folyamatok között), a meghajtókat és a fájlrendszereket pedig közönséges, felhasználói módú folyamatokként futtatja. Egy összeomlott meghajtó így újraindítható, és a kis kernelt könnyebb ellenőrizni, cserébe több üzenet és környezetváltás kell. A Minix 3, a QNX (amely autókban és ipari eszközökben gyakori) és a seL4, amelynek helyességét formálisan bebizonyították (Klein et al., 2009), mikrokernelek. A **hibrid kernelek** mikrokernel-tervből indulnak ki, de a sebesség kedvéért a legtöbb szolgáltatást kernelmódban futtatják: ilyen a Windows NT kernele és az XNU, a macOS és az iOS kernele, amely a Mach mikrokernelt és a BSD Unix egyes részeit egyesíti egyetlen címtartományban (Tanenbaum & Bos, 2015).
+**A kernel felépítése.** **Monolitikus kernelben** az összes OS-szolgáltatás (folyamat- és memóriakezelés, fájlrendszerek, a hálózati stack, eszközmeghajtók) együtt fut kernelmódban, egyetlen címtartományban. A köztük lévő hívások közönséges függvényhívások, így gyors, de bármelyik meghajtó hibája összeomlaszthatja az egész rendszert. A Unix és a Linux monolitikus; a Linux ehhez **betölthető modulokat** ad, így a meghajtók a rendszer futása közben betölthetők és eltávolíthatók, de egy betöltött modul továbbra is a kernelen belül fut. A **mikrokernel** csak a legszükségesebbet tartja kernelmódban (címtartományok, szálak, üzenetküldés a folyamatok között), a meghajtókat és a fájlrendszereket pedig közönséges, felhasználói módú folyamatokként futtatja. Egy összeomlott meghajtó így újraindítható, és a kis kernelt könnyebb ellenőrizni, cserébe több üzenet és környezetváltás kell. A Minix 3, a QNX (amely autókban és ipari eszközökben gyakori) és a seL4, amelynek helyességét formálisan bebizonyították (Klein et al., 2009), mikrokernelek. A **hibrid kernelek** mikrokernel-tervből indulnak ki, de a sebesség kedvéért a legtöbb szolgáltatást kernelmódban futtatják: ilyen a Windows NT kernele és az XNU, a macOS és az iOS kernele, amely a Mach mikrokernelt és a BSD Unix egyes részeit egyesíti egyetlen címtartományban (Tanenbaum & Bos, 2015).
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> nyílt forráskód, zárt (szabadalmaztatott) szoftver, platform, beágyazott, monolitikus kernel, betölthető modul, mikrokernel, hibrid kernel, címtartomány, üzenetküldés, formális verifikáció, Minix, QNX, seL4, XNU, Mach, BSD</summary>
@@ -778,7 +774,7 @@ child  (pid 297): &x = 0x55d4df268010, x = 2
 parent (pid 296): &x = 0x55d4df268010, x = 1
 ```
 
-**Ugyanaz a cím**, két **különböző érték**. Ez csak azért lehetséges, mert a cím virtuális: minden folyamatban más fizikai keretre fordítódik le, pontosan úgy, mint PR1 és PR2 esetében a VII. lépés ábráján. (Közvetlenül a `fork()` után a Linux hagyja, hogy a szülő és a gyerek ugyanazon a kereten osztozzon, csak olvashatóként megjelölve, hogy megspórolja a másolást. A gyerek első írása az `x`-be laphibát vált ki, és a kernel csak ekkor ad a gyereknek saját másolatot az adott lapról: ez az **írásra másolás** (copy-on-write).) A gyerek akkor sem tudná megváltoztatni a szülő `x`-ét, ha megpróbálná.
+**Ugyanaz a cím**, két **különböző érték**. Ez csak azért lehetséges, mert a cím virtuális: minden folyamatban más fizikai keretre fordítódik le, pontosan úgy, mint PR1 és PR2 esetében a VII. lépés ábráján. (Közvetlenül a `fork()` után a Linux hagyja, hogy a szülő és a gyerek ugyanazon a kereten osztozzon, csak olvashatóként megjelölve, hogy megspórolja a másolást. A gyerek első írása az `x`-be laphibát vált ki, és a kernel csak ekkor ad a gyereknek saját másolatot az adott lapról: ez a **copy-on-write** (másolás csak íráskor).) A gyerek akkor sem tudná megváltoztatni a szülő `x`-ét, ha megpróbálná.
 
 ### A kernelbe lépés ára
 
@@ -820,16 +816,16 @@ $ strace -c ls / > /dev/null
 Még az `ls`-nek is 76 rendszerhívásra van szüksége: a programkönyvtárai betöltéséhez (`mmap`, `openat`), a könyvtár (mappa) tartalmának beolvasásához (`getdents64`, nem látszik) és az eredmény kiírásához (`write`). Mindegyik egy-egy kérés a kernelhez. A C könyvtár és a kernel rendszerhívási interfésze együtt az 1950-es évek rezidens könyvtárának leszármazottai.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> ldd, libc, folyamat, fork, pid, falióra-idő, CPU-idő, önkéntes/kényszerű váltás, nice, dd, /dev/zero, /dev/null, strace, mmap</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> ldd, libc, folyamat, fork, pid, eltelt idő, CPU-idő, önkéntes/kényszerű váltás, nice, dd, /dev/zero, /dev/null, strace, mmap</summary>
 
 - **`ldd`:** parancs, amely kilistázza, milyen megosztott könyvtárakra van szüksége egy programnak. A **libc** a C könyvtár, azok az alaprutinok, amelyeket szinte minden program használ.
 - **Folyamat** (process): futó program a memóriájával és az állapotával együtt. **pid** (process ID, folyamatazonosító): az a szám, amelyet a Linux minden folyamatnak ad.
 - **`fork()`:** rendszerhívás, amely pontos másolatot készít a futó folyamatról. A másolat a **gyerek** (child), az eredeti a **szülő** (parent).
 - **`&x`, `%p`:** C-ben az `&x` azt jelenti, hogy „x címe”, a `%p` pedig egy címet ír ki, hexadecimálisan (`0x…`, 16-os számrendszerben).
-- **Falióra-idő** (wall-clock time): a falon lógó órával mért idő az indítástól a befejezésig. **CPU-idő:** csak az az idő, amíg a program ténylegesen a processzoron futott.
+- **Eltelt idő** (wall-clock time): a falon lógó órával mért idő az indítástól a befejezésig. **CPU-idő:** csak az az idő, amíg a program ténylegesen a processzoron futott.
 - **Önkéntes / kényszerű környezetváltás:** önkéntes (voluntary): a program maga mondott le a processzorról, mert várnia kellett. Kényszerű (involuntary): az ütemező vette el tőle a processzort (preempció).
 - **`nice`:** parancs, amely alacsonyabb prioritással indít el egy programot, hogy „kedves” (nice) legyen a többiekkel. A nagyobb nice érték alacsonyabb prioritást jelent.
-- **`time`:** parancs, amely megméri, mennyi ideig tart egy másik parancs: a `real` a falióra-idő, a `user` a program saját CPU-ideje, a `sys` a kernel által a program érdekében elhasznált CPU-idő.
+- **`time`:** parancs, amely megméri, mennyi ideig tart egy másik parancs: a `real` a eltelt idő, a `user` a program saját CPU-ideje, a `sys` a kernel által a program érdekében elhasznált CPU-idő.
 - **`dd`:** parancs, amely választott méretű blokkokban másol adatot (`bs` = block size, blokkméret).
 - **`/dev/zero`, `/dev/null`:** a kernel által biztosított különleges „fájlok”: az egyik végtelen nullát ad, a másik elnyel mindent, amit beleírnak.
 - **MB, MiB:** megabájt, kb. egymillió bájt (MiB: pontosan 1 048 576 bájt).
@@ -839,7 +835,7 @@ Még az `ls`-nek is 76 rendszerhívásra van szüksége: a programkönyvtárai b
 
 ### Egy monolitikus kernel, megmérve
 
-A Linux monolitikus kernel: a fájlrendszerek, a hálózati protokollkészlet és a meghajtók mind a részei. Sok kernel a `/proc/config.gz` fájlban teszi elérhetővé azt a konfigurációt, amellyel lefordították. Minden opció vagy be van fordítva a kernelbe (`=y`), vagy betölthető modulként készült (`=m`), vagy kimaradt:
+A Linux monolitikus kernel: a fájlrendszerek, a hálózati stack és a meghajtók mind a részei. Sok kernel a `/proc/config.gz` fájlban teszi elérhetővé azt a konfigurációt, amellyel lefordították. Minden opció vagy be van fordítva a kernelbe (`=y`), vagy betölthető modulként készült (`=m`), vagy kimaradt:
 
 ```console
 $ uname -sr
@@ -886,7 +882,7 @@ Ez a kis felhőbeli virtuális gépre készült kernel a legszigorúbb értelemb
 4. Miért növeli a multiprogramozás a CPU kihasználtságát? Használd a mért példát: mekkora volt a kihasználtság vele és nélküle?
 5. Két CPU-igényes munka egy magon együtt futtatva hamarabb végezne, mint egymás után futtatva? Miért igen, vagy miért nem?
 6. Nevezz meg három dolgot, amelyet a virtuális memória nyújt, és magyarázd meg, hogyan írhatja ki a `vm.c` ugyanazt a címet két különböző értékkel!
-7. Mi a különbség az átbocsátóképesség és a válaszidő között, és melyik ütemezési technikát vezették be a válaszidő miatt?
+7. Mi a különbség az áteresztőképesség és a válaszidő között, és melyik ütemezési technikát vezették be a válaszidő miatt?
 8. Miért lett sikeres a Bell Labs Unixa ott, ahol a Multics nehézségekkel küzdött? Mit árul el a `panic()` rutin a tervezési filozófiájáról?
 9. Sorolj fel négy szolgáltatást, amelyet az MS-DOS az 1960-as évek időosztásos rendszereihez képest elhagyott, és magyarázd meg, miért hagyta el őket!
 10. Add meg az OS hatásfokának képletét, és számítsd ki egy olyan programra, amely 3 másodpercig futott felhasználói módban és 1 másodpercig a kernelben!
@@ -911,7 +907,7 @@ Ez a kis felhőbeli virtuális gépre készült kernel a legszigorúbb értelemb
 4. Mert amíg az egyik program I/O-ra vár, a CPU egy másikat futtathat, ahelyett hogy tétlenül állna. Egymás után: 2,4 s CPU-munka 4,03 s alatt, kb. 60%. Együtt: 2,4 s 2,44 s alatt, kb. 99%.
 5. Nem. Mindkét munkának csak a CPU kell, és csak egy CPU van, így nincs kitölthető tétlen idő. Együtt nagyjából ugyanannyi ideig tartanak összesen (a környezetváltások miatt kicsit tovább), és külön-külön mindegyik később végez.
 6. Védelem (egy program csak a saját kereteit érheti el), a lapok rugalmas elhelyezése bárhol a fizikai memóriában, és több memória, mint amennyi fizikailag létezik (lapok kiírása lemezre). A kiírt cím virtuális. A `fork()` után a két folyamatnak külön laptáblája van; ezek eleinte ugyanarra a csak olvashatóként megjelölt keretre mutatnak (copy-on-write), és a gyerek első írása az `x`-be arra készteti a kernelt, hogy a gyereknek saját másolatot adjon. Ettől kezdve ugyanaz a virtuális cím különböző fizikai keretekhez vezet, így a gyerek írása nem érinti a szülő példányát.
-7. Az átbocsátóképesség az időegység alatt elvégzett munka mennyisége; a válaszidő az, hogy egy felhasználó mennyit vár egyetlen kérésére adott válaszra. A válaszidő miatt vezették be az időszeletekkel dolgozó preemptív ütemezést (és később a prioritásos ütemezést).
+7. Az áteresztőképesség az időegység alatt elvégzett munka mennyisége; a válaszidő az, hogy egy felhasználó mennyit vár egyetlen kérésére adott válaszra. A válaszidő miatt vezették be az időszeletekkel dolgozó preemptív ütemezést (és később a prioritásos ütemezést).
 8. A Multics mindent meg akart oldani, a kifinomult hibakezelést is beleértve, és nagy lett és késett. A Unix csak a lényeget tartotta meg egy kis kernelben, a többit közönséges programokba tette ki, és átírták C-re, ami hordozhatóvá tette. A `panic()` az egyszerűség tudatos választását mutatja: bonyolult helyreállító kód helyett súlyos hiba esetén a rendszer egyszerűen leáll.
 9. Például: memóriavédelem és virtuális memória, multiprogramozás, több felhasználó, preemptív (prioritásos) ütemezés és időosztás; továbbá az első változatban a merevlemez-támogatás. Azért hagyták el őket, mert a hardver minimális volt (16–64 KB memória, hajlékonylemez vagy kazetta), és mert az alacsony beszerzési ár és a rövid piacra jutási idő egy egyfelhasználós gépnél fontosabb volt ezeknél a szolgáltatásoknál.
 10. $\eta_{OS} = t_{user} / (t_{user} + t_{OS})$. Itt 3 / (3 + 1) = 75%.

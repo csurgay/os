@@ -69,7 +69,7 @@ def access_path():
     # left: the layers, bottom to top
     p.append(text(24, 62, "egy hálózati kérés egy webszerverhez", 12.5, 600, cls="quiet"))
     layers = [("5. végrehajtás", "a művelet végrehajtódik", "tint"),
-              ("4. MAC: SELinux, AppArmor", "rendszerszintű házirend; a rootot is köti", "acc"),
+              ("4. MAC: SELinux, AppArmor", "rendszerszintű policy; a rootot is köti", "acc"),
               ("3. DAC: módbitek, ACL-ek", "a fájl tulajdonosa dönt", "c2"),
               ("2. a szolgáltatás (démon)", "saját konfiguráció és hitelesítés", "plain"),
               ("1. tűzfal", "mely gépek mely portokat érhetik el", "plain")]
@@ -92,7 +92,7 @@ def access_path():
     p.append(text(x0 + 66, 106, "alany", 12.5, 600, anchor="middle"))
     p.append(text(x0 + 66, 126, "folyamat: httpd", 11, anchor="middle"))
     p.append(text(x0 + 66, 142, "UID apache", 11, cls="quiet", anchor="middle"))
-    p.append(text(x0 + 66, 156, "kontextus: httpd_t", 11, cls="quiet", anchor="middle"))
+    p.append(text(x0 + 66, 156, "context: httpd_t", 11, cls="quiet", anchor="middle"))
     p.append(rect(x0 + 172, 84, 132, 80, "acc"))
     p.append(text(x0 + 238, 108, "referencia-", 12.5, 600, anchor="middle"))
     p.append(text(x0 + 238, 126, "monitor", 12.5, 600, anchor="middle"))
@@ -111,7 +111,7 @@ def access_path():
     p.append(text(x0 + 342, 198, "nem: EACCES / EPERM", 11, 600, cls="bad"))
     # policy and log
     p.append(rect(x0 + 172, 226, 132, 50, "c2"))
-    p.append(text(x0 + 238, 247, "házirend", 12.5, 600, anchor="middle"))
+    p.append(text(x0 + 238, 247, "policy", 12.5, 600, anchor="middle"))
     p.append(text(x0 + 238, 264, "bitek, ACL, szabályok", 10.5, anchor="middle"))
     p.append(path(f"M{x0 + 238} 226V166", "a1"))
     p.append(rect(x0 + 344, 226, 112, 50, "plain"))
@@ -282,13 +282,13 @@ def acl_mask():
 
 # ---------------- 5. SELinux type enforcement ----------------
 def selinux_te():
-    title = "SELinux-típuskényszerítés: mindennek címkéje van, és csak a megengedett párok érintkezhetnek"
+    title = "SELinux type enforcement: mindennek címkéje van, és csak a megengedett párok érintkezhetnek"
     p = [text(24, 30, title, 15, 600), marker("a5"), marker("a5b", "bad")]
     # context anatomy
     y = 70
-    fields = [("system_u", "felhasználó"), ("system_r", "szerep"), ("httpd_t", "típus (folyamatnál: tartomány)"), ("s0", "szint (MLS/MCS)")]
+    fields = [("system_u", "felhasználó"), ("system_r", "szerep"), ("httpd_t", "típus (folyamatnál: domain)"), ("s0", "szint (MLS/MCS)")]
     x = 60
-    p.append(text(24, 52, "egy biztonsági környezet (kontextus), ahogy a ps -Z (folyamat) vagy az ls -Z (fájl) mutatja:", 12, 600, cls="quiet"))
+    p.append(text(24, 52, "egy SELinux context, ahogy a ps -Z (folyamat) vagy az ls -Z (fájl) mutatja:", 12, 600, cls="quiet"))
     xs = []
     for i, (f, lab) in enumerate(fields):
         w = 12 + len(f) * 9
@@ -308,7 +308,7 @@ def selinux_te():
     p.append(text(520, y + 30, "port:  system_u:object_r:http_port_t:s0", 11.5))
     # domains and types
     y0 = 182
-    p.append(text(60, y0 - 12, "tartományok (folyamatok)", 12, 600, cls="quiet"))
+    p.append(text(60, y0 - 12, "domainek (folyamatok)", 12, 600, cls="quiet"))
     p.append(text(560, y0 - 12, "típusok (fájlok, portok)", 12, 600, cls="quiet"))
     doms = [("httpd_t", "Apache httpd", y0 + 30), ("mysqld_t", "MariaDB mysqld", y0 + 190)]
     for name, desc, yy in doms:

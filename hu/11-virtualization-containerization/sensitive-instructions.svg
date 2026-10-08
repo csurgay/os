@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 426" width="760" height="426" role="img" aria-label="Popek és Goldberg: minden érzékeny utasításnak trapet kell okoznia">
+<title>Popek és Goldberg: minden érzékeny utasításnak trapet kell okoznia</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Popek és Goldberg: minden érzékeny utasításnak trapet kell okoznia</text>
+<text x="24" y="64" font-size="13" font-weight="600" class="ink" text-anchor="start">Virtualizálható (pl. IBM System/370)</text>
+<rect x="24" y="76" width="336" height="236" rx="10" fill="none" class="edge" stroke-width="1.25"/>
+<text x="36" y="96" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">összes utasítás</text>
+<ellipse cx="192" cy="196" rx="146" ry="96" class="accf"/>
+<ellipse cx="192" cy="196" rx="146" ry="96" fill="none" class="acc" stroke-width="1.5"/>
+<text x="192" y="124" font-size="12" font-weight="600" class="acct" text-anchor="middle">privilegizált: trapet okoz,</text>
+<text x="192" y="140" font-size="12" font-weight="600" class="acct" text-anchor="middle">ha nem kernelmódban fut</text>
+<ellipse cx="192" cy="214" rx="96" ry="52" class="c2f"/>
+<ellipse cx="192" cy="214" rx="96" ry="52" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="192" y="208" font-size="12" font-weight="600" class="ink" text-anchor="middle">érzékeny</text>
+<text x="192" y="225" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">(a gép állapotát olvassa/írja)</text>
+<text x="192" y="336" font-size="12" font-weight="600" class="acct" text-anchor="middle">érzékeny ⊆ privilegizált: a trap-and-emulate működik</text>
+<text x="400" y="64" font-size="13" font-weight="600" class="ink" text-anchor="start">Nem virtualizálható (klasszikus 32 bites x86)</text>
+<rect x="400" y="76" width="336" height="236" rx="10" fill="none" class="edge" stroke-width="1.25"/>
+<text x="412" y="96" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">összes utasítás</text>
+<ellipse cx="540" cy="196" rx="124" ry="96" class="accf"/>
+<ellipse cx="540" cy="196" rx="124" ry="96" fill="none" class="acc" stroke-width="1.5"/>
+<text x="540" y="124" font-size="12" font-weight="600" class="acct" text-anchor="middle">privilegizált: trapet okoz,</text>
+<text x="540" y="140" font-size="12" font-weight="600" class="acct" text-anchor="middle">ha nem kernelmódban fut</text>
+<ellipse cx="622" cy="222" rx="100" ry="56" class="badf"/>
+<ellipse cx="622" cy="222" rx="100" ry="56" fill="none" class="bads" stroke-width="1.5"/>
+<text x="596" y="210" font-size="12" font-weight="600" class="ink" text-anchor="middle">érzékeny</text>
+<text x="596" y="227" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">(pl. MOV a CR3-ba)</text>
+<text x="691" y="226" font-size="10.5" font-weight="600" class="bad" text-anchor="middle">nincs trap!</text>
+<text x="730" y="300" font-size="11" font-weight="600" class="bad" text-anchor="end">érzékeny, de nem privilegizált: POPF, SGDT, SMSW…</text>
+<text x="568" y="336" font-size="12" font-weight="600" class="bad" text-anchor="middle">néhány érzékeny utasítás nem okoz trapet</text>
+<text x="24" y="372" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">A jogfosztottan futó vendégkernel érzékeny utasításainak trapet kell okozniuk, hogy a VMM emulálhassa őket.</text>
+<text x="24" y="390" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">A klasszikus x86-on a POPF felhasználói módban csendben figyelmen kívül hagyja a megszakításjelzőt,</text>
+<text x="24" y="408" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">az SGDT/SMSW pedig trap nélkül árulja el a valódi állapotot.</text>
+</svg>

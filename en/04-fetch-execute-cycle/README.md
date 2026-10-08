@@ -2,10 +2,6 @@
 
 *Operating Systems lecture: the von Neumann machine, the instruction cycle and interrupts, with Linux (x86-64) examples*
 
-Previous: [Cognitive Ergonomics and Operating Systems UI](../03-cognitive-ergonomics/). Next: [Interrupts](../05-interrupts/).
-
-> **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
-
 ## Learning objectives
 
 The processor repeats a single cycle: it fetches an instruction, decodes it, executes it, then checks whether an interrupt has arrived. This lesson follows that cycle at register level on a simple teaching CPU, then shows the same mechanisms on a real x86-64 Linux system.

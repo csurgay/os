@@ -292,14 +292,14 @@ def tlbchart():
     for i, n in enumerate(pages):
         p.append(text(X(i), y0 + 18, f"{n:,}".replace(",", " "), 10.5, cls="quiet", anchor="middle"))
     p.append(text((x0 + x1) / 2, y0 + 38, "az érintett különböző lapok száma (mindegyikben egy 64 bájtos sor)", 11.5, cls="quiet", anchor="middle"))
-    for data, cls, lab in ((small, "c2", "4 KiB-os lapok"), (huge, "acct", "2 MiB-os óriáslapok")):
+    for data, cls, lab in ((small, "c2", "4 KiB-os lapok"), (huge, "acct", "2 MiB-os huge page-ek")):
         pts = " ".join(f"{X(i):.1f},{Y(v):.1f}" for i, v in enumerate(data))
         stroke = "c2s" if cls == "c2" else "acc"
         p.append(f'<polyline points="{pts}" fill="none" class="{stroke}" stroke-width="2.5"/>')
         for i, v in enumerate(data):
             p.append(f'<circle cx="{X(i):.1f}" cy="{Y(v):.1f}" r="3.5" class="{cls}"/>')
     p.append(f'<rect x="100" y="70" width="14" height="4" class="c2"/>'); p.append(text(120, 76, "4 KiB-os lapok", 11.5))
-    p.append(f'<rect x="100" y="90" width="14" height="4" class="acct"/>'); p.append(text(120, 96, "2 MiB-os óriáslapok", 11.5))
+    p.append(f'<rect x="100" y="90" width="14" height="4" class="acct"/>'); p.append(text(120, 96, "2 MiB-os huge page-ek", 11.5))
     p.append(text(24, 386, "4096 lapig az érintett sorok (256 KiB) még elférnek az L2 gyorsítótárban; a görbék közti különbség a címfordítás:", 11.5, cls="quiet"))
     p.append(text(24, 404, "a 4 KiB-os lapok túlcsordítják a TLB-t, míg 1 GiB 2 MiB-os lapokkal csak 512 fordítást igényel.", 11.5, cls="quiet"))
     return svg(800, 420, title, "\n".join(p))
@@ -435,9 +435,9 @@ def faultflow():
     p.append(arrow("M565 426V446")); p.append(arrow("M565 486V506")); p.append(arrow("M565 546V566")); p.append(arrow("M565 606V626"))
     p.append(arrow("M700 648H900V78H190V86"))
     p.append(text(560, 70, "ugyanaz az elérés újra: most már érvényes a lap", 10.5, cls="quiet", anchor="middle"))
-    # a kisebb laphibákról szóló megjegyzés a szabad területen
-    for i, l in enumerate(["A kisebb (minor) laphibákhoz (egy lap első érintése, írásra másolás,",
-                           "a lapgyorsítótárban már bent lévő lap) nem kell lemez: a kernel",
+    # a minor laphibákról szóló megjegyzés a szabad területen
+    for i, l in enumerate(["A minor laphibákhoz (egy lap első érintése, copy-on-write,",
+                           "a page cache-ben már bent lévő lap) nem kell lemez: a kernel",
                            "kinullázza, átmásolja vagy csak leképezi a keretet, és kihagyja",
                            "a lemezolvasást, a várakozást és a megszakítást."]):
         p.append(text(420, 130 + i * 18, l, 11.5, cls="quiet"))

@@ -1,10 +1,6 @@
 # Quality, Commercial Aspects and the Enterprise Linux Ecosystem
 
-*Operating Systems lecture: what makes an operating system good, how its quality is measured and sold (MTBF, availability, SLA), how the Fedora, CentOS Stream, RHEL, AlmaLinux and Rocky Linux family is built and maintained, and how it reaches containers (UBI, registries, Podman, image mode)*
-
-Previous: [Operating Systems Historic Evolution](../01-historic-evolution/). Next: [Cognitive Ergonomics and Operating Systems UI](../03-cognitive-ergonomics/).
-
-> **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
+*Operating Systems lecture: what makes an operating system good, how its quality is measured and sold (MTBF, availability, SLA), how the Fedora, CentOS Stream, RHEL, AlmaLinux and Rocky Linux family is built and maintained, and how it reaches containers (UBI, RHEL images, image mode)*
 
 ## Learning objectives
 
@@ -21,9 +17,7 @@ By the end, students will be able to:
 - use the vocabulary of code lines: branch, merge, fork, upstream, downstream, patch, backport, update;
 - describe how Fedora, CentOS Stream, RHEL, AlmaLinux, Rocky Linux and Oracle Linux relate to each other, and what changed in 2020 and 2023;
 - explain why an enterprise distribution backports fixes instead of upgrading, and why a version number alone says little about security;
-- explain what a container image is (layers, registries, OCI), why a container shares the host's kernel, and what follows for compatibility and support;
-- distinguish an image, a container and a volume, build an image from a Containerfile, and explain why a container's main process must run in the foreground;
-- compare the base images of the family (UBI and its variants, Fedora, CentOS Stream, AlmaLinux, Rocky Linux) and their terms, and name the roles of Podman, Buildah, Skopeo and image mode.
+- explain why Red Hat created the Universal Base Image, compare its variants and its terms with those of the RHEL images for customers, and describe image mode for RHEL.
 
 <details>
 <summary><b>Explained simply:</b> distribution, community project, enterprise, Fedora, RHEL, CentOS, AlmaLinux, Rocky Linux</summary>
@@ -371,7 +365,7 @@ The episode is a lesson in the commercial side of open source. The GPL (version 
 
 ![RHEL promises ten years per major version; Fedora about thirteen months](support-lifecycles.svg)
 
-Each RHEL major version is supported for about ten years: five years of **full support** (fixes and some new features and hardware support) and five years of **maintenance support** (fixes only), with optional paid extensions after that (Red Hat, n.d.-d). RHEL 7 appeared in June 2014 and its maintenance ended in June 2024; RHEL 8 (May 2019) and RHEL 9 (May 2022) are supported until about 2029 and 2032; RHEL 10 reached general availability in May 2025 (Larabel, 2025). A Fedora release, by contrast, is supported for about 13 months. AlmaLinux and Rocky Linux follow RHEL's major-version life cycles.
+Each RHEL major version is supported for about ten years: five years of **full support** (fixes and some new features and hardware support) and five years of **maintenance support** (fixes only), with optional paid extensions after that (Red Hat, n.d.-b). RHEL 7 appeared in June 2014 and its maintenance ended in June 2024; RHEL 8 (May 2019) and RHEL 9 (May 2022) are supported until about 2029 and 2032; RHEL 10 reached general availability in May 2025 (Larabel, 2025). A Fedora release, by contrast, is supported for about 13 months. AlmaLinux and Rocky Linux follow RHEL's major-version life cycles.
 
 The same pattern exists outside Red Hat. **Debian** is a community distribution with long, stable releases; **Ubuntu** is built downstream from it by the company Canonical, which offers five years of free updates for its long-term-support (LTS) versions and paid extensions beyond that. **SUSE** has the community distributions openSUSE Tumbleweed (rolling, like Fedora) and Leap, and the commercial SUSE Linux Enterprise Server. Upstream community, downstream enterprise product, long paid support: the economics are the same.
 
@@ -390,164 +384,42 @@ The figure shows the engineering trade-off of the whole lecture in one picture: 
 
 ## Container images: the family in containers
 
-Today much enterprise software is not installed on a server directly but delivered as a **container image**, and the Enterprise Linux family is present there too, in a form that shows the same commercial ideas from a new angle.
-
-### Containers in one picture
-
-A virtual machine simulates a whole computer, so each one boots its own kernel. A **container** is lighter: it is an ordinary group of processes on the host, which the host's kernel isolates from the others (with *namespaces*, which give each container its own view of files, processes and network, and *cgroups*, which limit its CPU and memory). A container therefore brings its own **user space** (libraries, tools, configuration, `/etc/os-release`) but **no kernel of its own**: every system call goes to the host's kernel.
-
-![Two images share a base layer; three containers with different distributions share one host kernel](container-images.svg)
-
-A **container image** is the packaged file system a container starts from. It is a stack of read-only **layers**, each identified by a cryptographic hash of its contents: a base layer with a distribution's user space, then a layer per build step that adds packages or the application. Images built on the same base share that layer, which is stored and downloaded only once. Images are kept in **registries**, servers from which they are pulled by name, such as `registry.access.redhat.com/ubi9/ubi-minimal`.
-
-The isolation itself is older than the word "container" suggests: FreeBSD jails (2000), Solaris Zones (2004), and Linux cgroups and LXC (2008) came first. Docker, from 2013, made it popular by adding a simple image format and workflow: build an image once, push it to a registry, run it anywhere. So that images would not depend on one company's tools, Docker, CoreOS and others founded the **Open Container Initiative (OCI)** under the Linux Foundation on 22 June 2015. It maintains three specifications: the *runtime* specification (how to run a container), the *image* specification (the format of images and layers), and the *distribution* specification (how registries serve them) (Open Container Initiative, n.d.). An image built with one OCI tool can be pulled and run by any other (on the same CPU architecture), which is what makes an image ecosystem across vendors possible.
-
-### Image, container, volume
-
-An image and a container relate as a blueprint and the things built from it, or as a class and its objects in programming: `podman run` *instantiates* an image, and any number of containers can run from the same image at the same time. The image itself never changes; it is **immutable**. Each container gets its own thin **writable layer** on top of the image's read-only layers. When a process in the container creates or changes a file, the change goes into this layer (a changed file is first copied up from the read-only layer below, **copy-on-write**; a deleted one is only hidden). The writable layer belongs to the container and is deleted together with it (Docker Inc., n.d.-c).
-
-![A Containerfile's steps become the image's layers and configuration; each container adds its own writable layer; a volume lives outside the containers](image-container-volume.svg)
-
-Data that must survive therefore does not belong in the container. A **volume** is storage managed by the container engine (or, as a *bind mount*, a directory of the host) that is mounted into the container at a path such as `/data` or `/var/lib/mysql`. It lives independently of every container, so a container can be removed and replaced by one from a newer image (the "rebuild and redeploy" below) while the database files stay where they are. Containers are thus disposable, and the state of a service lives in its volumes; the measured demonstration is in the section [Container, writable layer and volume](#container-writable-layer-and-volume).
-
-A container also lives exactly as long as its **main process**. The command given to `podman run`, or the image's default `CMD`, runs as process 1 in the container's own process namespace; when it exits, the container stops and every other process in it is killed. A traditional Unix server **daemonises**: the process that was started forks a child to do the work in the background and exits at once, which in a container would stop the container immediately. Servers are therefore started in the foreground in containers, for example Apache with `httpd -D FOREGROUND` or nginx with `-g 'daemon off;'`. The engine also collects the main process's standard output and error as the container's log (`podman logs`).
-
-### Building an image: by hand or from a Containerfile
-
-An image can be made by hand, much as one would set up a server:
-
-```bash
-podman pull registry.access.redhat.com/ubi9/ubi
-podman run -it --name work registry.access.redhat.com/ubi9/ubi /bin/bash
-#   inside the container: dnf install -y httpd, edit /etc/httpd/conf/httpd.conf, then exit
-podman commit work registry.example.com/web/httpd:1.0
-podman push registry.example.com/web/httpd:1.0
-```
-
-Leaving the shell ends the container's main process, so the container stops (a container started in the background with `-d` is stopped with `podman stop`). `podman commit` turns the stopped container's writable layer into a new image layer, and `podman push` uploads the image to a registry. This works, but it is an anti-pattern for anything that will be used for real. Nobody can tell later exactly what was done: the image records only the command that the container ran, not the commands typed in the shell. The work cannot be repeated automatically when the base image receives a security fix, which defeats "rebuild and redeploy". Everything left in the container ends up in the image: package caches, temporary files, the shell history. And the container's settings become the image's settings, as the demonstration below shows.
-
-The reproducible way is a **Containerfile** (Docker's name: Dockerfile), a text file of build steps kept in version control next to the application, and one command that builds it:
-
-```dockerfile
-FROM registry.access.redhat.com/ubi9/ubi
-RUN dnf install -y httpd && dnf clean all
-COPY httpd.conf /etc/httpd/conf/httpd.conf
-EXPOSE 8080
-USER apache
-CMD ["httpd", "-D", "FOREGROUND"]
-```
-
-```bash
-podman build -t registry.example.com/web/httpd:1.0 .
-```
-
-(A sketch: the configuration file makes httpd listen on port 8080, because ports below 1024 need root; a production image also adjusts the ownership of the log and run directories for the non-root user.) The final `.` is the **build context**, the directory whose files `COPY` may use. Each instruction becomes either a layer or a line of configuration (Docker Inc., n.d.-a):
-
-| Instruction | What it does | In the image |
-| --- | --- | --- |
-| `FROM` | names the base image to build on | the base image's layers, reused unchanged |
-| `RUN` | runs a command in a temporary container during the build | a new layer with the files the command changed |
-| `COPY` | copies files from the build context into the image | a new layer |
-| `EXPOSE` | documents the port the service listens on | configuration only |
-| `USER` | the user that later `RUN` steps and the container's main process run as | configuration only |
-| `WORKDIR` | the current directory for later steps and for the container | configuration (the directory is created if missing) |
-| `CMD` | the default command: the container's main process | configuration only |
-
-Two consequences follow from the layers. A file deleted in a later step still takes up space in the earlier layer, so `dnf install` and `dnf clean all` are run in *one* `RUN` step. And the builder reuses the layers of unchanged steps from earlier builds, so steps that rarely change (installing packages) come before those that change often (copying the application).
-
-**Image names.** A full image name has the form `registry/namespace/name:tag`, for example `registry.example.com/web/httpd:1.0` or `registry.access.redhat.com/ubi9/ubi-minimal:latest`: the registry's host name (optionally with a port), a namespace (a user, organisation or project), the repository name, and a **tag** (Docker Inc., n.d.-b). Without a registry, Docker assumes Docker Hub (`docker.io`), while Podman searches the registries listed in `/etc/containers/registries.conf`, which is why full names are safer. Without a tag, the tag `latest` is used. Despite its name, `latest` is just a default label, not a guarantee of the newest version: it points to whatever was last pushed with that tag, and it moves. Version tags such as `:1.0` can also be moved by whoever pushes, so a deployment that must be exactly reproducible names the image by its **digest** (`name@sha256:…`), the hash of its content. The price is the one discussed under "rebuild and redeploy" below: an image pinned to a digest receives no fixes until someone rebuilds it and changes the pin deliberately.
-
-<details>
-<summary><b>Explained simply:</b> blueprint, instance, immutable, writable layer, copy-on-write, volume, bind mount, main process, process 1, daemonise, foreground, commit, push, anti-pattern, Containerfile, build context, EXPOSE, tag, latest, digest</summary>
-
-- **Blueprint, instance:** a blueprint is the plan of a house; each house built from it is an instance. The image is the plan, each container a house.
-- **Immutable:** cannot be changed after it is made. To change an image, you build a new one.
-- **Writable layer:** a container's private scratch sheet laid over the image; everything the container writes goes there, and it is thrown away with the container.
-- **Copy-on-write:** a file is copied only at the moment someone wants to change it, like photocopying a library book's page before writing on it.
-- **Volume, bind mount:** a storage area that lives outside the container and is plugged into it at a folder; a bind mount plugs in a folder of the host itself. What is written there stays when the container is deleted.
-- **Main process, process 1:** the first program started in the container; when it ends, the container ends.
-- **Daemonise, foreground:** a daemonising program starts a copy of itself in the background and quits; a program in the foreground keeps running itself. In a container, quitting the first program stops everything.
-- **Commit, push:** commit saves a container's changes as a new image; push uploads an image to a registry.
-- **Anti-pattern:** a way of doing something that seems to work but causes problems later.
-- **Containerfile, build context:** the recipe of an image, step by step, and the folder from which the recipe may take files.
-- **EXPOSE:** a note in the image saying which network port the program listens on.
-- **Tag, latest:** a tag is a label on an image version, like "1.0"; "latest" is the label used when none is given, and it does not have to mean the newest.
-- **Digest:** the fingerprint (hash) of an image's exact content; the same digest always means exactly the same image.
-
-</details>
+Today much enterprise software is not installed on a server directly but delivered as a **container image**: a packaged file system with an application and the parts of a distribution it needs, from which containers are started and which is downloaded from a **registry**. What containers and images are, and how the kernel isolates them, is the subject of [lecture 11](../11-virtualization-containerization/). This section looks only at how the Enterprise Linux family is present in the world of containers, in a form that shows the commercial ideas of this lecture from a new angle.
 
 ### Base images and registries
 
-Every family member publishes base images:
+Red Hat publishes two kinds of images built from RHEL packages:
 
 | Image source | Where | Terms |
 |---|---|---|
 | **UBI** (Universal Base Image), from RHEL packages | `registry.access.redhat.com` (no login) | free to use and redistribute under the UBI licence; supported only on RHEL or OpenShift with a subscription |
 | **RHEL** images for customers | `registry.redhat.io` (Red Hat login or service account) | subscription |
-| **Certified partner** images (databases, middleware) | `registry.connect.redhat.com` (login), listed in the Red Hat Ecosystem Catalog | vendor's terms |
-| **Fedora**, **CentOS Stream** | `quay.io` (e.g. `quay.io/centos/centos:stream9`), Fedora's own registry | free, community |
-| **AlmaLinux**, **Rocky Linux** | Docker Hub and Quay.io (e.g. `quay.io/almalinuxorg/almalinux:9`, `docker.io/rockylinux/rockylinux:9`) | free, community |
 
-Red Hat introduced **UBI** in 2019 to solve a commercial problem: software vendors wanted to build their products on RHEL and ship the resulting images to anyone, including people without a RHEL subscription, which RHEL's terms did not allow. UBI is a subset of RHEL's packages, built and updated with RHEL's security fixes, that may be freely redistributed. It comes in four variants (Red Hat, n.d.-f):
+Red Hat introduced **UBI** in 2019 to solve a commercial problem: software vendors wanted to build their products on RHEL and ship the resulting images to anyone, including people without a RHEL subscription, which RHEL's terms did not allow. UBI is a subset of RHEL's packages, built and updated with RHEL's security fixes, that may be freely redistributed. It comes in four variants (Red Hat, n.d.-d):
 
 - **ubi**: the standard image, with the full `dnf`/`yum` package manager;
 - **ubi-minimal**: smaller, with the reduced `microdnf` package manager;
 - **ubi-micro**: the smallest, with no package manager at all; packages are added at build time from outside the image;
 - **ubi-init**: runs `systemd`, for images that run several services.
 
-Two limits keep the commercial model intact. Without a subscription, only the UBI package repositories are available inside the image, a selected subset of RHEL's packages; an image that adds RHEL packages from outside UBI loses the right to be redistributed freely. And a UBI image gets updates everywhere, but Red Hat *supports* it, answering support cases about it, only when it runs on RHEL or OpenShift under a subscription (Red Hat, n.d.-f). Registries mirror the same split: `registry.access.redhat.com` serves freely available images without authentication, while `registry.redhat.io` requires a Red Hat account or a registry service account, so that access is tied to an account and its entitlements (Red Hat, n.d.-b).
-
-### Kernel and image must fit together
-
-Because a container shares the host's kernel, "it runs in a container, so it runs anywhere" is only partly true. A RHEL 7 image on a RHEL 9 host runs RHEL 7 libraries against a kernel that is two major versions newer, which RHEL 7's developers never tested. Red Hat therefore publishes a **Container Compatibility Matrix** (Red Hat, n.d.-c). A RHEL 9 host, for example, runs RHEL or UBI 7, 8, 9 and 10 images, but only the matching major version (UBI 9 on RHEL 9) is "fully compatible"; the other combinations are supported only as "workload specific": the container must be unprivileged and must not use interfaces that depend on the kernel version, such as special `ioctl` calls, files in `/proc` and `/sys`, firewall rules (iptables, nftables) or eBPF, apart from the most common uses. Everything else, including privileged containers that act on the host itself, needs matching versions. A *newer* image on an *older* host (UBI 10 on RHEL 9) gets the strictest terms, because the image may expect kernel features that the old kernel lacks: a problem must also be reproducible on a matching host before Red Hat will treat it. This is the kABI and certification logic of the commercial side, applied to containers: a promise of support covers only the combinations that were tested.
-
-### Updating images: rebuild and redeploy
-
-A running container is not patched in place. When a fix appears, for example a fixed `glibc` in UBI 9, the image is **rebuilt** on the updated base layer and the containers are **replaced** with new ones from it. Because the base layer is shared, one updated base is downloaded once and serves every image built on it. The fix itself still comes from the same backporting process as on a server: the `glibc` of UBI 9 stays at version 2.34 for the whole of RHEL 9 and receives backported fixes (a few components are occasionally rebased to a newer upstream version within a major release, as OpenSSL was from 3.0 to 3.2 in RHEL 9.5, but that is the exception), so the version-number lesson of the Dirty Pipe example applies inside containers too, and image scanners need the vendor's security data just as server scanners do.
-
-### The tools: Podman, Buildah, Skopeo
-
-Since RHEL 8 (2019), Red Hat ships its own OCI tools instead of Docker, in the `container-tools` package set (Red Hat, n.d.-a):
-
-- **Podman** runs and manages containers, images and *pods* (groups of containers); its commands mirror Docker's (`podman run` for `docker run`);
-- **Buildah** builds images, from a `Containerfile` (Docker's `Dockerfile` format) or step by step from a script;
-- **Skopeo** works directly against registries, with no local image store: it copies, inspects, signs and deletes images; `skopeo inspect` reads an image's metadata without pulling it.
-
-Two design differences from Docker matter for quality. Podman needs **no daemon**: there is no central background service that runs as root and through which every container is started, so there is no single point of failure for all containers, and containers can be run as ordinary `systemd` services (with Podman's Quadlet files). And Podman can run **rootless** (generally available since RHEL 8.1): when an ordinary user runs it, containers start without administrator rights, so an attacker who breaks out of a container gains only that user's rights. Docker later added a rootless mode too, but its usual setup is still a daemon running as root. Both are robustness and security criteria from the first section of this lecture.
+Two limits keep the commercial model intact. Without a subscription, only the UBI package repositories are available inside the image, a selected subset of RHEL's packages; an image that adds RHEL packages from outside UBI loses the right to be redistributed freely. And a UBI image gets updates everywhere, but Red Hat *supports* it, answering support cases about it, only when it runs on RHEL or OpenShift under a subscription (Red Hat, n.d.-d). The registries mirror the same split: `registry.access.redhat.com` serves freely available images such as `registry.access.redhat.com/ubi9/ubi-minimal` without authentication, while `registry.redhat.io` requires a Red Hat account or a registry service account, so that access to the RHEL images for customers is tied to an account and its subscriptions (Red Hat, n.d.-a).
 
 ### Image mode: the whole operating system as an image
 
-Red Hat applied the same idea to the operating system itself. In **image mode for RHEL**, a technology preview from RHEL 9.4 and generally available since 20 May 2025 for RHEL 9.6 and RHEL 10, a server's complete operating system, kernel included, is built as a bootable OCI image (with the `bootc` tool) and installed or updated from a registry (Breard, 2025). An update downloads the new image and switches to it at the next boot, atomically: the system runs either the old version or the new one, never a half-updated mix, and if the new one fails, it can **roll back** to the previous image (Red Hat, n.d.-g). The traditional, package-by-package way of installing and updating RHEL remains available as *package mode*. In the terms of this lecture, image mode shortens MTTR after a bad update (roll back instead of repair) and makes every server of a fleet identical, which makes behaviour more consistent.
+Red Hat applied the same idea to the operating system itself. In **image mode for RHEL**, a technology preview from RHEL 9.4 and generally available since 20 May 2025 for RHEL 9.6 and RHEL 10, a server's complete operating system, kernel included, is built as a bootable OCI image (with the `bootc` tool) and installed or updated from a registry (Breard, 2025). An update downloads the new image and switches to it at the next boot, atomically: the system runs either the old version or the new one, never a half-updated mix, and if the new one fails, it can **roll back** to the previous image (Red Hat, n.d.-e). The traditional, package-by-package way of installing and updating RHEL remains available as *package mode*. In the terms of this lecture, image mode shortens MTTR after a bad update (roll back instead of repair) and makes every server of a fleet identical, which makes behaviour more consistent.
 
 <details>
-<summary><b>Explained simply:</b> container, virtual machine, kernel, user space, system call, namespace, cgroup, image, layer, hash, registry, OCI, Docker, jails, LXC, UBI, OpenShift, Quay, privileged, ioctl, /proc, /sys, iptables, eBPF, glibc, OpenSSL, Podman, Buildah, Skopeo, technology preview, Quadlet, daemon, root, rootless, pod, Containerfile, systemd, bootc, atomic update, roll back</summary>
+<summary><b>Explained simply:</b> container, container image, registry, UBI, OpenShift, package manager, dnf, microdnf, systemd, OCI, technology preview, bootc, atomic update, roll back</summary>
 
-- **Container:** a program, together with the files it needs, running in a closed-off space on a computer: it sees its own files and processes, but shares the computer's operating-system core with all other containers.
-- **Virtual machine:** a whole computer simulated by software, with its own operating system inside. Heavier than a container, because each one starts its own core.
-- **Kernel:** the core of the operating system, the part that controls the hardware. **User space** is everything else: libraries, tools and programs.
-- **System call:** a request from a program to the kernel, for example "open this file" or "tell me your version". Programs cannot touch the hardware themselves; they ask the kernel.
-- **Namespace, cgroup:** two Linux features. Namespaces give a group of processes its own private view (its own list of files, processes, network); cgroups limit how much CPU time and memory the group may use.
-- **Image:** a packaged, ready-to-start set of files from which containers are started, like a template.
-- **Layer:** one slice of an image, for example "the base system" or "the added Python packages". Images are stacked from layers.
-- **Hash:** a short "fingerprint" computed from data; different data gives a different fingerprint, so identical layers can be recognised.
-- **Registry:** a server that stores images, like an app store for containers. **Quay.io** and **Docker Hub** are well-known public registries.
-- **OCI** (Open Container Initiative): an industry group that writes the common rules for container images and for running them, so that tools of different companies work together.
-- **Docker:** the company and tool that made containers popular.
+- **Container:** a program (or a few) started from an image; it runs on the computer's own kernel, but fenced off so that it sees only its own files, processes and network (lecture 11).
+- **Container image:** a packaged, ready-to-start set of files (an application with the libraries and tools it needs) from which containers are started, like a template.
+- **Registry:** a server that stores images, like an app store for containers.
 - **UBI** (Universal Base Image): Red Hat's freely shareable container base images, built from RHEL packages.
 - **OpenShift:** Red Hat's commercial platform for running many containers on many servers.
-- **Privileged container:** a container given extra rights over the host, for example to manage its hardware.
-- **ioctl, /proc, /sys:** special ways for programs to talk to the kernel directly; they change between kernel versions more than ordinary system calls do.
-- **Podman, Buildah, Skopeo:** Red Hat's three container tools: Podman runs containers, Buildah builds images, Skopeo moves and examines images in registries.
-- **Jails, Zones, LXC:** earlier ways of isolating programs on FreeBSD, Solaris and Linux, before Docker made containers popular.
-- **iptables, nftables, eBPF:** kernel features for firewall rules and for running small checked programs inside the kernel.
-- **glibc, OpenSSL:** glibc is the basic C library almost every Linux program uses; OpenSSL provides encryption, for example for HTTPS.
-- **Technology preview:** an early version a vendor lets customers try, without full support.
-- **Quadlet:** a small configuration file that tells systemd to run a Podman container as a service.
-- **Daemon:** a program that runs in the background all the time, waiting for requests.
-- **Root, rootless:** root is the administrator account with all rights; rootless means running without those rights.
-- **Pod:** a small group of containers that work together and share a network address.
-- **Containerfile** (Dockerfile): a text file of build steps from which an image is made.
+- **Package manager, dnf, microdnf:** a package manager installs, updates and removes software packages; `dnf` is the one of the RHEL family, `microdnf` a small version of it for container images.
 - **systemd:** the program that starts and supervises the services of a Linux system.
+- **OCI** (Open Container Initiative): an industry group that writes the common rules for container images, so that tools of different companies work together.
+- **Technology preview:** an early version a vendor lets customers try, without full support.
 - **bootc:** a tool that installs and updates a whole operating system from a container image.
 - **Atomic update:** an update that happens completely or not at all, never halfway.
 - **Roll back:** to return to the previous working version.
@@ -556,7 +428,7 @@ Red Hat applied the same idea to the operating system itself. In **image mode fo
 
 ## The same ideas on Linux (x86-64)
 
-The outputs below come from a real system: an Ubuntu 24.04 environment in a cloud data centre, running on its host's Linux 6.18 kernel (so `uname -r` there shows the host's kernel, not Ubuntu's own). The RHEL family could not be downloaded there, so the lab exercises ask you to run the RHEL-specific commands yourself, on Fedora, AlmaLinux or Rocky Linux.
+The outputs below come from a real system: an Ubuntu 24.04 environment in a cloud data centre. The RHEL family could not be downloaded there, so the lab exercises ask you to run the RHEL-specific commands yourself, on Fedora, AlmaLinux or Rocky Linux.
 
 <details>
 <summary><b>Explained simply:</b> console, Python, Ubuntu, virtual machine, web server, HTTP, status code</summary>
@@ -691,209 +563,13 @@ ID_LIKE=debian
 
 Ubuntu is downstream of Debian, just as RHEL is downstream of Fedora. On the rebuilds, `ID_LIKE` names their relatives (lab exercise 4); Fedora, at the top of its family, has no `ID_LIKE` line at all.
 
-### An image brings its own distribution, not its own kernel
-
-A minimal container image shows both halves of the container picture. `container-demo/whoami-os.c` prints two things: the kernel, as the running kernel reports it through the `uname` system call, and the distribution, as written in the file `/etc/os-release` that the program can see:
-
-```c
-struct utsname u;
-uname(&u);                                   /* system call: ask the kernel */
-printf("kernel (from the running kernel): %s %s\n", u.sysname, u.release);
-FILE *f = fopen("/etc/os-release", "r");     /* a file in this filesystem */
-/* ... print the PRETTY_NAME= line ... */
-```
-
-The image contains no distribution at all, only two files: the program (statically linked, so it needs no libraries) and a hand-written `os-release`:
-
-```dockerfile
-# A minimal image: no base distribution at all, just two files.
-FROM scratch
-COPY whoami-os /whoami-os
-COPY os-release /etc/os-release
-CMD ["/whoami-os"]
-```
-
-Built and run with Docker (Podman accepts the same commands), first on the host and then in the container:
-
-```console
-$ gcc -static -O2 -o whoami-os whoami-os.c
-$ ./whoami-os
-kernel (from the running kernel): Linux 6.18.44-fc-v70
-distribution (from /etc/os-release): "Ubuntu 24.04.5 LTS"
-$ docker build -f Containerfile -t demo-os:1.0 .
-$ docker run --rm demo-os:1.0
-kernel (from the running kernel): Linux 6.18.44-fc-v70
-distribution (from /etc/os-release): "Demo Linux 1.0 (a two-file distribution)"
-```
-
-The kernel line is identical: the container has no kernel of its own. The distribution line changed completely: a "distribution", seen from inside, is just the files in the image. This is why a UBI 9 container on an Ubuntu host says "Red Hat Enterprise Linux 9" in `/etc/os-release` while `uname -r` shows Ubuntu's kernel, and why the compatibility matrix is needed.
-
-The image is made of layers, one for each build step that changes the file system (such as `COPY` or `RUN`); other steps only add a history entry:
-
-```console
-$ docker history demo-os:1.0
-IMAGE          CREATED         CREATED BY                                   SIZE      COMMENT
-e742ae003cf5   2 minutes ago   CMD ["/whoami-os"]                           0B        buildkit.dockerfile.v0
-<missing>      2 minutes ago   COPY os-release /etc/os-release # buildkit   12.3kB    buildkit.dockerfile.v0
-<missing>      2 minutes ago   COPY whoami-os /whoami-os # buildkit         791kB     buildkit.dockerfile.v0
-```
-
-(`CMD` only sets metadata, so it adds no layer; `<missing>` means the intermediate steps were not kept as separate images. The `os-release` layer is 12.3 kB although the file has 81 bytes: a layer is an archive, with headers and directory entries of its own.) Changing only `os-release` to version 1.1 and rebuilding as `demo-os:1.1` gives a new image whose first layer is the very same one, recognised by its hash, while only the changed layer is new. (These are *diff IDs*, hashes of the uncompressed layer archive, so they cover file contents and also file metadata such as timestamps and permissions.)
-
-```console
-$ docker image inspect -f '{{range .RootFS.Layers}}{{println .}}{{end}}' demo-os:1.0 demo-os:1.1
-sha256:76e517d774124520b35cabd7ff82486de9543814cf01d46f751087fe68d76be7
-sha256:6f46b4c467e179d7da25d2aa14430186d6eb3a88ca1e2d3387af28757598172b
-
-sha256:76e517d774124520b35cabd7ff82486de9543814cf01d46f751087fe68d76be7
-sha256:02fe7db5aff3efb9a29fe5d9a97029bd5bef8389166d2baa9bd31677097e83f6
-$ docker run --rm demo-os:1.1
-kernel (from the running kernel): Linux 6.18.44-fc-v70
-distribution (from /etc/os-release): "Demo Linux 1.1 (a two-file distribution)"
-```
-
-The same mechanism, at a larger scale, is what lets hundreds of images built on UBI 9 share one copy of the base layer, and what makes "rebuild on the updated base" cheap.
-
-<details>
-<summary><b>Explained simply:</b> statically linked, FROM scratch, docker build, docker run, docker history, metadata</summary>
-
-- **Statically linked:** the program file contains all the library code it needs, so it runs even where no libraries are installed.
-- **`FROM scratch`:** start the image from nothing, an empty file system.
-- **`docker build` / `docker run`:** make an image from a Containerfile / start a container from an image (`--rm` deletes the container when it ends).
-- **`docker history`:** lists the layers of an image and the build step that created each.
-- **Metadata:** data about the image (such as which program to start), not files inside it.
-
-</details>
-
-### Container, writable layer and volume
-
-The folder `container-lifecycle/` holds a second minimal image. Its only program, `tool.c` (statically linked again), can append a line to a file (`tool write FILE TEXT`), print a file (`tool cat FILE`), create a directory for a given owner (`tool mkdir DIR UID`, used during the build) and pretend to be a server (`tool serve`), either in the foreground or, with `--daemon`, by forking a background child and exiting like a classic daemon. The `Containerfile` uses most of the instructions of the table above:
-
-```dockerfile
-# Each instruction below adds either a file-system layer or only metadata.
-FROM scratch
-COPY --chmod=755 tool /bin/tool
-RUN ["/bin/tool", "mkdir", "/data", "1000"]
-COPY app.conf /etc/app.conf
-EXPOSE 8080
-USER 1000
-WORKDIR /data
-CMD ["/bin/tool", "serve"]
-```
-
-(`--chmod=755` sets the program's mode in the image whatever its mode in the build directory; `RUN` uses the exec form, a list of arguments, because an image built `FROM scratch` has no shell.) Built with `docker build -f Containerfile -t course/app:1.0 .`, the history shows which steps added files:
-
-```console
-$ docker history course/app:1.0
-IMAGE          CREATED                  CREATED BY                                   SIZE      COMMENT
-cfe360c7eca9   Less than a second ago   CMD ["/bin/tool" "serve"]                    0B        buildkit.dockerfile.v0
-<missing>      Less than a second ago   WORKDIR /data                                4.1kB     buildkit.dockerfile.v0
-<missing>      Less than a second ago   USER 1000                                    0B        buildkit.dockerfile.v0
-<missing>      Less than a second ago   EXPOSE [8080/tcp]                            0B        buildkit.dockerfile.v0
-<missing>      Less than a second ago   COPY app.conf /etc/app.conf # buildkit       12.3kB    buildkit.dockerfile.v0
-<missing>      Less than a second ago   RUN /bin/tool mkdir /data 1000 # buildkit    20.5kB    buildkit.dockerfile.v0
-<missing>      Less than a second ago   COPY --chmod=755 tool /bin/tool # buildkit   836kB     buildkit.dockerfile.v0
-```
-
-`COPY` and `RUN` added layers; `EXPOSE`, `USER` and `CMD` added none. This builder recorded `WORKDIR` as a tiny layer of its own although `/data` already existed: exactly which steps produce a layer is a detail of the builder, but only file changes take real space. The commands below are in `container-lifecycle/demo.sh`, and the outputs come from the same run as the build above.
-
-**The writable layer disappears with the container.** A file written in container `c1` is not visible in a second container started from the same image, and `docker diff` lists what `c1` has in its writable layer (`A` added, `C` changed):
-
-```console
-$ docker run --name c1 course/app:1.0 tool write notes.txt "written in container c1"
-$ docker run --rm course/app:1.0 tool cat notes.txt
-notes.txt: No such file or directory
-$ docker diff c1
-C /data
-A /data/notes.txt
-```
-
-When `c1` is removed (`docker rm c1`), its writable layer and `notes.txt` are gone for good. With a **volume** mounted at `/data`, the file outlives the container that wrote it (`--rm` deletes each container as soon as it ends):
-
-```console
-$ docker volume create appdata
-appdata
-$ docker run --rm -v appdata:/data course/app:1.0 tool write notes.txt "kept in the volume"
-$ docker run --rm -v appdata:/data course/app:1.0 tool cat notes.txt
-kept in the volume
-```
-
-**A container lives as long as its main process.** Two containers are started in the background (`-d`): one with the default command, a server in the foreground, and one with the daemonising variant:
-
-```console
-$ docker run -d --name fg course/app:1.0
-99bc7b3683c32bc58b2b3da0125a485e8fee2cc6d538ea50ff51fd33bb4862eb
-$ docker run -d --name bg course/app:1.0 tool serve --daemon
-094ad61fdc11042a1030a98a782e2e2161018ea26e22e583af6edfaab25dd416
-$ docker ps -a --filter name=fg --filter name=bg --format 'table {{.Names}}\t{{.Command}}\t{{.Status}}'
-NAMES     COMMAND                 STATUS
-bg        "tool serve --daemon"   Exited (0) 2 seconds ago
-fg        "/bin/tool serve"       Up 2 seconds
-$ docker logs bg
-server: started in the background as pid 7, parent (pid 1) exits
-```
-
-The daemonising server was process 1 of its container. It started its background child (process 7) and exited "successfully", and the container stopped with it, taking the child along. This is what `httpd -D FOREGROUND` prevents.
-
-**What `commit` records.** A container started as root (`--user 0`) changes `/etc/app.conf`, and the container is committed as a new image:
-
-```console
-$ docker run --user 0 --name edit course/app:1.0 tool write /etc/app.conf "colour=blue"
-$ docker commit edit course/app:1.1-manual
-sha256:12301fc7ca5bdbdff31c89804bbee167642a8e77e1c38dc7eff60dc1c9ec0e06
-$ docker history course/app:1.1-manual
-IMAGE          CREATED                  CREATED BY                                   SIZE      COMMENT
-12301fc7ca5b   Less than a second ago   tool write /etc/app.conf colour=blue         12.3kB    
-cfe360c7eca9   4 seconds ago            CMD ["/bin/tool" "serve"]                    0B        buildkit.dockerfile.v0
-<missing>      4 seconds ago            WORKDIR /data                                4.1kB     buildkit.dockerfile.v0
-<missing>      4 seconds ago            USER 1000                                    0B        buildkit.dockerfile.v0
-<missing>      4 seconds ago            EXPOSE [8080/tcp]                            0B        buildkit.dockerfile.v0
-<missing>      4 seconds ago            COPY app.conf /etc/app.conf # buildkit       12.3kB    buildkit.dockerfile.v0
-<missing>      4 seconds ago            RUN /bin/tool mkdir /data 1000 # buildkit    20.5kB    buildkit.dockerfile.v0
-<missing>      4 seconds ago            COPY --chmod=755 tool /bin/tool # buildkit   836kB     buildkit.dockerfile.v0
-$ docker image inspect -f 'Cmd={{.Config.Cmd}} User={{.Config.User}}' course/app:1.0 course/app:1.1-manual
-Cmd=[/bin/tool serve] User=1000
-Cmd=[tool write /etc/app.conf colour=blue] User=0
-```
-
-The new layer is there, but the history says only which command the container ran, not why or what else was typed. Worse, the committed image took over the editing container's settings: its default command is now the one-off edit, and it runs as root instead of user 1000. A container started from it would append the same line to the configuration file once more and exit, instead of starting the server. Fixing such an image means doing the work again by hand; with a Containerfile, the change is one more reviewed line and a rebuild.
-
-**Names and tags.** A tag is only a name pointing at an image: tagging creates no copy, and leaving the tag out means `latest`:
-
-```console
-$ docker tag course/app:1.0 registry.example.com/course/app:1.0
-$ docker tag course/app:1.0 course/app
-$ docker image ls --format 'table {{.Repository}}\t{{.Tag}}\t{{.ID}}' --filter reference='*/app' --filter reference='*/*/app'
-REPOSITORY                        TAG          IMAGE ID
-course/app                        1.1-manual   12301fc7ca5b
-registry.example.com/course/app   1.0          cfe360c7eca9
-course/app                        1.0          cfe360c7eca9
-course/app                        latest       cfe360c7eca9
-```
-
-Three names, one image ID. Note that `course/app:latest` points to version 1.0, not to the newer `1.1-manual`: `latest` is whatever was last tagged so. The full name with a registry host is what `push` needs; no registry could be reached from the measuring environment, so pushing is left to lab exercise 10.
-
-<details>
-<summary><b>Explained simply:</b> exec form, docker diff, docker volume, -d, docker ps, docker logs, docker commit, docker tag</summary>
-
-- **Exec form:** writing a command as a list (`["/bin/tool", "mkdir", ...]`), so that it is started directly, without a shell to interpret it.
-- **`docker diff`:** lists the files a container has added (A), changed (C) or deleted (D) compared with its image.
-- **`docker volume create`, `-v appdata:/data`:** make a named volume, and plug it into a container at the folder `/data`.
-- **`-d`** (detached): start the container in the background and give the prompt back.
-- **`docker ps -a`:** list containers, including stopped ones, with their state.
-- **`docker logs`:** show what a container's main process printed.
-- **`docker commit`:** save a container's writable layer and settings as a new image.
-- **`docker tag`:** give an existing image another name; nothing is copied.
-
-</details>
-
 ### Why the version number lies: backporting in practice
 
 An enterprise kernel keeps its version number for the whole life of a major release, while thousands of fixes and features are backported into it. RHEL 8 ships a kernel numbered 4.18; RHEL 10.1 ships 6.12.0-124.8.1, where 6.12.0 is the upstream base and the rest is Red Hat's own build number (Red Hat, 2025).
 
 A real example shows why this matters. In March 2022, Max Kellermann disclosed **Dirty Pipe** (CVE-2022-0847), a flaw that let an ordinary user overwrite read-only files and take over the system. Its history has two steps. The underlying bug, a field left uninitialised, entered the kernel in Linux 4.9 in 2016, where it had no practical effect; a change in Linux 5.8 (2020) made it exploitable. It was fixed upstream in 5.16.11, 5.15.25 and 5.10.102 (Kellermann, 2022).
 
-Most reports said "affects Linux 5.8 and later", so judged by its version number, RHEL 8's 4.18 kernel looked safe. Red Hat's analysis was more careful: the known exploits needed the 5.8 change, which was not in the RHEL 8 kernel, but the underlying flaw was still present, inherited from the upstream code that the 4.18 kernel was based on. Red Hat therefore classed RHEL 8 as affected and released fixed kernels, for example in advisory RHSA-2022:0825 (Red Hat, n.d.-e).
+Most reports said "affects Linux 5.8 and later", so judged by its version number, RHEL 8's 4.18 kernel looked safe. Red Hat's analysis was more careful: the known exploits needed the 5.8 change, which was not in the RHEL 8 kernel, but the underlying flaw was still present, inherited from the upstream code that the 4.18 kernel was based on. Red Hat therefore classed RHEL 8 as affected and released fixed kernels, for example in advisory RHSA-2022:0825 (Red Hat, n.d.-c).
 
 The lesson goes both ways: a security scanner that judges by version numbers alone will wrongly report a backported fix as missing in an "old" kernel, and, as here, may wrongly declare an "old" kernel safe. In an enterprise distribution, only the vendor's advisories tell what is affected and what is fixed.
 
@@ -916,11 +592,7 @@ The lesson goes both ways: a security scanner that judges by version numbers alo
 4. **The family tree.** On CentOS Stream, AlmaLinux or Rocky Linux, and on Fedora (virtual machines or containers), run `cat /etc/os-release` and `cat /etc/redhat-release`. What does `ID_LIKE` say on each, why does Fedora have none, and how does it match the family figure?
 5. **Backports.** On AlmaLinux or Rocky Linux (Fedora does not backport, and CentOS Stream publishes no security advisories), run `uname -r` and `rpm -q --changelog kernel-core-$(uname -r) | grep -c CVE`. How many CVE fixes does the changelog of your running kernel mention, although its base version never changed? Then list the security advisories with `dnf updateinfo list --security --all` (without `--all`, only the ones not yet installed are shown).
 6. **Life cycles.** For your laptop's operating system and for one server distribution, find out until when the installed version gets security updates. What would it cost your organisation (in hours of work) to move to the next major version?
-7. **Kernel versus distribution in containers.** On a Fedora, AlmaLinux or Rocky Linux machine with Podman, run `uname -r` and `cat /etc/os-release` on the host, then `podman run --rm registry.access.redhat.com/ubi9/ubi-minimal cat /etc/os-release` and `podman run --rm registry.access.redhat.com/ubi9/ubi-minimal uname -r`. Repeat with `quay.io/centos/centos:stream9`, `quay.io/almalinuxorg/almalinux:9` and `docker.io/rockylinux/rockylinux:9` (full names, so that Podman does not have to ask which registry to use). Which lines change, which stay the same, and why? Then build the two-file image in `container-demo/`: compile with `gcc -static -O2 -o whoami-os whoami-os.c` (this needs the `glibc-static` package; on AlmaLinux and Rocky Linux it is in the CRB repository: `sudo dnf --enablerepo=crb install glibc-static`), then `podman build -f Containerfile -t demo-os:1.0 .` and compare its output with the UBI container's.
-8. **Images without downloading.** Run `skopeo inspect docker://registry.access.redhat.com/ubi9/ubi-minimal` and `skopeo inspect docker://registry.access.redhat.com/ubi9/ubi`. Compare the layers and their sizes (`LayersData`) and the labels (look for the version and release). Then `podman pull` both and compare their sizes with `podman images`. Then try `dnf install -y bzip2` and `microdnf install -y bzip2` in containers of `ubi`, `ubi-minimal` and `ubi-micro` (for example `podman run --rm registry.access.redhat.com/ubi9/ubi-minimal microdnf install -y bzip2`). Which commands exist in which image, and why would anyone choose the image that has none?
-9. **Layer sharing.** Change only `os-release` in `container-demo/`, rebuild as `demo-os:1.1`, and compare the layer hashes of the two images with `podman image inspect -f '{{range .RootFS.Layers}}{{println .}}{{end}}' demo-os:1.0 demo-os:1.1` (do not recompile or `touch` `whoami-os` in between: a new timestamp alone gives a new hash). Then write a `Containerfile` that starts `FROM registry.access.redhat.com/ubi9/ubi-minimal` and adds one package, build it, and check with `podman history` which layers come from UBI.
-10. **Container life cycle.** In `container-lifecycle/`, compile `tool.c` with `gcc -static -O2 -o tool tool.c`, build with `podman build -f Containerfile -t course/app:1.0 .`, and run `D=podman bash demo.sh writable`, then `volume`, `foreground`, `commit` and `tags` (and `clean` at the end). Compare your outputs with the ones in this lecture. After `podman rm c1`, where is `notes.txt`? Why did the `bg` container stop, although its server process never exited? Then start a local registry (`podman run -d -p 5000:5000 --name registry docker.io/library/registry:2`), tag the image as `localhost:5000/course/app:1.0`, push it with `podman push --tls-verify=false localhost:5000/course/app:1.0`, remove the local copy and pull it back.
-11. **Own or rent?** A server costs 6000 euros and is written off over four years; power, space and its share of staff time cost a further 100 euros a month. A comparable cloud instance costs 0.40 euros per hour. What does each cost per month if the service runs around the clock (730 hours a month)? Above what share of the hours does owning become cheaper? What does the cloud cost if the service is needed only 10 hours a day on 22 working days? Which factors left out of this calculation could change the decision?
+7. **Own or rent?** A server costs 6000 euros and is written off over four years; power, space and its share of staff time cost a further 100 euros a month. A comparable cloud instance costs 0.40 euros per hour. What does each cost per month if the service runs around the clock (730 hours a month)? Above what share of the hours does owning become cheaper? What does the cloud cost if the service is needed only 10 hours a day on 22 working days? Which factors left out of this calculation could change the decision?
 
 ## Review questions
 
@@ -936,15 +608,10 @@ The lesson goes both ways: a security scanner that judges by version numbers alo
 10. How did the position of CentOS in the family change in December 2020, and why did many users feel betrayed?
 11. What changed in June 2023, and how did AlmaLinux and Rocky Linux respond differently?
 12. Why can a security scanner that compares version numbers be wrong in both directions on RHEL? Use the Dirty Pipe example.
-13. A container and a virtual machine both isolate an application. What does each bring of its own, and what does a container share with the host? What follows for running a RHEL 7 image on a RHEL 9 host?
-14. What problem did Red Hat solve with UBI, and which two limits protect its subscription business? Compare ubi, ubi-minimal, ubi-micro and ubi-init.
-15. Why does one updated base layer fix a vulnerability in many images, and why must the images still be rebuilt and the containers replaced?
-16. Name two design differences between Podman and Docker, and relate each to a quality criterion of this lecture.
-17. How does image mode for RHEL change updating a server, and which KPI does its rollback improve?
-18. A start-up expects its traffic to grow tenfold within a year, with peaks at weekends. Should it buy servers or rent cloud capacity? Explain with capex, opex and idle capacity, and say when the answer would change.
-19. Place two threats in a risk matrix: (a) the only copy of a database is on a single disk; (b) a worker process crashes about once a day and is restarted automatically within a second. Which response fits each, and which quantity of this lecture (MTTF, MTTR, RPO) does each response improve?
-20. What is the difference between an image, a container and a volume? A database runs in a container without a volume; what happens to its data when the container is replaced by one from an updated image?
-21. Why is `podman commit` a poor way to make images for production, and what does a Containerfile give instead? Why does a web server's image use `CMD ["httpd", "-D", "FOREGROUND"]`, and what is the risk of deploying an image by the tag `latest`?
+13. What problem did Red Hat solve with UBI, and which two limits protect its subscription business? Compare ubi, ubi-minimal, ubi-micro and ubi-init.
+14. How does image mode for RHEL change updating a server, and which KPI does its rollback improve?
+15. A start-up expects its traffic to grow tenfold within a year, with peaks at weekends. Should it buy servers or rent cloud capacity? Explain with capex, opex and idle capacity, and say when the answer would change.
+16. Place two threats in a risk matrix: (a) the only copy of a database is on a single disk; (b) a worker process crashes about once a day and is restarted automatically within a second. Which response fits each, and which quantity of this lecture (MTTF, MTTR, RPO) does each response improve?
 
 <details>
 <summary><strong>Answer key (for instructors)</strong></summary>
@@ -961,17 +628,12 @@ The lesson goes both ways: a security scanner that judges by version numbers alo
 10. Before: CentOS Linux was a free rebuild downstream of RHEL, released after it. After: CentOS Stream is the development branch upstream of RHEL, ahead of it. Users had chosen CentOS Linux 8 expecting updates until 2029; they ended at the end of 2021.
 11. RHEL's source packages were no longer published on git.centos.org; CentOS Stream became the only public source, and RHEL's own sources went to customers and partners (including no-cost developer accounts) through the Customer Portal, under terms that discourage redistribution. AlmaLinux moved to ABI compatibility, building mainly from CentOS Stream; Rocky Linux kept the 1:1 goal using other legitimate source routes; CIQ, Oracle and SUSE founded OpenELA to publish Enterprise Linux sources.
 12. Because RHEL keeps the base version number for years while backporting changes into it. A scanner may report a vulnerability as present although the fix has been backported (false positive). Or, as with Dirty Pipe, it may judge by "introduced in 5.8, and 4.18 is older" and declare RHEL 8 safe (false negative), although the underlying bug dated from 4.9 and was present in RHEL 8's kernel; Red Hat classed RHEL 8 as affected and shipped fixes (RHSA-2022:0825). Only the vendor's advisories give the true status.
-13. A virtual machine brings its own kernel and user space on simulated hardware; a container brings only a user space (libraries, tools, files) and shares the host's kernel, isolated by namespaces and cgroups. A RHEL 7 image on RHEL 9 runs RHEL 7 libraries on a much newer kernel that RHEL 7 was never tested with; Red Hat's compatibility matrix therefore treats it as "workload specific": supported only for unprivileged containers that do not use kernel-version-specific interfaces (ioctl, /proc, /sys, iptables/nftables, eBPF, beyond the most common uses); privileged containers and everything else need matching major versions. The opposite direction (newer image, older host) has even stricter terms.
-14. Vendors wanted to ship RHEL-based images to anyone, which RHEL's terms did not allow. UBI is a freely redistributable subset of RHEL packages with RHEL's updates. Limits: without a subscription only the UBI repositories are available (adding other RHEL packages ends free redistribution), and Red Hat supports UBI only on RHEL or OpenShift under a subscription. ubi: full dnf; ubi-minimal: microdnf, smaller; ubi-micro: no package manager, smallest; ubi-init: runs systemd for several services.
-15. Layers are identified by hash and shared, so one updated base is pulled once and used by every image built on it. But an image's layers are read-only and a container is started from a fixed image, so the fix reaches an application only when its image is rebuilt on the new base and new containers replace the old ones.
-16. No daemon: no central root service, so no single point of failure for all containers, and containers can run as ordinary systemd services (robustness). Rootless operation: ordinary users run containers without administrator rights, so a container escape gains only that user's rights (security); Docker offers a rootless mode too, but its usual setup is a root daemon.
-17. The whole OS, kernel included, is a bootable OCI image; an update switches atomically to the new image at reboot, and a failed update is undone by rolling back to the previous image. This shortens MTTR after a bad update, and identical images make a fleet more consistent.
-18. Rent at first. There is no up-front capex, and the capacity follows both the growth and the weekend peaks (elasticity), so the start-up neither pays for idle servers bought ahead of demand nor suffers a shortage if growth beats the forecast: the forecasting risk moves to the provider. The answer changes when the load becomes large, steady and predictable: then owned hardware is cheaper per unit of work (beyond the break-even point), and a combination (own servers for the base load, the cloud for peaks) is common. Legal data location, egress fees and vendor lock-in also count.
-19. (a) Disks do fail, and the impact is catastrophic (all data lost): a high risk, to be reduced. A mirror (RAID 1) cuts the impact of a disk failure to a disk swap without an outage (in effect a much shorter MTTR), and regular backups kept elsewhere bound the data loss (RPO) even if the whole server is lost. (b) Frequent but negligible: the corner cell of the matrix, a medium risk at most, and the cheap reduction is already in place: the automatic restart keeps MTTR at a second, so what remains is accepted and monitored. If the crashes become more frequent, fixing the bug would lengthen MTTF.
-20. An image is the read-only, immutable blueprint made of shared layers; a container is a running instance of it: the image's layers plus its own thin writable layer and its processes; a volume is storage mounted into a container that lives independently of any container. Without a volume, the database files are in the container's writable layer; when the container is removed and replaced, they are deleted with it. With a volume, the new container mounts the same volume and finds the data.
-21. A committed image does not record what was done (only the command the container ran), cannot be rebuilt automatically when the base image is fixed, carries leftovers (caches, temporary files, shell history) and takes over the container's settings (in the demonstration, the default command and the user changed). A Containerfile is a reviewable text in version control, gives the same result every time with `podman build`, makes rebuilding on an updated base trivial, and uses the layer cache. A container lives as long as its main process; `httpd` without `-D FOREGROUND` would daemonise, its first process would exit and the container would stop at once; in the foreground it also leaves its output to the engine's log. `latest` is a moving label: different servers may run different images under the same name, an upgrade can happen unnoticed at the next pull, and rolling back is unclear; pin a version tag or a digest and update deliberately.
+13. Vendors wanted to ship RHEL-based images to anyone, which RHEL's terms did not allow. UBI is a freely redistributable subset of RHEL packages with RHEL's updates. Limits: without a subscription only the UBI repositories are available (adding other RHEL packages ends free redistribution), and Red Hat supports UBI only on RHEL or OpenShift under a subscription. ubi: full dnf; ubi-minimal: microdnf, smaller; ubi-micro: no package manager, smallest; ubi-init: runs systemd for several services.
+14. The whole OS, kernel included, is a bootable OCI image; an update switches atomically to the new image at reboot, and a failed update is undone by rolling back to the previous image. This shortens MTTR after a bad update, and identical images make a fleet more consistent.
+15. Rent at first. There is no up-front capex, and the capacity follows both the growth and the weekend peaks (elasticity), so the start-up neither pays for idle servers bought ahead of demand nor suffers a shortage if growth beats the forecast: the forecasting risk moves to the provider. The answer changes when the load becomes large, steady and predictable: then owned hardware is cheaper per unit of work (beyond the break-even point), and a combination (own servers for the base load, the cloud for peaks) is common. Legal data location, egress fees and vendor lock-in also count.
+16. (a) Disks do fail, and the impact is catastrophic (all data lost): a high risk, to be reduced. A mirror (RAID 1) cuts the impact of a disk failure to a disk swap without an outage (in effect a much shorter MTTR), and regular backups kept elsewhere bound the data loss (RPO) even if the whole server is lost. (b) Frequent but negligible: the corner cell of the matrix, a medium risk at most, and the cheap reduction is already in place: the automatic restart keeps MTTR at a second, so what remains is accepted and monitored. If the crashes become more frequent, fixing the bug would lengthen MTTF.
 
-**Lab answers.** Lab 1: 1000 / 1008 ≈ 99.21%; with MTTR 4 h, 1000 / 1004 ≈ 99.60%, the same as doubling the MTTF to 2000 h (2000 / 2008). Lab 2: all three needed: 0.995³ ≈ 98.51%; any one enough: 1 − 0.005³ ≈ 99.99999%. Lab 3: a missing page answers 404; `urlopen` raises an error for it, so the probe counts every request as failed, although the server is fine; most SLIs count only server errors (5xx) and timeouts against the service. Lab 7: `/etc/os-release` shows the image's distribution in each container, while `uname -r` shows the host's kernel everywhere. Lab 8: the standard ubi image has `dnf`, ubi-minimal only `microdnf`, and ubi-micro neither, so both commands fail there; ubi-micro is chosen because it is the smallest and contains the least software that could have vulnerabilities, with packages added at build time from outside the image. Lab 9: the layer holding the unchanged program keeps its hash; only the `os-release` layer is new. Lab 10: `notes.txt` was only in `c1`'s writable layer, so after `podman rm c1` it no longer exists anywhere, while the file in the volume remains; the `bg` container stopped because its process 1 exited after forking, and the child was killed with the container. Lab 11: owning costs 6000 / 48 + 100 = 225 euros a month; the cloud around the clock 0.40 × 730 = 292 euros; break-even at 225 / 292 ≈ 77% of the hours; 10 × 22 = 220 hours cost 88 euros. Left out: staff time for buying and installing, spare capacity for peaks and growth, data-transfer fees, discounts for reserved cloud capacity, legal requirements, and the residual value of the hardware.
+**Lab answers.** Lab 1: 1000 / 1008 ≈ 99.21%; with MTTR 4 h, 1000 / 1004 ≈ 99.60%, the same as doubling the MTTF to 2000 h (2000 / 2008). Lab 2: all three needed: 0.995³ ≈ 98.51%; any one enough: 1 − 0.005³ ≈ 99.99999%. Lab 3: a missing page answers 404; `urlopen` raises an error for it, so the probe counts every request as failed, although the server is fine; most SLIs count only server errors (5xx) and timeouts against the service. Lab 7: owning costs 6000 / 48 + 100 = 225 euros a month; the cloud around the clock 0.40 × 730 = 292 euros; break-even at 225 / 292 ≈ 77% of the hours; 10 × 22 = 220 hours cost 88 euros. Left out: staff time for buying and installing, spare capacity for peaks and growth, data-transfer fees, discounts for reserved cloud capacity, legal requirements, and the residual value of the hardware.
 
 </details>
 
@@ -991,12 +653,6 @@ Breard, B. (2025, May 20). *Image mode for Red Hat Enterprise Linux is generally
 
 CentOS. (n.d.). In *Wikipedia*. Retrieved October 6, 2026, from https://en.wikipedia.org/wiki/CentOS
 
-Docker Inc. (n.d.-a). *Dockerfile reference*. Docker Docs. Retrieved October 7, 2026, from https://docs.docker.com/reference/dockerfile/
-
-Docker Inc. (n.d.-b). *docker image tag*. Docker Docs. Retrieved October 7, 2026, from https://docs.docker.com/reference/cli/docker/image/tag/
-
-Docker Inc. (n.d.-c). *Storage*. Docker Docs. Retrieved October 7, 2026, from https://docs.docker.com/engine/storage/
-
 Free Software Foundation. (1991). *GNU General Public License, version 2*. https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
 Hennessy, J. L., & Patterson, D. A. (2019). *Computer architecture: A quantitative approach* (6th ed.). Morgan Kaufmann.
@@ -1015,25 +671,19 @@ Linuxiac. (n.d.). *AlmaLinux vs Rocky Linux: Which one to choose?* Retrieved Oct
 
 McGrath, M. (2023, June 21). *Furthering the evolution of CentOS Stream*. Red Hat. https://www.redhat.com/en/blog/furthering-evolution-centos-stream
 
-Open Container Initiative. (n.d.). *About the Open Container Initiative*. Retrieved October 6, 2026, from https://opencontainers.org/about/overview/
-
 OpenELA. (2023, August 10). *CIQ, Oracle and SUSE create OpenELA*. https://openela.org/news/2023/08/hello_world/
 
 OpenLogic. (n.d.). *CentOS Stream 10*. Retrieved October 6, 2026, from https://www.openlogic.com/blog/centos-stream-10
 
-Red Hat. (n.d.-a). *Building, running, and managing containers* (Red Hat Enterprise Linux 9 documentation). Retrieved October 6, 2026, from https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/building_running_and_managing_containers/index
+Red Hat. (n.d.-a). *Red Hat container registry authentication*. Retrieved October 6, 2026, from https://access.redhat.com/articles/3399531
 
-Red Hat. (n.d.-b). *Red Hat container registry authentication*. Retrieved October 6, 2026, from https://access.redhat.com/articles/3399531
+Red Hat. (n.d.-b). *Red Hat Enterprise Linux life cycle*. Retrieved October 6, 2026, from https://access.redhat.com/node/493203
 
-Red Hat. (n.d.-c). *Red Hat Enterprise Linux container compatibility matrix*. Retrieved October 6, 2026, from https://access.redhat.com/support/policy/rhel-container-compatibility
+Red Hat. (n.d.-c). *RHSB-2022-002: Dirty Pipe – kernel arbitrary file manipulation (CVE-2022-0847)*. Retrieved October 6, 2026, from https://access.redhat.com/security/vulnerabilities/RHSB-2022-002
 
-Red Hat. (n.d.-d). *Red Hat Enterprise Linux life cycle*. Retrieved October 6, 2026, from https://access.redhat.com/node/493203
+Red Hat. (n.d.-d). *Universal Base Images FAQ*. Red Hat Developer. Retrieved October 6, 2026, from https://developers.redhat.com/articles/ubi-faq
 
-Red Hat. (n.d.-e). *RHSB-2022-002: Dirty Pipe – kernel arbitrary file manipulation (CVE-2022-0847)*. Retrieved October 6, 2026, from https://access.redhat.com/security/vulnerabilities/RHSB-2022-002
-
-Red Hat. (n.d.-f). *Universal Base Images FAQ*. Red Hat Developer. Retrieved October 6, 2026, from https://developers.redhat.com/articles/ubi-faq
-
-Red Hat. (n.d.-g). *Using image mode for RHEL to build, deploy, and manage operating systems* (Red Hat Enterprise Linux 10 documentation). Retrieved October 6, 2026, from https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html/using_image_mode_for_rhel_to_build_deploy_and_manage_operating_systems/index
+Red Hat. (n.d.-e). *Using image mode for RHEL to build, deploy, and manage operating systems* (Red Hat Enterprise Linux 10 documentation). Retrieved October 6, 2026, from https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html/using_image_mode_for_rhel_to_build_deploy_and_manage_operating_systems/index
 
 Red Hat. (2020, December 8). *FAQ: CentOS Stream updates*. https://www.redhat.com/en/blog/faq-centos-stream-updates
 

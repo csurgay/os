@@ -127,7 +127,7 @@ def ssd():
     p.append(path("M144 165H184", "a2"))
     p.append(rect(184, 60, 230, 210, "acc"))
     p.append(text(299, 86, "vezérlő (firmware)", 13, 600, anchor="middle"))
-    for i, s in enumerate(["flash-fordítóréteg (FTL):", "logikai lap → fizikai lap", "szemétgyűjtés", "kopáskiegyenlítés", "hibajavítás (ECC)", "hibásblokk-kezelés"]):
+    for i, s in enumerate(["FTL (flash translation layer):", "logikai lap → fizikai lap", "szemétgyűjtés", "wear leveling", "hibajavítás (ECC)", "hibásblokk-kezelés"]):
         p.append(text(200, 112 + 22 * i, ("• " if i != 1 else "   ") + s, 11.5, 600 if i == 0 else 400))
     p.append(rect(200, 234, 198, 26, "c2", rx=4))
     p.append(text(299, 252, "DRAM: leképezési tábla, cache", 11, anchor="middle"))
@@ -173,7 +173,7 @@ def write_amp():
         p.append(text(x0 - 8, Y(v) + 4, f"{v}×", 10.5, cls="quiet", anchor="end"))
     for s in spare:
         p.append(text(X(s), y0 + 18, f"{s}%", 10.5, cls="quiet", anchor="middle"))
-    p.append(text((x0 + x1) / 2, y0 + 38, "a nyers flash gazdagép elől elrejtett hányada (tartalékterület, over-provisioning)", 11.5, cls="quiet", anchor="middle"))
+    p.append(text((x0 + x1) / 2, y0 + 38, "a nyers flash gazdagép elől elrejtett hányada (over-provisioning)", 11.5, cls="quiet", anchor="middle"))
     pts = " ".join(f"{X(s):.1f},{Y(v):.1f}" for s, v in zip(spare, wa))
     p.append(f'<polyline points="{pts}" fill="none" class="acc" stroke-width="2.5"/>')
     for s, v in zip(spare, wa):
@@ -189,8 +189,8 @@ def layers():
     title = "A rendszerhívástól az eszközig: a tárolási verem rétegei Linuxon"
     p = [text(24, 30, title, 15, 600), marker("a4")]
     rows = [("alkalmazás", "open() read() write() close() rename() fsync() …", "tint"),
-            ("virtuális fájlrendszer (VFS)", "egy felület minden fájlrendszerhez; dentry- és inode-gyorsítótár", "acc"),
-            ("lap-gyorsítótár", "fájladatok a RAM-ban; az írás késleltetett (visszaírás)", "c2"),
+            ("virtuális fájlrendszer (VFS)", "egy felület minden fájlrendszerhez; dentry és inode cache", "acc"),
+            ("page cache","fájladatok a RAM-ban; az írás késleltetett (visszaírás)", "c2"),
             ("fájlrendszer", "ext4 · XFS · Btrfs · vfat · ntfs3 · tmpfs · proc · NFS …", "acc"),
             ("blokkréteg", "számozott blokkokra vonatkozó kérések; összevonás és I/O-ütemezés", "tint"),
             ("eszközmeghajtó", "NVMe · SATA (AHCI) · SCSI · virtio-blk · USB-háttértár", "tint"),
@@ -207,7 +207,7 @@ def layers():
     p.append(text(826, 93, "tér", 11, cls="quiet", anchor="start"))
     p.append(path("M40 102H850", cls="edge", width=1, dash="5 4"))
     p.append(text(826, 120, "kernel", 11, cls="quiet", anchor="start"))
-    p.append(text(24, y + 8, "A pszeudo-fájlrendszerek (proc, sysfs, tmpfs) a VFS-nél vagy a lap-gyorsítótárnál megállnak: nincs alattuk eszköz.", 11.5, cls="quiet"))
+    p.append(text(24, y + 8, "A pszeudo-fájlrendszerek (proc, sysfs, tmpfs) a VFS-nél vagy a page cache-nél megállnak: nincs alattuk eszköz.", 11.5, cls="quiet"))
     return svg(900, y + 22, title, "\n".join(p))
 
 
@@ -419,7 +419,7 @@ def mft():
         p.append(text(x + 6, 290, d, 10.5, cls="quiet"))
     p.append(rect(250, 336, 600, 70, "c2"))
     p.append(text(262, 356, "65. rekord: big.bin (3 MiB) — az adat nem rezidens", 12, 600))
-    p.append(text(262, 378, "a $DATA futáslistát tárol: VCN 0, LCN 0x206a, hossz 0x300 klaszter", 11.5))
+    p.append(text(262, 378, "a $DATA run listet tárol: VCN 0, LCN 0x206a, hossz 0x300 klaszter", 11.5))
     p.append(text(262, 396, "(a fájl 0. klasztere a lemez 8298. klaszterén kezdődik, és 768 klaszteren át tart)", 11, cls="quiet"))
     p.append(text(24, 432, "A kis fájlok (nagyjából 700 bájtig) teljes egészében az MFT-rekordjukban élnek; a könyvtárak $FILE_NAME bejegyzések B+ fái.", 11.5, cls="quiet"))
     return svg(880, 446, title, "\n".join(p))
@@ -449,7 +449,7 @@ def head_gap():
     p.append(text(150, 146, "porszem", 11.5, 600, cls="bad", anchor="middle"))
     p.append(text(150, 160, "vagy ujjlenyomatréteg", 11, cls="bad", anchor="middle"))
     p.append(path("M246 178H172", "a11b", cls="bads", width=1.4, dash="4 3"))
-    p.append(text(24, 266, "Ha nekiütközik, megkarcolja a felületet és a fejet: fejütközés.", 11.5, cls="quiet"))
+    p.append(text(24, 266, "Ha nekiütközik, megkarcolja a felületet és a fejet: head crash.", 11.5, cls="quiet"))
     p.append(text(24, 284, "Ezért van zárt ház, szűrő és parkolórámpa.", 11.5, cls="quiet"))
     # right: logarithmic scale
     x0, x1, yb = 480, 860, 170

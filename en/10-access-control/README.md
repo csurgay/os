@@ -2,10 +2,6 @@
 
 *Operating Systems lecture: who may do what with a file, a device or a port, and how the kernel enforces it: subjects, objects and the reference monitor, Unix owner/group/others permissions, the setuid, setgid and sticky bits, root and capabilities, POSIX access control lists, and mandatory access control with SELinux, all tried out on Linux*
 
-Previous: [File Systems](../09-file-systems/).
-
-> **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
-
 ## Learning objectives
 
 The [previous lecture](../09-file-systems/#inodes) showed that every inode stores an owner, a group and a few permission bits. This lecture explains what the kernel does with them, what it adds when they are not enough, and how a modern Linux server confines even programs that run as root.

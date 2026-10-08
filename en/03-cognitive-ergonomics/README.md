@@ -2,10 +2,6 @@
 
 *Operating Systems lecture: how human perception, memory and emotion shape the user interface of an operating system, from the command line and the desktop to phones, watches, glasses and robots*
 
-Previous: [Quality, Commercial Aspects and the Enterprise Linux Ecosystem](../02-quality-and-enterprise-linux/). Next: [The Fetch-Execute Cycle](../04-fetch-execute-cycle/).
-
-> **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
-
 ## Learning objectives
 
 The first two lectures looked at operating systems from the outside: where they came from and how good they are. One part of that quality is decided not by the machine but by the person in front of it. This lecture asks what the user interface of an operating system must respect about human perception, memory, skill and emotion, and how the answers changed from the terminal to the phone, the watch and the headset.

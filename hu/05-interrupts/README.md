@@ -2,10 +2,6 @@
 
 *Operációs rendszerek előadás: a megszakítások osztályai, felhasználói és kernelmód, a megszakítások feldolgozása, egymásba ágyazott megszakítások, a megszakításvezérlő, a megszakítási késleltetés, az I/O-technikák, és miért teszik a megszakítások szükségessé a kölcsönös kizárást – Linux (x86-64) példákkal*
 
-Előző: [Az utasítás-végrehajtási ciklus](../04-fetch-execute-cycle/). Következő: [Párhuzamosság, holtpontok, folyamatállapotok és a Linux ütemezése](../06-concurrency-deadlocks-scheduling/).
-
-> **Hogyan olvasd ezt az előadást?** Ahol új rövidítés vagy fogalom jelenik meg, utána egy **Egyszerűen elmagyarázva** feliratú doboz következik. Kattints rá, és kinyílik egy köznapi nyelvű magyarázat. Ha már ismered a fogalmakat, nyugodtan átugorhatod ezeket a dobozokat.
-
 ## Tanulási célok
 
 A megszakítás (interrupt) lehetővé teszi, hogy egy külső esemény két utasítás között megállítsa a futó programot, lefuttasson egy kezelőrutint, majd a programot úgy folytassa, mintha semmi sem történt volna. Ez az előadás azt mutatja be, hogyan osztozik ezen a munkán a hardver és az operációs rendszer, és milyen következményekkel jár mindez.
@@ -87,7 +83,7 @@ Az utasítás által kiváltott megszakítások kicsit másképp működnek, mer
 
 | Osztály | Kiváltója | Példák | Időzítés |
 | --- | --- | --- | --- |
-| Időzítő | a hardveróra | lejárt az időszelet, periodikus óraütés (tick) | aszinkron |
+| Időzítő | a hardveróra | lejárt az időszelet, periodikus tick | aszinkron |
 | I/O | egy I/O-vezérlő | normális befejeződés (a puffer megtelt vagy kész), hibahelyzet | aszinkron |
 | Program | a végrehajtott utasítás | nullával való osztás, aritmetikai túlcsordulás, tiltott memória-hozzáférés, rendszerhívás | szinkron |
 | Hardverhiba | a gép meghibásodása | tápfeszültség-kiesés, memória-paritáshiba | aszinkron |
@@ -215,17 +211,17 @@ Az ábrán a felhasználói programot a 2-es cím után éri a megszakítás. A 
 
 Mivel mindig az utoljára mentett állapot áll vissza elsőként, a mentett állapotok **vermet** alkotnak (last in, first out). Ezért tolja az x86 a PC-t és a PSW-t egy verembe egyetlen rögzített hely helyett: a rögzített helyet a második megszakítás felülírná. Sok RISC processzor (ARM, RISC-V, MIPS) speciális regiszterekbe menti őket, és a kezelő a verembe másolja át őket, mielőtt újra engedélyezné a megszakításokat. Az egymásba ágyazáshoz így vagy úgy, de verem kell.
 
-**Nem maszkolható megszakítások.** Egyes események soha nem várhatnak, jellemzően a sürgős hardveresemények. Ezek egy **nem maszkolható megszakítás** (NMI, non-maskable interrupt) vonalon érkeznek, amelyet a szokásos megszakítás-engedélyező jelzőbit nem tud kikapcsolni. x86-on az NMI-t főként watchdogokhoz és teljesítményméréshez használják, a súlyos hardverhibákat, például a memóriahibákat pedig a gépellenőrzési kivétel (machine check) jelzi.
+**Nem maszkolható megszakítások.** Egyes események soha nem várhatnak, jellemzően a sürgős hardveresemények. Ezek egy **nem maszkolható megszakítás** (NMI, non-maskable interrupt) vonalon érkeznek, amelyet a szokásos megszakítás-engedélyező jelzőbit nem tud kikapcsolni. x86-on az NMI-t főként watchdogokhoz és teljesítményméréshez használják, a súlyos hardverhibákat, például a memóriahibákat pedig a machine check kivétel jelzi.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> maszkolás, prioritás, egymásba ágyazott, RISC, ARM, RISC-V, MIPS, NMI, gépellenőrzés, watchdog</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> maszkolás, prioritás, egymásba ágyazott, RISC, ARM, RISC-V, MIPS, NMI, machine check, watchdog</summary>
 
 - **Maszkolás (egy megszakítás maszkolása):** ideiglenesen megmondjuk a processzornak, hogy hagyjon figyelmen kívül egy megszakítást – mint amikor a telefont „ne zavarjanak” módba kapcsoljuk. A kérés nem vész el, csak vár.
 - **Prioritás:** mennyire sürgős valami. A tűzjelzőnek nagyobb a prioritása, mint a csengőnek.
 - **Egymásba ágyazott (nested):** egyik a másikban, mint a matrjoska babák: egy megszakításkezelőt egy másik megszakítás szakít meg.
 - **RISC** (Reduced Instruction Set Computer, csökkentett utasításkészletű számítógép): kevesebb, egyszerűbb utasítással dolgozó processzorkialakítás. Az **ARM** (szinte minden telefonban ez van), a **RISC-V** (nyílt kialakítás) és a **MIPS** RISC-családok.
 - **NMI** (non-maskable interrupt, nem maszkolható megszakítás): olyan megszakítás, amelyet a „ne zavarjanak” mód sem tud blokkolni.
-- **Gépellenőrzés (machine check):** a processzor saját riasztása súlyos hardverhibák esetén, például ha a memóriában lévő adat megsérült, és nem lehetett kijavítani.
+- **Machine check:** a processzor saját riasztása súlyos hardverhibák esetén, például ha a memóriában lévő adat megsérült, és nem lehetett kijavítani.
 - **Watchdog („házőrző kutya”):** időzítő, amely ellenőrzi, hogy a rendszer még él-e. Ha a rendszer nem válaszol, a watchdog jelez (gyakran NMI formájában), hogy a hibát jelenteni lehessen, vagy a gépet újra lehessen indítani.
 
 </details>
@@ -288,10 +284,10 @@ Az adatra váró program számára a késés még hosszabb: a kezelő után az �
 
 **Miért a legrosszabb eset számít?** Egy asztali gépen az időnként előforduló néhány ezredmásodperces késés észrevehetetlen. Egy **valós idejű rendszerben** viszont ez hibát jelenthet: egy légzsákvezérlőnek, egy motorvezérlőnek vagy egy szívritmus-szabályozónak minden egyes alkalommal rögzített határidőn belül kell reagálnia (**kemény valós idejű** rendszer, hard real-time). Hang vagy videó esetén egy elmulasztott határidő „csak” hallható kattanás vagy kiesett képkocka (**puha valós idejű** rendszer, soft real-time). Valós idejű munkában nem az átlagos késleltetés számít, hanem a **legrosszabb eset**.
 
-Hogyan tartja alacsonyan a késleltetést egy operációs rendszer? Csak nagyon rövid kódrészletekre maszkolja a megszakításokat, a hardveres kezelőket rövidre fogja, a munka többi részét pedig későbbre halasztja (felső és alsó fél, lásd lentebb), és megengedi, hogy a sürgős feladatok kiszorítsák a kevésbé sürgőseket. A Linux fő kernelvonalában a 6.12-es verzió (2024) óta elérhető a **PREEMPT_RT** opció: ez a legtöbb megszakításkezelőt prioritással rendelkező kernelszállá alakítja, így még a hosszú kernelkódot is megszakíthatja egy sürgős valós idejű feladat.
+Hogyan tartja alacsonyan a késleltetést egy operációs rendszer? Csak nagyon rövid kódrészletekre maszkolja a megszakításokat, a hardveres kezelőket rövidre fogja, a munka többi részét pedig későbbre halasztja (felső és alsó fél, lásd lentebb), és megengedi, hogy a sürgős feladatok kiszorítsák a kevésbé sürgőseket. A Linux mainline kernelében a 6.12-es verzió (2024) óta elérhető a **PREEMPT_RT** opció: ez a legtöbb megszakításkezelőt prioritással rendelkező kernelszállá alakítja, így még a hosszú kernelkódot is megszakíthatja egy sürgős valós idejű feladat.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> késleltetés, nanoszekundum, mikroszekundum, ütemező, valós idejű, határidő, kiszorítás, kernelszál, fő kernelvonal</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> késleltetés, nanoszekundum, mikroszekundum, ütemező, valós idejű, határidő, kiszorítás, kernelszál, mainline kernel</summary>
 
 - **Késleltetés (latency):** várakozási idő, a „valami történik” és a „valaki reagál” közötti késés. Az online játékok „pingje” is késleltetés.
 - **Nanoszekundum (ns), mikroszekundum (µs), milliszekundum (ms):** a másodperc milliárdod, milliomod és ezred része. 1 ms = 1000 µs = 1 000 000 ns.
@@ -301,7 +297,7 @@ Hogyan tartja alacsonyan a késleltetést egy operációs rendszer? Csak nagyon 
 - **Legrosszabb eset (worst case):** a lehető leglassabb eset, nem a tipikus vagy az átlagos sebesség.
 - **Kiszorítás (preempt):** a processzor elvétele egy futó feladattól, mielőtt az végzett volna, hogy egy sürgősebb kapja meg.
 - **Kernelszál (kernel thread):** a kernelen belül futó feladat, amelyet azonban közönséges programként ütemeznek, így szüneteltethető és prioritást kaphat.
-- **Fő kernelvonal (mainline kernel):** a hivatalos Linux kernel, amelyet a fő fejlesztők adnak ki, szemben a külön karbantartott kiegészítésekkel (javítócsomagokkal, „patchekkel”).
+- **Mainline kernel:** a hivatalos Linux kernel, amelyet a fő fejlesztők adnak ki, szemben a külön karbantartott kiegészítésekkel (patchekkel).
 
 </details>
 
@@ -323,7 +319,7 @@ DMA esetén a processzor csak megadja a DMA-vezérlőnek az eszközt, a memória
 - **megszakításos I/O:** a processzor szabad, amíg az eszköz dolgozik, de minden szót továbbra is maga mozgat;
 - **DMA:** a processzor csak elindítja az átvitelt és lekezeli a végét; az adat nélküle mozog, így a terhelés a sínre esik, nem a processzorra.
 
-Ez azért működik, mert a DMA-vezérlő egy második **sínmester** (bus master): olyan eszköz, amely magától is indíthat sínátvitelt, nem csak válaszolhat rá. Mivel a processzor és a DMA-vezérlő osztozik a sínen, felváltva kell használniuk, és a **sínarbitráció** (bus arbitration) dönti el, ki kapja meg: a DMA-vezérlő kéri a sínt, a processzor pedig egy sínciklus végén átadja. A mai PC-kben a legtöbb gyors eszköz (a lemez- és a hálózati vezérlők) maga is sínmester a PCI Express-en ([sínhierarchia](../04-fetch-execute-cycle/#egy-sínről-a-sínek-hierarchiájáig)); átviteleik már nem egyetlen közös sínre várnak, de a memória-sávszélességért továbbra is versenyeznek a processzormagokkal.
+Ez azért működik, mert a DMA-vezérlő egy második **bus master**: olyan eszköz, amely magától is indíthat sínátvitelt, nem csak válaszolhat rá. Mivel a processzor és a DMA-vezérlő osztozik a sínen, felváltva kell használniuk, és a **sínarbitráció** (bus arbitration) dönti el, ki kapja meg: a DMA-vezérlő kéri a sínt, a processzor pedig egy sínciklus végén átadja. A mai PC-kben a legtöbb gyors eszköz (a lemez- és a hálózati vezérlők) maga is bus master a PCI Express-en ([sínhierarchia](../04-fetch-execute-cycle/#egy-sínről-a-sínek-hierarchiájáig)); átviteleik már nem egyetlen közös sínre várnak, de a memória-sávszélességért továbbra is versenyeznek a processzormagokkal.
 
 **Egy kidolgozott példa.** Mennyi processzoridőbe kerülnek az egyes technikák? Vegyünk egy eszközt, amely 10 µs-onként ad egy bájtot, és egy 4 KiB-os (4096 bájtos) blokkot; az átvitel így, bármit teszünk is, 40,96 ms-ig tart. A lenti többi szám kerek, feltételezett érték, amelyet az egyszerű számolás kedvéért választottunk; a valódiak a hardvertől függenek, de az arányok jellemzőek.
 
@@ -348,8 +344,8 @@ Az eszköz mind a négy esetben ugyanolyan lassú. Az változik, hogy ebből az 
 - **DMA** (Direct Memory Access, közvetlen memória-hozzáférés): segédchip, amely önállóan másol adatot egy eszköz és a memória között, így a processzornak nem kell. Olyan, mint amikor költöztetőket fogadsz, ahelyett hogy minden dobozt magad cipelnél: csak megmondod nekik, mit hová vigyenek, és ők szólnak, ha végeztek.
 - **Sín (bus):** a processzort, a memóriát és az eszközöket összekötő közös vezetékköteg. Egyszerre csak egyikük használhatja.
 - **Ciklusellopás (cycle stealing):** amíg a DMA használja a sínt, a processzornak időnként várnia kell rá: a DMA „ellop” néhány alkalmat, amikor a processzor használhatná a sínt.
-- **Sínmester (bus master):** olyan eszköz, amely magától is indíthat átvitelt a sínen. A processzor ilyen, a DMA-vezérlő is ilyen. A többi eszköz csak akkor válaszol, ha megszólítják.
-- **Sínarbitráció (bus arbitration):** annak eldöntése, ki használhatja legközelebb a sínt, ha több sínmester is akarja – mint a játékvezető, aki egyszerre mindig csak egy játékosnak adja a labdát.
+- **Bus master:** olyan eszköz, amely magától is indíthat átvitelt a sínen. A processzor ilyen, a DMA-vezérlő is ilyen. A többi eszköz csak akkor válaszol, ha megszólítják.
+- **Sínarbitráció (bus arbitration):** annak eldöntése, ki használhatja legközelebb a sínt, ha több bus master is akarja – mint a játékvezető, aki egyszerre mindig csak egy játékosnak adja a labdát.
 - **Memória-sávszélesség (memory bandwidth):** mennyi adatot tud a memória másodpercenként szállítani. Ezen az összes mag és eszköz osztozik.
 
 </details>
@@ -394,7 +390,7 @@ A programnak a közös adatokon dolgozó részét **kritikus szakasznak** (criti
 **Megoldások:**
 
 - **A megszakítások letiltása** a kritikus szakasz idejére. Megszakítás nélkül nincs váltás, így a szakasz egyedül fut. Ez csak egyetlen processzoron működik, és csak a kernelben: egy felhasználói program nem kapcsolhatja ki az időzítőt, hogy örökre megtartsa a processzort – éppen ezért privilegizált utasítás a `cli`.
-- **Atomi test-and-set utasítás.** A processzor egyetlen, oszthatatlan utasításban olvassa ki a régi értéket és írja be az újat, így sem megszakítás, sem másik mag nem kerülhet a tesztelés és a beállítás közé. A megszakításokkal szemben ez magától teljesül, mert a processzor megszakítást csak két utasítás között fogad el (lásd [az utasításciklust](#a-megszakítás-helye-az-utasításciklusban)); a többi maggal szemben viszont a processzornak az utasítás idejére a memóriahelyet is zárolnia kell. x86-on ez az `xchg` utasítás (regiszter és memória cseréje), amely automatikusan zárolt. Az erre épülő zár, amelynél a várakozó folyamat ciklusban újra és újra próbálkozik, a **spinlock** („pörgő zár”).
+- **Atomi test-and-set utasítás.** A processzor egyetlen, oszthatatlan utasításban olvassa ki a régi értéket és írja be az újat, így sem megszakítás, sem másik mag nem kerülhet a tesztelés és a beállítás közé. A megszakításokkal szemben ez magától teljesül, mert a processzor megszakítást csak két utasítás között fogad el (lásd [az utasításciklust](#a-megszakítás-helye-az-utasításciklusban)); a többi maggal szemben viszont a processzornak az utasítás idejére a memóriahelyet is zárolnia kell. x86-on ez az `xchg` utasítás (regiszter és memória cseréje), amely automatikusan zárolt. Az erre épülő zár, amelynél a várakozó folyamat ciklusban újra és újra próbálkozik, a **spinlock**.
 - **Szemafor**, amelyet az operációs rendszer biztosít (Silberschatz et al., 2018; Stallings, 2018). Kölcsönös kizáráshoz S kezdőértéke 1. A `wait(S)` csökkenti S-et, és ha az eredmény negatív, a folyamat blokkolódik (elalszik) ahelyett, hogy tevékenyen várakozna. A `signal(S)` növeli S-et, és ha folyamatok várakoznak, felébreszti egyiküket. Az operációs rendszer a fenti két technikával a kernelen belül teszi mindkét műveletet atomivá. (Dijkstra eredeti, P-nek és V-nek nevezett definíciójában S sosem megy nulla alá: a P egyszerűen vár, amíg S > 0. Mindkét változat használatos.)
 
 <details>
@@ -466,7 +462,7 @@ $ cat /proc/irq/37/effective_affinity_list
 - **virtio:** szimulált eszközök (lemez, hálózati kártya), amelyeket egy virtuális gép valódi hardver helyett használ.
 - **Soros konzol (`ttyS0`):** nagyon egyszerű szöveges kapcsolat a géppel, a terminálkapcsolatok legrégebbi fajtája.
 - **Sor (queue):** várakozási sor. Egy hálózati kártya külön sort tart fenn a bejövő és a kimenő adatoknak.
-- **TLB** (translation lookaside buffer, címfordítási gyorsítótár): minden magban lévő kis gyorsítótár, amely a legutóbbi memóriacím-fordításokat jegyzi meg. Ha a memóriabeállítások megváltoznak, a többi magot értesíteni kell, hogy ürítsék a sajátjukat: ez a „TLB shootdown” (TLB-lelövés).
+- **TLB** (translation lookaside buffer): minden magban lévő kis gyorsítótár, amely a legutóbbi memóriacím-fordításokat jegyzi meg. Ha a memóriabeállítások megváltoznak, a többi magot értesíteni kell, hogy ürítsék a sajátjukat: ez a „TLB shootdown”.
 - **Affinitás (affinity):** mely processzormagokon futhat (vagy mely magokra kézbesíthető) valami.
 - **SMP** (symmetric multiprocessing, szimmetrikus többprocesszoros feldolgozás): több egyenrangú processzormaggal rendelkező gép. Az `smp_affinity_list` azokat a magokat sorolja fel, amelyekre egy megszakítás mehet.
 
@@ -482,7 +478,7 @@ x86-64-en a kivételeknek rögzített számuk van a megszakításvektor-tábláb
 | 2 | `NMI` | hardverhiba (és egyéb) | a kernelben kezeli |
 | 13 | `#GP` általános védelmi hiba | program | `SIGSEGV` szignált küld |
 | 14 | `#PF` laphiba | program | betölti a lapot, vagy ha a hozzáférés tiltott, `SIGSEGV` (néha `SIGBUS`) szignált küld |
-| 18 | `#MC` gépellenőrzés (machine check) | hardverhiba | naplózza a hibát; `SIGBUS` szignált küldhet az érintett folyamatnak, vagy leállíthatja a rendszert |
+| 18 | `#MC` machine check | hardverhiba | naplózza a hibát; `SIGBUS` szignált küldhet az érintett folyamatnak, vagy leállíthatja a rendszert |
 | 32–255 | külső megszakítások, magok közötti megszakítások | időzítő, I/O | lefuttatja az adott vektorhoz regisztrált kezelőt |
 
 Nullával való osztás a gyakorlatban:
@@ -552,7 +548,7 @@ Egyik utasítás sem fut le. A processzor általános védelmi hibát váltott k
 A Linux minden hardveres megszakításkezelőt úgy futtat, hogy az adott magon minden megszakítás le van tiltva, és ugyanaz az IRQ soha nem fut egyszerre két magon. Az előadás fogalmaival: a Linux az eszközmegszakításoknál **szekvenciális** feldolgozást használ, nem prioritásos egymásba ágyazást. Ez csak akkor működik, ha a kezelők nagyon rövidek, ezért a Linux két részre bontja a megszakítással járó munkát:
 
 - a **felső fél** (top half, a hardveres IRQ-kezelő, hard IRQ handler) csak a sürgős részt végzi el: nyugtázza az eszközt, és átveszi az adatot;
-- a többi **halasztott munka** (deferred work), amely kicsit később, engedélyezett megszakítások mellett történik. A *softirq-k* és a *taskletek* még megszakítási környezetben futnak, és nem alhatnak el. A *szálas IRQ-kezelők* (threaded IRQ handlers) és a *munkasorok* (work queues) kernelszálként futnak, így elalhatnak (például várhatnak egy zárra vagy memóriára).
+- a többi **halasztott munka** (deferred work), amely kicsit később, engedélyezett megszakítások mellett történik. A *softirq-k* és a *taskletek* még megszakítási környezetben futnak, és nem alhatnak el. A *threaded IRQ-kezelők* (threaded IRQ handlers) és a *workqueue-k* (work queues) kernelszálként futnak, így elalhatnak (például várhatnak egy zárra vagy memóriára).
 
 A `/proc/softirqs` típusonként számolja a halasztott munkát. A hálózati fogadás (`NET_RX`) és a lemezműveletek befejezése (`BLOCK`) a fenti eszközmegszakítások alsó fele:
 
@@ -572,33 +568,33 @@ $ cat /proc/softirqs
 ```
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> felső fél, alsó fél, halasztott munka, softirq, tasklet, megszakítási környezet, alvás, munkasor</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> felső fél, alsó fél, halasztott munka, softirq, tasklet, megszakítási környezet, alvás, workqueue</summary>
 
 - **Felső fél / alsó fél (top half / bottom half):** a mentős egy balesetnél csak azt teszi meg, ami nem várhat (felső fél); a többit később a kórház végzi el (alsó fél).
 - **Halasztott munka:** egy kicsit későbbi, nyugodtabb pillanatra elhalasztott munka.
 - **Softirq, tasklet:** Linux-mechanizmusok halasztott munka futtatására röviddel a megszakítás után. A felső félhez hasonlóan ezek sem alhatnak el (nem várhatnak semmire).
 - **Megszakítási környezet (interrupt context):** olyan kód, amely egy megszakítás „nevében” fut, nem valamelyik programéban. Soha nem várhat (nem alhat el), mert nincs olyan program, amelyet el lehetne altatni.
 - **Alvás (sleep):** szüneteltetés, és a processzor átadása valaki másnak, amíg egy feltétel nem teljesül, például amíg meg nem érkezik az adat.
-- **Munkasor, szálas IRQ (work queue, threaded IRQ):** kernelszálak által végzett halasztott munka; ezek elalhatnak.
+- **Workqueue, threaded IRQ:** kernelszálak által végzett halasztott munka; ezek elalhatnak.
 
 </details>
 
 ### A három I/O-technika ma
 
-A modern lemezek és hálózati kártyák **DMA**-t használnak: közvetlenül olvassák és írják a főmemóriát, és csak akkor szakítják meg a processzort, amikor egy munkaköteg elkészült. Nagyon nagy hálózati forgalomnál már csomagonként egy megszakítás is túl sok, ezért a Linux hálózati rétegverme (NAPI) egy terhelt hálózati kártyát megszakításokról visszakapcsol **lekérdezésre**, majd a forgalom csillapodásával visszatér a megszakításokhoz. A lekérdezés tehát nem mindig pazarlás: akkor éri meg, ha szinte mindig van mit begyűjteni.
+A modern lemezek és hálózati kártyák **DMA**-t használnak: közvetlenül olvassák és írják a főmemóriát, és csak akkor szakítják meg a processzort, amikor egy munkaköteg elkészült. Nagyon nagy hálózati forgalomnál már csomagonként egy megszakítás is túl sok, ezért a Linux hálózati stackje (NAPI) egy terhelt hálózati kártyát megszakításokról visszakapcsol **lekérdezésre**, majd a forgalom csillapodásával visszatér a megszakításokhoz. A lekérdezés tehát nem mindig pazarlás: akkor éri meg, ha szinte mindig van mit begyűjteni.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> csomag, hálózati rétegverem, NAPI</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> csomag, hálózati stack, NAPI</summary>
 
 - **Csomag (packet):** a hálózaton küldött kis adatdarab. Egy weboldal sok csomagban érkezik meg.
-- **Hálózati rétegverem (network stack):** az operációs rendszer hálózatkezelő része, amely egymásra épülő rétegekből áll.
+- **Hálózati stack (network stack):** az operációs rendszer hálózatkezelő része, amely egymásra épülő rétegekből áll.
 - **NAPI** („New API”, „új API”): a Linux módszere hálózati kártyákhoz, amely megszakítások (gyér forgalomnál) és lekérdezés (folyamatosan érkező csomagoknál) között vált.
 
 </details>
 
 ### Egy laphiba, amely a lemezre vár
 
-A `pagefault.c` egy 16 MiB-os fájlt képez le a memóriába az `mmap` segítségével, és mind a 4096 lapjáról beolvas egy-egy bájtot, így minden lapot először érint. A laphibákat a `getrusage` függvénnyel számolja meg: a **nagyobb (major) laphiba** lemezolvasást igényelt, a **kisebb (minor) laphiba** a lapot már a memóriában (a lapgyorsítótárban, page cache) találta, és csak be kellett illesztenie a címtartományba. Alapértelmezés szerint kikapcsolja az előreolvasást (`madvise(MADV_RANDOM)`), hogy minden laphiba pontosan egy lapot olvasson be; a `readahead` argumentummal bekapcsolva hagyja. A `pagefault.sh` szkript kiüríti a lapgyorsítótárat, kétszer futtatja a programot (hidegen, majd melegen), és mindkét futtatás alatt megszámolja a lemez megszakításait (`virtio1-req.0` a `/proc/interrupts`-ban, a korábbi listában látott lemez):
+A `pagefault.c` egy 16 MiB-os fájlt képez le a memóriába az `mmap` segítségével, és mind a 4096 lapjáról beolvas egy-egy bájtot, így minden lapot először érint. A laphibákat a `getrusage` függvénnyel számolja meg: a **major laphiba** lemezolvasást igényelt, a **minor laphiba** a lapot már a memóriában (a page cache-ben) találta, és csak be kellett illesztenie a címtartományba. Alapértelmezés szerint kikapcsolja az előreolvasást (`madvise(MADV_RANDOM)`), hogy minden laphiba pontosan egy lapot olvasson be; a `readahead` argumentummal bekapcsolva hagyja. A `pagefault.sh` szkript kiüríti a page cache-t, kétszer futtatja a programot (hidegen, majd melegen), és mindkét futtatás alatt megszámolja a lemez megszakításait (`virtio1-req.0` a `/proc/interrupts`-ban, a korábbi listában látott lemez):
 
 ```c
     if (argc < 3)                                  /* no read-ahead: one fault = one page */
@@ -629,29 +625,29 @@ cold run: disk interrupts (virtio1-req.0): 73
 ...
 ```
 
-- **Hidegen, előreolvasás nélkül:** 4096 nagyobb laphiba és 4102 lemezmegszakítás, beolvasott laponként egy befejezési megszakítás (a további 6 a futtatás alatti egyéb lemeztevékenységből származott). Ez az [előző szakasz](#összerakva-egy-laphiba-amelyhez-a-lemez-kell) lánca, 4096-szor egymás után: laponként mintegy 39 µs, szinte teljes egészében a lemezre való várakozással töltve – ennyi idő alatt a processzor más folyamatokat futtathatna.
-- **Melegen:** ugyanaz a ciklus 1,4 ms-ig tart, több mint százszor gyorsabban: nincs se nagyobb laphiba, se lemezmegszakítás. A 258 kisebb laphiba jóval kevesebb a 4096 lapnál, mert a Linux minden laphibánál a szomszédos, már a lapgyorsítótárban lévő lapokat is beilleszti (*fault-around*).
-- **Hidegen, előreolvasással:** csak 1 nagyobb laphiba és 73 megszakítás. Az első laphibát látva a kernel néhány tucat nagy DMA-átvitellel előre beolvasta a fájl nagy darabjait, és a későbbi hozzáférések a lapjaikat már a memóriában találták. Kevesebb, nagyobb átvitel kevesebb megszakítást jelent: ugyanaz a tanulság, mint fent a „pufferenkénti” és a „bájtonkénti megszakítás” összevetéséből.
+- **Hidegen, előreolvasás nélkül:** 4096 major laphiba és 4102 lemezmegszakítás, beolvasott laponként egy befejezési megszakítás (a további 6 a futtatás alatti egyéb lemeztevékenységből származott). Ez az [előző szakasz](#összerakva-egy-laphiba-amelyhez-a-lemez-kell) lánca, 4096-szor egymás után: laponként mintegy 39 µs, szinte teljes egészében a lemezre való várakozással töltve – ennyi idő alatt a processzor más folyamatokat futtathatna.
+- **Melegen:** ugyanaz a ciklus 1,4 ms-ig tart, több mint százszor gyorsabban: nincs se major laphiba, se lemezmegszakítás. A 258 minor laphiba jóval kevesebb a 4096 lapnál, mert a Linux minden laphibánál a szomszédos, már a page cache-ben lévő lapokat is beilleszti (*fault-around*).
+- **Hidegen, előreolvasással:** csak 1 major laphiba és 73 megszakítás. Az első laphibát látva a kernel néhány tucat nagy DMA-átvitellel előre beolvasta a fájl nagy darabjait, és a későbbi hozzáférések a lapjaikat már a memóriában találták. Kevesebb, nagyobb átvitel kevesebb megszakítást jelent: ugyanaz a tanulság, mint fent a „pufferenkénti” és a „bájtonkénti megszakítás” összevetéséből.
 
 Ez egy virtuális gép, amelynek a lemezét maga a gazdagép emulálja, ezért fizikai lemezen az abszolút idők eltérnek (egy HDD olvasásonként sokkal lassabb, egy NVMe SSD valamivel gyorsabb), a számlálók azonban mindenhol ugyanazt mutatják.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> mmap, getrusage, nagyobb laphiba, kisebb laphiba, lapgyorsítótár, előreolvasás, madvise, drop_caches, fault-around</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> mmap, getrusage, major laphiba, minor laphiba, page cache, előreolvasás, madvise, drop_caches, fault-around</summary>
 
 - **`mmap`:** megkéri az operációs rendszert, hogy egy fájl a program memóriájának részeként jelenjen meg. Az adat csak akkor töltődik be, amikor a program először hozzányúl egy laphoz – egy laphibán keresztül.
 - **`getrusage`:** Linux-függvény, amely megmondja, mennyi erőforrást használt el eddig a program, többek között azt is, hány laphibát okozott.
-- **Nagyobb (major) / kisebb (minor) laphiba:** a nagyobb laphibánál várni kell a lemezre; a kisebb laphiba az adatot már a memóriában találja, és csak a laptáblát kell rendbe tenni.
-- **Lapgyorsítótár (page cache):** a memóriának az a része, ahol a Linux a nemrég használt fájladatok másolatát tartja, hogy ne kelljen újra a lemezről olvasni.
+- **Major / minor laphiba:** a major laphibánál várni kell a lemezre; a minor laphiba az adatot már a memóriában találja, és csak a laptáblát kell rendbe tenni.
+- **Page cache:** a memóriának az a része, ahol a Linux a nemrég használt fájladatok másolatát tartja, hogy ne kelljen újra a lemezről olvasni.
 - **Előreolvasás (read-ahead):** ha egy fájlt az elejétől olvasunk, az operációs rendszer arra számít, hogy hamarosan a következő részek is kellenek, és előre beolvassa őket – mint a pincér, aki kérés nélkül hozza a következő fogást.
 - **`madvise`:** függvény, amellyel a program elmondja az operációs rendszernek, hogyan fogja használni a memóriáját; a `MADV_RANDOM` azt jelenti: „össze-vissza sorrendben, ne olvass előre”.
-- **`drop_caches`:** ha a `/proc/sys/vm/drop_caches` fájlba 3-at írunk, a Linux kiüríti a lapgyorsítótárát, így a következő olvasásnak a lemezről kell jönnie.
+- **`drop_caches`:** ha a `/proc/sys/vm/drop_caches` fájlba 3-at írunk, a Linux kiüríti a page cache-t, így a következő olvasásnak a lemezről kell jönnie.
 - **Fault-around:** laphibánál a Linux a szomszédos, már a memóriában lévő lapokat is beilleszti, így megspórolja a későbbi laphibákat.
 
 </details>
 
 ### A megszakítási késleltetés mérése
 
-A `latency.c` azt kéri, hogy ezredmásodpercenként, pontos időpontban ébresszék fel, 5000-szer, és megméri, mennyit késnek valójában az egyes ébresztések. Minden ébresztéshez szükség van egy időzítő-megszakításra, a kernel megszakításkezelésére és az ütemezőre, így ez a késleltetésről szóló szakasz teljes láncát méri: a megszakítási késleltetést, az ütemezési késleltetést, valamint még egy Linux-sajátosságot, az **időzítő-ráhagyást** (timer slack). Energiatakarékosság céljából a Linux egy közönséges programot szándékosan akár 50 µs-mal később is felébreszthet, hogy több ébresztést együtt intézhessen el; a valós idejű feladatok nem kapnak ráhagyást. A `noslack` opcióval a program arra kéri a kernelt, hogy a ráhagyást kapcsolja ki számára. (A program a `cyclictest`, az erre szolgáló szabványos Linux-eszköz egyszerűsített változata.)
+A `latency.c` azt kéri, hogy ezredmásodpercenként, pontos időpontban ébresszék fel, 5000-szer, és megméri, mennyit késnek valójában az egyes ébresztések. Minden ébresztéshez szükség van egy időzítő-megszakításra, a kernel megszakításkezelésére és az ütemezőre, így ez a késleltetésről szóló szakasz teljes láncát méri: a megszakítási késleltetést, az ütemezési késleltetést, valamint még egy Linux-sajátosságot, a **timer slacket**. Energiatakarékosság céljából a Linux egy közönséges programot szándékosan akár 50 µs-mal később is felébreszthet, hogy több ébresztést együtt intézhessen el; a valós idejű feladatokra nem vonatkozik timer slack. A `noslack` opcióval a program arra kéri a kernelt, hogy a timer slacket kapcsolja ki számára. (A program a `cyclictest`, az erre szolgáló szabványos Linux-eszköz egyszerűsített változata.)
 
 ```c
 #include <stdio.h>
@@ -695,7 +691,7 @@ int main(int argc, char **argv) {
 }
 ```
 
-Négy futtatás: egy terheletlen gépen, majd úgy, hogy mindkét magot két `yes > /dev/null` folyamat tartja elfoglalva: közönséges programként, időzítő-ráhagyás nélkül, illetve valós idejű prioritással (`chrt -f 80`, ehhez rendszergazdai jogosultság kell):
+Négy futtatás: egy terheletlen gépen, majd úgy, hogy mindkét magot két `yes > /dev/null` folyamat tartja elfoglalva: közönséges programként, timer slack nélkül, illetve valós idejű prioritással (`chrt -f 80`, ehhez rendszergazdai jogosultság kell):
 
 ```console
 $ ./latency                    # idle
@@ -710,22 +706,22 @@ $ sudo chrt -f 80 ./latency    # both cores busy, real-time priority
 
 (Az első kimeneti sort – „5000 wake-ups, latency in microseconds:” – elhagytuk.) Mit mutatnak a számok?
 
-- **Az időzítő-ráhagyás határozza meg a tipikus késést.** Ráhagyás nélkül a medián terhelés alatt 86-ról 37 µs-ra esett: a késésből mintegy 50 µs egyáltalán nem késleltetés volt, hanem az, hogy a kernel szándékosan kötegelte az ébresztéseket. A legrosszabb esetek nem javultak.
-- **A prioritás határozza meg a rossz eseteket.** Valós idejű prioritással a medián alig változott (36 µs, hiszen a valós idejű feladatok sem kapnak ráhagyást), a 99%-os érték viszont 2,8 ms-ról 74 µs-ra, a maximum pedig 9-ről 1,6 ms-ra esett. Egy közönséges programnak ki kell várnia a sorát a terhelő `yes` folyamatok mögött; egy valós idejű program viszont azonnal fut, amint felébresztették.
+- **A timer slack határozza meg a tipikus késést.** Timer slack nélkül a medián terhelés alatt 86-ról 37 µs-ra esett: a késésből mintegy 50 µs egyáltalán nem késleltetés volt, hanem az, hogy a kernel szándékosan kötegelte az ébresztéseket. A legrosszabb esetek nem javultak.
+- **A prioritás határozza meg a rossz eseteket.** Valós idejű prioritással a medián alig változott (36 µs, hiszen a valós idejű feladatokra eleve nem vonatkozik timer slack), a 99%-os érték viszont 2,8 ms-ról 74 µs-ra, a maximum pedig 9-ről 1,6 ms-ra esett. Egy közönséges programnak ki kell várnia a sorát a terhelő `yes` folyamatok mögött; egy valós idejű program viszont azonnal fut, amint felébresztették.
 - **A medián és a legrosszabb eset nagyon különbözik.** Még a legjobb futtatásban is a legrosszabb ébresztés késése a medián 46-szorosa volt. Valós idejű munkában csak a legrosszabb eset számít.
 - **A terheletlen gép nem feltétlenül gyors.** A terheletlen gép mediánja *nagyobb* volt, mint a terhelté: a tétlen mag mély energiatakarékos alvásba kerül, és a felébresztése időbe telik.
 
 Ez egy virtuális gép: a valódi hardveren más gépekkel osztozik, ami olyan késéseket okoz, amelyeket a vendég kernel sem látni, sem befolyásolni nem tud, és a számok futtatásról futtatásra erősen ingadoznak. Egy dedikált gépen PREEMPT_RT kernellel a legrosszabb eset jellemzően jóval kisebb – ez kell a kemény valós idejű munkához.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> medián, 99. percentilis, maximum, valós idejű prioritás, chrt, időzítő-ráhagyás, prctl, sudo, yes</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> medián, 99. percentilis, maximum, valós idejű prioritás, chrt, timer slack, prctl, sudo, yes</summary>
 
 - **Medián:** a középső érték: az ébresztések fele gyorsabb volt, fele lassabb. Az átlaggal ellentétben néhány szélsőséges érték nem torzítja.
 - **99. percentilis (99%):** az ébresztések 99%-a legalább ilyen gyors volt; csak a leglassabb 1% volt lassabb.
 - **Maximum (max):** a legrosszabb megfigyelt eset – ez a szám számít a valós idejű rendszereknél.
 - **Valós idejű prioritás, `chrt -f 80`:** utasítja a Linux ütemezőjét, hogy ezt a programot minden közönséges program előtt futtassa, amikor futásra kész, 99-ből 80-as prioritással. A `-f` („first in, first out”, aki elsőként jön, elsőként megy) azt jelenti, hogy az azonos prioritású programok közül az fut, amelyik elsőként vált futásra késszé, egészen addig, amíg át nem adja a processzort.
-- **Időzítő-ráhagyás (timer slack):** kis extra késés, amelyet a kernel egy közönséges program ébresztéséhez hozzáadhat, hogy több ébresztést egyszerre intézhessen el, és a processzor tovább aludhasson. Mint a busz, amely egy percet vár a megállóban, hogy több utas felszállhasson.
-- **`prctl`:** Linux-függvény, amellyel egy program módosíthatja néhány saját beállítását, itt az időzítő-ráhagyását.
+- **Timer slack:** kis extra késés, amelyet a kernel egy közönséges program ébresztéséhez hozzáadhat, hogy több ébresztést egyszerre intézhessen el, és a processzor tovább aludhasson. Mint a busz, amely egy percet vár a megállóban, hogy több utas felszállhasson.
+- **`prctl`:** Linux-függvény, amellyel egy program módosíthatja néhány saját beállítását, itt a timer slackjét.
 - **`sudo`:** rendszergazdai jogosultsággal futtat egy parancsot.
 - **`yes > /dev/null`:** program, amely a végtelenségig „y” betűket ír a semmibe – egyszerű módja annak, hogy egy processzormagot 100%-ig lefoglaljunk.
 
@@ -839,7 +835,7 @@ Egyszer helyes, kétszer hibás. Ez teszi veszélyessé a versenyhelyzeteket: a 
 5. **A versenyhelyzet.** Futtasd a `race.c` programot mindhárom üzemmódban, mindegyiket többször. Ezután kösd egyetlen maghoz a `taskset -c 0` paranccsal. Miért sokkal ritkábbak a hibák egyetlen magon? Növeld `N` értékét, amíg meg nem jelennek.
 6. **Késleltetés.** Futtasd a `latency.c` programot terheletlen gépen, majd úgy, hogy magonként egy `yes > /dev/null` fut: változtatás nélkül, a `noslack` opcióval, és (ha van rendszergazdai jogosultságod) `sudo chrt -f 80`-nal. Tölts ki egy táblázatot a mediánnal, a 99%-os értékkel és a maximummal. Melyik beállítás változtat a mediánon, és melyik a legrosszabb eseteken? Miért fontosabb egy motorvezérlőnél a maximum, mint a medián?
 7. **Saját szemafor.** Írd át a `race.c` programot POSIX-szemaforral (`sem_t`, `sem_init`, `sem_wait`, `sem_post`). Mérd meg a `time` paranccsal a spinlockos és a szemaforos változat futási idejét. Melyik a gyorsabb itt, és miért változhatna ez, ha a kritikus szakasz hosszú lenne?
-8. **Egy laphiba, amely a lemezre vár.** Futtasd a `pagefault.sh` szkriptet (rendszergazdaként) a `readahead` argumentum nélkül és azzal is. (A saját gépeden előbb keresd meg a lemez sorát a `/proc/interrupts`-ban, és add meg a nevét a `DISK` változóban, például `sudo DISK=nvme0q1 sh ./pagefault.sh`; egy NVMe-lemeznek több várakozási sora (queue) van, ezért válassz egyet, vagy add össze őket.) Hány lemezmegszakítás jut egy nagyobb (major) laphibára? Miért csökkenti az előreolvasás a laphibák és a megszakítások számát is? Mit csinál a processzor, amíg a hideg futtatás várakozik?
+8. **Egy laphiba, amely a lemezre vár.** Futtasd a `pagefault.sh` szkriptet (rendszergazdaként) a `readahead` argumentum nélkül és azzal is. (A saját gépeden előbb keresd meg a lemez sorát a `/proc/interrupts`-ban, és add meg a nevét a `DISK` változóban, például `sudo DISK=nvme0q1 sh ./pagefault.sh`; egy NVMe-lemeznek több várakozási sora (queue) van, ezért válassz egyet, vagy add össze őket.) Hány lemezmegszakítás jut egy major laphibára? Miért csökkenti az előreolvasás a laphibák és a megszakítások számát is? Mit csinál a processzor, amíg a hideg futtatás várakozik?
 
 ## Ellenőrző kérdések
 

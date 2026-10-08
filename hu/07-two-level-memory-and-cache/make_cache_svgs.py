@@ -92,7 +92,7 @@ def hierarchy():
     p.append(path("M890 340V84", m, width=2)); p.append(text(902, 210, "bájtonkénti ár", 11.5, cls="quiet"))
     p.append(text(902, 226, "és sebesség", 11.5, cls="quiet"))
     p.append(text(24, 368, "Kék: az előadás gyorsítótár–RAM párosa (felejtő, a hardver kezeli). Narancs: az alatta lévő tárak, ahol a RAM a lemez", 11.5, cls="quiet"))
-    p.append(text(24, 386, "gyorsítótáraként működik (lapgyorsítótár, virtuális memória). A gyorsítótár-idők az előadás gépén mérve (latency.c).", 11.5, cls="quiet"))
+    p.append(text(24, 386, "gyorsítótáraként működik (page cache, virtuális memória). A gyorsítótár-idők az előadás gépén mérve (latency.c).", 11.5, cls="quiet"))
     p.append(text(24, 404, "A belső tárat a CPU utasításai érik el, a külső tárat I/O-n keresztül; az offline tárnál előbb be kell helyezni az adathordozót.", 11.5, cls="quiet"))
     return svg(1000, 420, title, "\n".join(p))
 
@@ -147,7 +147,7 @@ def ladder():
     p.append(f'<polyline points="{pts}" fill="none" class="acc" stroke-width="2.5"/>')
     for kb, ns in data:
         p.append(f'<circle cx="{lx(kb):.1f}" cy="{ly(ns):.1f}" r="3.5" class="acct"/>')
-    p.append(text(24, 372, "Véletlenszerű mutatókövetés egy 2,8 GHz-es Xeonon (felhőbeli VM): kb. 1,6 ns (4–5 ciklus) az L1-ben, 4,4 ns az L2-ben,", 11.5, cls="quiet"))
+    p.append(text(24, 372, "Véletlenszerű pointer chasing egy 2,8 GHz-es Xeonon (felhőbeli VM): kb. 1,6 ns (4–5 ciklus) az L1-ben, 4,4 ns az L2-ben,", 11.5, cls="quiet"))
     p.append(text(24, 390, "25 ns a más bérlőkkel közös L3-ban, 110–180 ns a RAM-ból. Logaritmikus skálák; minden lépcső egy hierarchiaszint.", 11.5, cls="quiet"))
     return svg(800, 406, title, "\n".join(p))
 

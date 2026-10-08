@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 412" width="760" height="412" role="img" aria-label="Where the hypervisor runs: type 1, type 2, and KVM" xmlns:c2pa="http://c2pa.org/manifest"><metadata><c2pa:manifest>AAAWgmp1bWIAAAAeanVtZGMycGEAEQAQgAAAqgA4m3EDYzJwYQAAABZcanVtYgAAAEdqdW1kYzJtYQARABCAAACqADibcQN1cm46YzJwYTowNTMwYjI0OS1kNDZlLTQyMmQtYmNkOC00ZTliMTdkOTI4M2QAAAADl2p1bWIAAAApanVtZGMyYXMAEQAQgAAAqgA4m3EDYzJwYS5hc3NlcnRpb25zAAAAALxqdW1iAAAARGp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuaW5ncmVkaWVudC52MwAAAAAYYzJzaF0oU8C2fFFXU5yhb//M+ksAAABwY2JvcqNpZGM6Zm9ybWF0bWltYWdlL3N2Zyt4bWxqaW5zdGFuY2VJRHgseG1wOmlpZDo5Yzg5NWQ1Yi0zYzMzLTQxODEtYmUyZS1mMWViZTVkOWRhYTBscmVsYXRpb25zaGlwaHBhcmVudE9mAAAB4mp1bWIAAABBanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5hY3Rpb25zLnYyAAAAABhjMnNoEfyx5nPC7kryL3XawkNWVwAAAZljYm9yomdhY3Rpb25zgqJmYWN0aW9ua2MycGEub3BlbmVkanBhcmFtZXRlcnOha2luZ3JlZGllbnRzgaJjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggYNQSm2HwUL/+G192DRLCwKS7av0ebtZSk/HErOf3nmykZmFjdGlvbngdY29tLmFudGhyb3BpYy5jbGF1ZGUucHJvdmlkZWRqcGFyYW1ldGVyc6F4H2NvbS5hbnRocm9waWMub3JpZ2luLWNvbmZpZGVuY2VndW5rbm93bmtkZXNjcmlwdGlvbnhmQ2xhdWRlIHByb3ZpZGVkIHRoaXMgZmlsZSBhdCB0aGUgcmVxdWVzdCBvZiBhIHVzZXIgYW5kIG1heSBoYXZlIGNyZWF0ZWQgb3IgbW9kaWZpZWQgdGhlIGZpbGUgY29udGVudHMubXNvZnR3YXJlQWdlbnShZG5hbWVmQ2xhdWRlcmFsbEFjdGlvbnNJbmNsdWRlZPUAAADIanVtYgAAAEBqdW1kY2JvcgARABCAAACqADibcRNjMnBhLmhhc2guZGF0YQAAAAAYYzJzaGxrmzh4YuJZFO0LvzZAhN8AAACAY2JvcqVjYWxnZnNoYTI1NmNwYWRNAAAAAAAAAAAAAAAAAGRoYXNoWCB8CoiG9TGz9vyqwk2tumWJlj9fj6WYzP9rpf/FfJB+X2RuYW1lbmp1bWJmIG1hbmlmZXN0amV4Y2x1c2lvbnOBomVzdGFydBjhZmxlbmd0aBkeBAAAAj5qdW1iAAAAJ2p1bWRjMmNsABEAEIAAAKoAOJtxA2MycGEuY2xhaW0udjIAAAACD2Nib3KlY2FsZ2ZzaGEyNTZpc2lnbmF0dXJleE1zZWxmI2p1bWJmPS9jMnBhL3VybjpjMnBhOjA1MzBiMjQ5LWQ0NmUtNDIyZC1iY2Q4LTRlOWIxN2Q5MjgzZC9jMnBhLnNpZ25hdHVyZWppbnN0YW5jZUlEeCx4bXA6aWlkOmQ5MGVmYjg3LTFiMmYtNDA2My1hYzUwLWYzMGNkMzI1NzZkNHJjcmVhdGVkX2Fzc2VydGlvbnODomN1cmx4LXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaW5ncmVkaWVudC52M2RoYXNoWCBg1BKbYfBQv/4bX3YNEsLApLtq/R5u1lKT8cSs5/eebKJjdXJseCpzZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmFjdGlvbnMudjJkaGFzaFggxxBTKZD1tLM4IAY2zhNVB89Yxi8aAv+Z5zReciLiCx+iY3VybHgpc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5oYXNoLmRhdGFkaGFzaFgga6MlSm+P9d6lniFCMz/MstDygrAGXNmx60ZJgxfHaKN0Y2xhaW1fZ2VuZXJhdG9yX2luZm+jZG5hbWVvQW50aHJvcGljIEZpbGVzZ3ZlcnNpb25lMS4wLjBrc3BlY1ZlcnNpb25lMi40LjAAABA4anVtYgAAAChqdW1kYzJjcwARABCAAACqADibcQNjMnBhLnNpZ25hdHVyZQAAABAIY2JvctKEWQISogEmGCFZAgowggIGMIIBjaADAgECAhRA5aAK7sI50L64g/oGQgU9Z1UTADAKBggqhkjOPQQDAzBJMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEuMCwGA1UEAxMlQW50aHJvcGljIENvbnRlbnQgQ3JlZGVudGlhbHMgUm9vdCBDQTAeFw0yNjA4MDcxODQzNTZaFw0yODA4MDYxOTQzNTZaMEQxFzAVBgNVBAoTDkFudGhyb3BpYywgUEJDMSkwJwYDVQQDEyBBbnRocm9waWMgQ2xhdWRlIENvbnRlbnQgU2lnbmluZzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJh6CmvLUBgFFNU0vUKlOVtE6djd17L5SuwX0LemFisBM3dkd/3cyjxFA3Qo5S46fX0/ihY0VZ7mfb9KF703t5OjWDBWMA4GA1UdDwEB/wQEAwIHgDAVBgNVHSUEDjAMBgorBgEEAYPoXgIBMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUzlHiBIFOZFsj+OPEz5o+nMHXXMIwCgYIKoZIzj0EAwMDZwAwZAIwMXMdFJ4BetLLVY7ORuE9noqbbAZOZn/aArXyTwFAZfKrPzxF2vPoJNf1+UCdg1XGAjBwX1zd9WGqYkqmL5SFqw1QySjr1zJfpJM9+1rdDwSPLMOPOjKuiXjoU/pUUeG9RwmhY3BhZFkNngAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPZYQF38DiL2o0wVoFi51WSpEPnwqe3vGSlgAzOLmsu2NPLYKKACp8gZdie9A5WZKkEI03sxJKs1wunOjzFVfKpD0ME=</c2pa:manifest></metadata>
+<title>Where the hypervisor runs: type 1, type 2, and KVM</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="ht" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Where the hypervisor runs: type 1, type 2, and KVM</text>
+<text x="24" y="62" font-size="13" font-weight="600" class="ink" text-anchor="start">Type 1 (bare metal)</text>
+<text x="24" y="80" font-size="11" font-weight="400" class="quiet" text-anchor="start">Xen, VMware ESXi, Hyper-V</text>
+<rect x="24" y="318" width="228" height="32" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="138.0" y="338.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">hardware (with VT-x / AMD-V)</text>
+<text x="270" y="62" font-size="13" font-weight="600" class="ink" text-anchor="start">Type 2 (hosted)</text>
+<text x="270" y="80" font-size="11" font-weight="400" class="quiet" text-anchor="start">VirtualBox, VMware Workstation</text>
+<rect x="270" y="318" width="228" height="32" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="384.0" y="338.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">hardware (with VT-x / AMD-V)</text>
+<text x="516" y="62" font-size="13" font-weight="600" class="ink" text-anchor="start">KVM (Linux as the hypervisor)</text>
+<text x="516" y="80" font-size="11" font-weight="400" class="quiet" text-anchor="start">KVM + QEMU, Firecracker</text>
+<rect x="516" y="318" width="228" height="32" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="630.0" y="338.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">hardware (with VT-x / AMD-V)</text>
+<rect x="24" y="272" width="228" height="38" rx="6" class="accf"/><rect x="24" y="272" width="228" height="38" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="138.0" y="287.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">hypervisor (VMM)</text>
+<text x="138.0" y="302.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">runs in the most privileged mode</text>
+<rect x="24.0" y="104" width="72.0" height="160" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="60.0" y="122" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">VM 1</text>
+<rect x="30.0" y="132" width="60.0" height="54" rx="6" class="tint"/><rect x="30.0" y="132" width="60.0" height="54" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="60.0" y="162.96" font-size="11" font-weight="400" class="ink" text-anchor="middle">apps</text>
+<rect x="30.0" y="194" width="60.0" height="62" rx="6" class="c2f"/><rect x="30.0" y="194" width="60.0" height="62" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="60.0" y="221.96" font-size="11" font-weight="600" class="ink" text-anchor="middle">guest</text>
+<text x="60.0" y="235.96" font-size="11" font-weight="400" class="quiet" text-anchor="middle">kernel</text>
+<rect x="102.0" y="104" width="72.0" height="160" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="138.0" y="122" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">VM 2</text>
+<rect x="108.0" y="132" width="60.0" height="54" rx="6" class="tint"/><rect x="108.0" y="132" width="60.0" height="54" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="138.0" y="162.96" font-size="11" font-weight="400" class="ink" text-anchor="middle">apps</text>
+<rect x="108.0" y="194" width="60.0" height="62" rx="6" class="c2f"/><rect x="108.0" y="194" width="60.0" height="62" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="138.0" y="221.96" font-size="11" font-weight="600" class="ink" text-anchor="middle">guest</text>
+<text x="138.0" y="235.96" font-size="11" font-weight="400" class="quiet" text-anchor="middle">kernel</text>
+<rect x="180.0" y="104" width="72.0" height="160" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="216.0" y="122" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">VM 3</text>
+<rect x="186.0" y="132" width="60.0" height="54" rx="6" class="tint"/><rect x="186.0" y="132" width="60.0" height="54" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="216.0" y="162.96" font-size="11" font-weight="400" class="ink" text-anchor="middle">apps</text>
+<rect x="186.0" y="194" width="60.0" height="62" rx="6" class="c2f"/><rect x="186.0" y="194" width="60.0" height="62" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="216.0" y="221.96" font-size="11" font-weight="600" class="ink" text-anchor="middle">guest</text>
+<text x="216.0" y="235.96" font-size="11" font-weight="400" class="quiet" text-anchor="middle">kernel</text>
+<rect x="270" y="272" width="228" height="38" rx="6" class="tint"/><rect x="270" y="272" width="228" height="38" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="384.0" y="287.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">host operating system</text>
+<text x="384.0" y="302.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">(Windows, macOS, Linux)</text>
+<rect x="270" y="104" width="70" height="160" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="276" y="132" width="58" height="124" rx="6" class="tint"/><rect x="276" y="132" width="58" height="124" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="305.0" y="190.96" font-size="11" font-weight="400" class="ink" text-anchor="middle">other</text>
+<text x="305.0" y="204.96" font-size="11" font-weight="400" class="quiet" text-anchor="middle">apps</text>
+<rect x="348" y="104" width="150" height="160" rx="6" class="accf"/><rect x="348" y="104" width="150" height="160" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="423.0" y="122" font-size="11" font-weight="600" class="acct" text-anchor="middle">hypervisor: an application</text>
+<rect x="354.0" y="132" width="66.0" height="58" rx="6" class="tint"/><rect x="354.0" y="132" width="66.0" height="58" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="387.0" y="164.96" font-size="11" font-weight="400" class="ink" text-anchor="middle">apps</text>
+<rect x="354.0" y="196" width="66.0" height="60" rx="6" class="c2f"/><rect x="354.0" y="196" width="66.0" height="60" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="387.0" y="222.96" font-size="11" font-weight="600" class="ink" text-anchor="middle">guest</text>
+<text x="387.0" y="236.96" font-size="11" font-weight="400" class="quiet" text-anchor="middle">kernel</text>
+<rect x="426.0" y="132" width="66.0" height="58" rx="6" class="tint"/><rect x="426.0" y="132" width="66.0" height="58" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="459.0" y="164.96" font-size="11" font-weight="400" class="ink" text-anchor="middle">apps</text>
+<rect x="426.0" y="196" width="66.0" height="60" rx="6" class="c2f"/><rect x="426.0" y="196" width="66.0" height="60" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="459.0" y="222.96" font-size="11" font-weight="600" class="ink" text-anchor="middle">guest</text>
+<text x="459.0" y="236.96" font-size="11" font-weight="400" class="quiet" text-anchor="middle">kernel</text>
+<rect x="516" y="272" width="228" height="38" rx="6" class="tint"/><rect x="516" y="272" width="228" height="38" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="524" y="295" font-size="11.5" font-weight="600" class="ink" text-anchor="start">Linux kernel</text>
+<rect x="620" y="277" width="118" height="28" rx="4" class="accf"/><rect x="620" y="277" width="118" height="28" rx="4" fill="none" class="acc" stroke-width="2"/>
+<text x="679.0" y="294.96" font-size="11" font-weight="600" class="ink" text-anchor="middle">kvm module</text>
+<rect x="516" y="104" width="64" height="160" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<rect x="522" y="132" width="52" height="124" rx="6" class="tint"/><rect x="522" y="132" width="52" height="124" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="548.0" y="191.03" font-size="10.5" font-weight="400" class="ink" text-anchor="middle">other</text>
+<text x="548.0" y="204.53" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">processes</text>
+<rect x="586.0" y="104" width="73.0" height="160" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="622.5" y="122" font-size="11" font-weight="600" class="ink" text-anchor="middle">QEMU 1</text>
+<rect x="592.0" y="132" width="61.0" height="48" rx="6" class="tint"/><rect x="592.0" y="132" width="61.0" height="48" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="622.5" y="153.03" font-size="10.5" font-weight="400" class="ink" text-anchor="middle">guest</text>
+<text x="622.5" y="166.53" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">apps</text>
+<rect x="592.0" y="186" width="61.0" height="44" rx="6" class="c2f"/><rect x="592.0" y="186" width="61.0" height="44" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="622.5" y="205.03" font-size="10.5" font-weight="600" class="ink" text-anchor="middle">guest</text>
+<text x="622.5" y="218.53" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">kernel</text>
+<text x="622.5" y="250" font-size="10" font-weight="400" class="quiet" text-anchor="middle">device model</text>
+<rect x="665.0" y="104" width="73.0" height="160" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="701.5" y="122" font-size="11" font-weight="600" class="ink" text-anchor="middle">QEMU 2</text>
+<rect x="671.0" y="132" width="61.0" height="48" rx="6" class="tint"/><rect x="671.0" y="132" width="61.0" height="48" rx="6" fill="none" class="edge" stroke-width="1.25"/>
+<text x="701.5" y="153.03" font-size="10.5" font-weight="400" class="ink" text-anchor="middle">guest</text>
+<text x="701.5" y="166.53" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">apps</text>
+<rect x="671.0" y="186" width="61.0" height="44" rx="6" class="c2f"/><rect x="671.0" y="186" width="61.0" height="44" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="701.5" y="205.03" font-size="10.5" font-weight="600" class="ink" text-anchor="middle">guest</text>
+<text x="701.5" y="218.53" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">kernel</text>
+<text x="701.5" y="250" font-size="10" font-weight="400" class="quiet" text-anchor="middle">device model</text>
+<text x="24" y="376" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Type 1: the hypervisor owns the hardware. Type 2: it is a program on an ordinary OS and uses that OS's drivers.</text>
+<text x="24" y="394" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">KVM makes the Linux kernel itself the hypervisor; each VM is an ordinary process (QEMU) with one thread per virtual CPU.</text>
+</svg>

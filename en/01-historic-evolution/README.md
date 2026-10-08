@@ -2,10 +2,6 @@
 
 *Operating Systems lecture: why operating systems exist, told as a chain of problems and solutions from punched cards to smartphones, with Linux (x86-64) demonstrations of each idea*
 
-Next: [Quality, Commercial Aspects and the Enterprise Linux Ecosystem](../02-quality-and-enterprise-linux/).
-
-> **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
-
 ## Learning objectives
 
 Almost every feature of a modern operating system was invented to remove a specific bottleneck of its time. This lecture follows those bottlenecks in order. Each step adds one piece to the operating system, and every piece is still there in the Linux, Windows, macOS or Android you use today.
@@ -463,7 +459,7 @@ Laptops, and later phones and tablets (the iPhone in 2007, Android in 2008, whic
 
 ### After the fourteen steps
 
-The story did not stop with phones. Three later turns are taken up in later lectures (containers in the [next one](../02-quality-and-enterprise-linux/#container-images-the-family-in-containers)): **virtualization**, running whole operating systems as programs on top of another (pioneered by IBM in the late 1960s and on VM/370 in 1972, and brought to PCs by VMware around 1999); **cloud computing** and **containers**, which rent out virtualized machines and isolated application packages by the hour; and **multicore** processors (from around 2005), which turned every PC and phone into a multiprocessor.
+The story did not stop with phones. Three later turns are taken up in later lectures (virtualization and containers in [lecture 11](../11-virtualization-containerization/)): **virtualization**, running whole operating systems as programs on top of another (pioneered by IBM in the late 1960s and on VM/370 in 1972, and brought to PCs by VMware around 1999); **cloud computing** and **containers**, which rent out virtualized machines and isolated application packages by the hour; and **multicore** processors (from around 2005), which turned every PC and phone into a multiprocessor.
 
 Alongside the main line of this history, specialised kinds of operating systems developed. **Real-time operating systems** guarantee that tasks finish within fixed deadlines, for example in industrial controllers or a car's braking system. **Embedded systems** run inside devices that do not look like computers at all, from washing machines to routers; most computers in the world today are embedded. **Distributed systems** make many computers connected by a network work together as if they were one.
 

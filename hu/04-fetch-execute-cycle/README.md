@@ -2,10 +2,6 @@
 
 *Operációs rendszerek előadás: a Neumann-gép, az utasításciklus és a megszakítások, Linux (x86-64) példákkal*
 
-Előző: [Kognitív ergonómia és az operációs rendszerek felhasználói felülete](../03-cognitive-ergonomics/). Következő: [Megszakítások](../05-interrupts/).
-
-> **Hogyan olvasd ezt az előadást?** Ahol új rövidítés vagy fogalom jelenik meg, utána egy **Egyszerűen elmagyarázva** feliratú doboz következik. Kattints rá, és kinyílik egy köznapi nyelvű magyarázat. Ha már ismered a fogalmakat, nyugodtan átugorhatod ezeket a dobozokat.
-
 ## Tanulási célok
 
 A processzor egyetlen ciklust ismétel: lehív egy utasítást, dekódolja, végrehajtja, majd megnézi, érkezett-e megszakítás. Ez az előadás regiszterszinten követi végig ezt a ciklust egy egyszerű oktatási CPU-n, majd megmutatja ugyanezeket a mechanizmusokat egy valódi x86-64-es Linux rendszeren.
@@ -804,7 +800,7 @@ RES:       1567       1431   Rescheduling interrupts
 - A **LOC** az ábránkon szereplő időzítő-megszakítás: minden magnak saját helyi időzítője van.
 - A **RES** azok a megszakítások, amelyeket egy mag egy másiknak küld, hogy újraütemezésre kérje.
 
-Milyen gyakran jelez az időzítő? A kernel ütemfrekvenciája fordítási opció, a `CONFIG_HZ`. Ezen a rendszeren 250 (másodpercenként 250 ütem, 4 ms-onként egy); gyakori értékek a 100, 250, 300 és 1000. A modern kernelek az energiatakarékosság érdekében a tétlen magokon le is állítják az ütemet („tickless”, ütem nélküli működés), ezért egy tétlen gépen a számlálók lassabban nőnek, mint másodpercenként 250.
+Milyen gyakran jelez az időzítő? A kernel tick-frekvenciája fordítási opció, a `CONFIG_HZ`. Ezen a rendszeren 250 (másodpercenként 250 tick, 4 ms-onként egy); gyakori értékek a 100, 250, 300 és 1000. A modern kernelek az energiatakarékosság érdekében a tétlen magokon le is állítják a ticket („tickless” működés), ezért egy tétlen gépen a számlálók lassabban nőnek, mint másodpercenként 250.
 
 A `vmstat 1` élőben mutatja a gyakoriságokat. Az `in` oszlop a másodpercenkénti megszakítások, a `cs` a másodpercenkénti környezetváltások száma:
 
@@ -818,11 +814,11 @@ procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu----
 Minden környezetváltás a kernelen belül történik, ahová egy megszakítás vagy egy rendszerhívás révén jut a vezérlés. Amikor megérkezik az időzítő-megszakítás, a Linux ütemezője (az EEVDF, a 6.6-os kernel óta az alapértelmezett) megnézi, hogy a futó feladat elhasználta-e már a CPU-időből méltányosan neki járó részt, és ha igen, átvált egy másikra.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> grep, ütem (tick), CONFIG_HZ, tickless, vmstat, környezetváltás, ütemező, EEVDF</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> grep, tick, CONFIG_HZ, tickless, vmstat, környezetváltás, ütemező, EEVDF</summary>
 
 - **`grep`:** parancs, amely egy fájlnak csak a mintára illeszkedő sorait írja ki.
-- **Ütem (tick):** egy szabályos időzítő-megszakítás. A **`CONFIG_HZ`** azt adja meg, hogy a kernelt másodpercenként hány ütemre fordították (Hz = másodpercenként).
-- **Tickless (ütem nélküli):** a tétlen mag energiatakarékosságból kikapcsolja a szabályos ütemét, és csak akkor ébred fel, ha dolga akad.
+- **Tick:** egy szabályos időzítő-megszakítás, a kernel „óraütése”. A **`CONFIG_HZ`** azt adja meg, hogy a kernelt másodpercenként hány tickre fordították (Hz = másodpercenként).
+- **Tickless (tick nélküli):** a tétlen mag energiatakarékosságból kikapcsolja a szabályos tickjét, és csak akkor ébred fel, ha dolga akad.
 - **`vmstat 1`:** parancs, amely másodpercenként kiír egy sor rendszerstatisztikát.
 - **Környezetváltás (context switch):** a CPU abbahagyja az egyik program futtatását, és egy másikat kezd futtatni: elmenti az elsőnek a regisztereit, és betölti a másodikét. Olyan, mint amikor könyvjelzőt teszünk az egyik könyvbe, és kinyitunk egy másikat.
 - **Ütemező:** az operációs rendszer azon része, amely eldönti, melyik program kapja meg legközelebb a CPU-t.

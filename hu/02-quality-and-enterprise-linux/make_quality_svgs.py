@@ -119,7 +119,7 @@ def mtbf():
 # ---------------- 3. Branching vocabulary ----------------
 def vocab():
     m, ma = "vb", "vba"
-    title = "Ág, összefésülés, fork, upstream, downstream, visszaportolás"
+    title = "Branch, merge, fork, upstream, downstream, backport"
     p = [f"<defs>{marker(m)}{marker(ma, 'acct')}</defs>", text(24, 30, title, 15, 600)]
     r = 17
     up = [(110, 150), (250, 150), (390, 150), (530, 150)]
@@ -144,8 +144,8 @@ def vocab():
     # branch and merge
     p.append(path(f"M{up[1][0] + 12} {150 - 12}L{br[0] - 14} {br[1] + 8}", m))
     p.append(path(f"M{br[0] + 14} {br[1] + 8}L{up[2][0] - 12} {150 - 12}", m, dash="4 3"))
-    p.append(text(262, 98, "ág (branch)", 11.5, 600, cls="quiet", anchor="end"))
-    p.append(text(372, 92, "összefésülés (merge)", 11.5, 600, cls="quiet"))
+    p.append(text(262, 98, "branch", 11.5, 600, cls="quiet", anchor="end"))
+    p.append(text(372, 92, "merge", 11.5, 600, cls="quiet"))
     for x, y in up:
         p += node(x, y)
     p += node(*br)
@@ -169,7 +169,7 @@ def vocab():
     p.append(path(f"M{dn[0][0]} {270 + r}L{old[0] - 12} {old[1] - 12}", m))
     p += node(*old, "c2", "v1.1")
     p.append(path(f"M{dn[1][0] - 10} {270 + r - 2}C{430} {330} {380} {350} {old[0] + r + 2} {old[1]}", ma, cls="acc", width=1.5, dash="5 3"))
-    p.append(text(430, 342, "visszaportolás: az új verzió", 11.5, 600, cls="acct"))
+    p.append(text(430, 342, "backport: az új verzió", 11.5, 600, cls="acct"))
     p.append(text(430, 358, "javítása a régihez igazítva", 11.5, cls="quiet"))
     p.append(text(dn[1][0] + 22, 262, "patch", 11.5, 600, cls="quiet"))
     # servers: install + update
@@ -202,7 +202,7 @@ def ecosystem():
     p += box(290, ya, 170, "RHEL", "Red Hat, előfizetéses", "acc")
     p += box(556, ya, 180, "CentOS Linux", "a RHEL ingyenes rebuildje")
     p.append(path(f"M194 {ya + 26}H290", m))
-    p.append(text(242, ya + 18, "ág (branch)", 11, 600, cls="quiet", anchor="middle"))
+    p.append(text(242, ya + 18, "branch", 11, 600, cls="quiet", anchor="middle"))
     p.append(text(242, ya + 44, "néhány évente", 10.5, cls="quiet", anchor="middle"))
     p.append(path(f"M460 {ya + 26}H556", m))
     p.append(text(508, ya + 18, "rebuild", 11, 600, cls="quiet", anchor="middle"))
@@ -216,7 +216,7 @@ def ecosystem():
     p += box(214, yb, 160, "CentOS Stream", "a jövő RHEL-je, nyíltan")
     p += box(414, yb, 130, "RHEL", "Red Hat", "acc")
     p.append(path(f"M174 {yb + 26}H214", m))
-    p.append(text(194, yb - 8, "ág", 11, 600, cls="quiet", anchor="middle"))
+    p.append(text(194, yb - 8, "branch", 11, 600, cls="quiet", anchor="middle"))
     p.append(path(f"M374 {yb + 26}H414", m))
     p.append(text(384, yb - 12, "kiadás", 11, 600, cls="quiet", anchor="middle"))
     # rebuilds
@@ -277,47 +277,7 @@ def lifecycle():
     return svg(760, ly + 20, title, "\n".join(p))
 
 
-# ---------------- 6. Containers: images share layers, containers share the kernel ----------------
-def containers():
-    m = "ct"
-    title = "A kép saját felhasználói teret hoz; a kernel minden konténernél a gazdagépé"
-    p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600)]
-    # left: two images sharing the base layer
-    p.append(text(24, 66, "Két kép ugyanarra az alapra építve", 13, 600))
-    bw, bh = 150, 34
-    lx = [24, 190]
-    labels = [("webalkalmazás", "számlázó alkalmazás"), ("Python-csomagok", "Java-futtatókörnyezet")]
-    for i, x in enumerate(lx):
-        p.append(rect(x, 80, bw, bh, "c2", rx=4)); p.append(text(x + bw / 2, 102, labels[0][i], 12, anchor="middle"))
-        p.append(rect(x, 80 + bh + 4, bw, bh, "tint", rx=4)); p.append(text(x + bw / 2, 102 + bh + 4, labels[1][i], 12, anchor="middle"))
-        p.append(text(x + bw / 2, 216, f"{i + 1}. kép", 11.5, 600, cls="quiet", anchor="middle"))
-    p.append(rect(24, 80 + 2 * (bh + 4), 316, bh + 8, "acc", rx=4))
-    p.append(text(182, 106 + 2 * (bh + 4), "alapréteg: UBI 9 (egy példány a lemezen)", 12, 600, anchor="middle"))
-    p.append(text(24, 262, "A rétegek csak olvashatók, és hash azonosítja őket,", 11.5, cls="quiet"))
-    p.append(text(24, 278, "így a közös alapot egyszer kell tárolni és letölteni.", 11.5, cls="quiet"))
-    # right: host with containers
-    hx, hy, hw = 400, 66, 336
-    p.append(text(hx, hy, "Egy gazdagép három konténerrel", 13, 600))
-    cw = 100
-    names = [("UBI 9", "felhasználói tér"), ("AlmaLinux 9", "felhasználói tér"), ("Fedora", "felhasználói tér")]
-    for i, (n, sub) in enumerate(names):
-        x = hx + i * (cw + 18)
-        p.append(rect(x, 80, cw, 86, "c2" if i == 0 else "tint", rx=6))
-        p.append(text(x + cw / 2, 104, "alkalmazás", 11.5, cls="quiet", anchor="middle"))
-        p.append(text(x + cw / 2, 128, n, 12, 600, anchor="middle"))
-        p.append(text(x + cw / 2, 146, sub, 11, cls="quiet", anchor="middle"))
-        p.append(path(f"M{x + cw / 2} 166V{196}", m))
-    p.append(rect(hx, 198, hw, 40, "acc", rx=6))
-    p.append(text(hx + hw / 2, 223, "egy Linux-kernel: a gazdagépé (pl. RHEL 9)", 12.5, 600, anchor="middle"))
-    p.append(rect(hx, 244, hw, 30, "tint", rx=6))
-    p.append(text(hx + hw / 2, 264, "hardver", 12, anchor="middle"))
-    p.append(text(24, 314, "Nyilak: rendszerhívások. Minden konténer ugyanazzal a kernellel beszél, ezért a Red Hat a RHEL/UBI-képeket", 11.5, cls="quiet"))
-    p.append(text(24, 332, "csak azonos főverziójú gazdagépen támogatja teljesen; más párosítást csak közönséges, nem privilegizált", 11.5, cls="quiet"))
-    p.append(text(24, 350, "munkaterheléseknél (a Red Hat kompatibilitási mátrixa szerint).", 11.5, cls="quiet"))
-    return svg(760, 370, title, "\n".join(p))
-
-
-# ---------------- 7. Owning or renting capacity: capex steps vs pay-as-you-go ----------------
+# ---------------- 6. Owning or renting capacity: capex steps vs pay-as-you-go ----------------
 def cloud_costs():
     m = "cc"
     title = "Saját szerver: lépcsőkben, az igény előtt; felhő: a költség a használatot követi"
@@ -419,7 +379,7 @@ def cloud_costs():
     return svg(760, 406, title, "\n".join(p))
 
 
-# ---------------- 8. Risk matrix ----------------
+# ---------------- 7. Risk matrix ----------------
 def risk_matrix():
     m = "rm"
     title = "A kockázat (valószínűség × hatás) dönti el, mire költsünk a rendelkezésre állásból"
@@ -464,82 +424,9 @@ def risk_matrix():
     return svg(760, ly + 50, title, "\n".join(p))
 
 
-# ---------------- 9. Image, container, volume ----------------
-def mono(x, y, s, size=12, cls="ink", anchor="start"):
-    return (f'<text x="{x}" y="{y}" font-size="{size}" class="{cls}" text-anchor="{anchor}" '
-            f'style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">{esc(s)}</text>')
-
-
-def image_container():
-    m, ma = "ic", "ica"
-    title = "A kép a csak olvasható tervrajz; minden konténer egy vékony írható réteget ad hozzá"
-    p = [f"<defs>{marker(m)}{marker(ma, 'acct')}</defs>", text(24, 30, title, 15, 600)]
-    # Containerfile
-    p.append(text(24, 66, "Containerfile", 13, 600))
-    lines = ["FROM scratch", "COPY tool /bin/tool", "RUN tool mkdir /data", "COPY app.conf /etc/",
-             "EXPOSE 8080", "USER 1000", "WORKDIR /data", "CMD tool serve"]
-    ly0, lstep = 96, 26
-    p.append(rect(18, 76, 190, len(lines) * lstep + 10, "tint", rx=6))
-    for i, s in enumerate(lines):
-        p.append(mono(28, ly0 + i * lstep, s, 12))
-    # image stack (bottom-up)
-    sx, sw = 270, 200
-    p.append(text(sx, 66, "Kép (csak olvasható, közös)", 13, 600))
-    cfg_y, cfg_h = 80, 76
-    p.append(f'<rect x="{sx}" y="{cfg_y}" width="{sw}" height="{cfg_h}" rx="4" fill="none" class="edge" stroke-width="1.25" stroke-dasharray="4 3"/>')
-    p.append(text(sx + sw / 2, cfg_y + 20, "konfiguráció (nincs fájl):", 11.5, 600, anchor="middle"))
-    p.append(text(sx + sw / 2, cfg_y + 38, "port 8080, felhasználó 1000,", 11, cls="quiet", anchor="middle"))
-    p.append(text(sx + sw / 2, cfg_y + 54, "munkakönyvtár /data,", 11, cls="quiet", anchor="middle"))
-    p.append(text(sx + sw / 2, cfg_y + 70, "parancs: tool serve", 11, cls="quiet", anchor="middle"))
-    layers = [("/etc/app.conf", "3. réteg"), ("/data, UID 1000", "2. réteg"), ("/bin/tool", "1. réteg")]
-    lh = 36
-    ly = cfg_y + cfg_h + 10
-    for i, (n, tag) in enumerate(layers):
-        y = ly + i * (lh + 4)
-        p.append(rect(sx, y, sw, lh, "acc", rx=4))
-        p.append(text(sx + 12, y + 23, n, 12, 600))
-        p.append(text(sx + sw - 10, y + 23, tag, 11, cls="quiet", anchor="end"))
-    base_y = ly + 3 * (lh + 4)
-    p.append(text(sx + sw / 2, base_y + 16, "üres alap (FROM scratch)", 11, cls="quiet", anchor="middle"))
-    # arrows from Containerfile lines to layers / config
-    def arrow_to(line_i, ty):
-        yy = ly0 + line_i * lstep - 4
-        return path(f"M210 {yy}C240 {yy} 240 {ty} {sx - 4} {ty}", m)
-    p.append(arrow_to(1, ly + 2 * (lh + 4) + lh / 2))
-    p.append(arrow_to(2, ly + 1 * (lh + 4) + lh / 2))
-    p.append(arrow_to(3, ly + lh / 2))
-    for i in (4, 5, 6, 7):
-        yy = ly0 + i * lstep - 4
-        p.append(path(f"M210 {yy}C236 {yy} 236 {cfg_y + cfg_h / 2} {sx - 4} {cfg_y + cfg_h / 2}", m, dash="3 3"))
-    # containers
-    cx, cw = 540, 196
-    p.append(text(cx, 66, "Konténerek (példányok)", 13, 600))
-    for j, (name, wl, yy) in enumerate([("c1 konténer", "írható réteg: notes.txt", 80),
-                                        ("c2 konténer", "írható réteg: (üres)", 186)]):
-        p.append(f'<rect x="{cx}" y="{yy}" width="{cw}" height="84" rx="6" fill="none" class="edge" stroke-width="1.25" stroke-dasharray="5 3"/>')
-        p.append(text(cx + 10, yy + 20, name, 12, 600))
-        p.append(rect(cx + 10, yy + 30, cw - 20, 24, "c2", rx=3))
-        p.append(text(cx + cw / 2, yy + 47, wl, 11, anchor="middle"))
-        p.append(text(cx + cw / 2, yy + 72, "+ alatta a kép rétegei", 11, cls="quiet", anchor="middle"))
-        p.append(path(f"M{sx + sw + 4} {ly + 40 + j * 30}C{505} {ly + 40 + j * 30} {505} {yy + 64} {cx - 4} {yy + 64}", m))
-    p.append(text(506, ly + 14, "futtatás", 11, 600, cls="quiet", anchor="middle"))
-    # volume
-    vy = 300
-    p.append(rect(cx, vy, cw, 46, "tint", rx=6))
-    p.append(text(cx + cw / 2, vy + 19, "appdata kötet", 12, 600, anchor="middle"))
-    p.append(text(cx + cw / 2, vy + 36, "minden konténert túlél", 11, cls="quiet", anchor="middle"))
-    p.append(path(f"M{cx + cw / 2} {vy - 2}V{186 + 86}", ma, cls="acc", width=1.5))
-    p.append(text(cx + cw / 2 + 8, vy - 12, "csatolva: /data", 11, 600, cls="acct"))
-    p.append(text(24, 386, "A konténerben írt adat a saját írható rétegébe kerül, és elvész, amikor a konténert eltávolítják;", 11.5, cls="quiet"))
-    p.append(text(24, 404, "a megmaradó adatok (adatbázis, feltöltések) kötetre valók. Folytonos nyilak: fájlokat hozzáadó építési lépések.", 11.5, cls="quiet"))
-    return svg(760, 424, title, "\n".join(p))
-
-
-
 if __name__ == "__main__":
     for name, f in [("nines", nines), ("mtbf-mttr", mtbf), ("branching-vocabulary", vocab),
                     ("enterprise-linux-family", ecosystem), ("support-lifecycles", lifecycle),
-                    ("container-images", containers), ("cloud-vs-own", cloud_costs),
-                    ("risk-matrix", risk_matrix), ("image-container-volume", image_container)]:
+                    ("cloud-vs-own", cloud_costs), ("risk-matrix", risk_matrix)]:
         open(f"{name}.svg", "w", encoding="utf-8").write(f())
     print("ok")

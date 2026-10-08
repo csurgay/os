@@ -2,10 +2,6 @@
 
 *Operációs rendszerek előadás: hogyan ad az operációs rendszer minden folyamatnak saját, privát, összefüggő memóriát, hogyan védi meg a folyamatokat egymástól, és hogyan bővíti a RAM-ot a lemezzel: fragmentáció, lapozás, laptáblák, a TLB, laphibák és lapcsere, linuxos mérésekkel*
 
-Előző: [Kétszintű memóriák és gyorsítótárak](../07-two-level-memory-and-cache/). Következő: [Fájlrendszerek](../09-file-systems/).
-
-> **Hogyan olvasd ezt az előadást?** Ahol új rövidítés vagy fogalom jelenik meg, utána egy **Egyszerűen elmagyarázva** feliratú doboz következik. Kattints rá, és kinyílik egy köznapi nyelvű magyarázat. Ha már ismered a fogalmakat, nyugodtan átugorhatod ezeket a dobozokat.
-
 ## Tanulási célok
 
 Az [előző előadás](../07-two-level-memory-and-cache/) egy gyorsítótárból és a RAM-ból épített kétszintű memóriát. Ez az előadás eggyel lejjebb lép, és a **RAM-ból és a lemezből** épít kétszintű memóriát, továbbá megmutatja, hogy ez sokkal többet tesz a kapacitás növelésénél: ezzel választja el egymástól az operációs rendszer a folyamatokat, így ad mindegyiknek egyszerű képet a memóriáról, és így osztja meg köztük a RAM-ot.
@@ -17,8 +13,8 @@ Az előadás végére a hallgatók képesek lesznek:
 - leírni az overlay technikát és a tárcserét (swapping), a lapozás előtti megoldásokat, és megmagyarázni, miért váltotta fel őket a lapozás;
 - elmagyarázni a lapozást: lapok és lapkeretek, a laptábla, a laptábla-bázisregiszter, az érvényességi bit és a hozzáférési jogokat jelző bitek, valamint egy virtuális címet fizikai címre fordítani;
 - elmagyarázni, miért többszintűek a laptáblák, és leírni az x86-64 négyszintű laptábláját;
-- elmagyarázni a TLB-t és a teljesítményre gyakorolt hatását, valamint az óriáslapok (huge page) szerepét;
-- leírni, mi történik laphibakor, lépésről lépésre a hardverben és az operációs rendszerben, megkülönböztetni az igény szerinti lapozást, az írásra másolást (copy-on-write), a kisebb (minor) és a nagyobb (major) laphibát, és megbecsülni a költségüket, a módosított (dirty) áldozat visszaírásával együtt;
+- elmagyarázni a TLB-t és a teljesítményre gyakorolt hatását, valamint a huge page-ek szerepét;
+- leírni, mi történik laphibakor, lépésről lépésre a hardverben és az operációs rendszerben, megkülönböztetni az igény szerinti lapozást, a copy-on-write mechanizmust, a minor és a major laphibát, és megbecsülni a költségüket, a módosított (dirty) áldozat visszaírásával együtt;
 - szimulálni és összehasonlítani a lapcsere-algoritmusokat (FIFO, OPT, LRU, óra), elmagyarázni a Bélády-anomáliát és azt, hogy az LRU miért mentes tőle, valamint elmagyarázni a munkahalmazt és a vergődést (thrashing);
 - összehasonlítani a gyorsítótárakat és a virtuális memóriát, és mindezeket a mechanizmusokat Linuxon megfigyelni.
 
@@ -29,7 +25,7 @@ Az előadás végére a hallgatók képesek lesznek:
 - **Címtartomány:** azoknak a címeknek a köre, amelyeket egy program használhat, 0-tól egy legnagyobb értékig.
 - **Lap:** a program memóriájának egy rögzített méretű darabja, általában 4 KiB. **Lapkeret (keret):** a RAM egy ugyanekkora darabja, amelybe pontosan egy lap fér.
 - **Lemez:** a merevlemez vagy az SSD. Áram nélkül is megőrzi az adatokat, de több ezerszer lassabb a RAM-nál.
-- **Swap (lapozóterület):** egy terület a lemezen, ahová az operációs rendszer azokat a lapokat teszi, amelyek nem férnek el a RAM-ban.
+- **Swap:** egy terület a lemezen, ahová az operációs rendszer azokat a lapokat teszi, amelyek nem férnek el a RAM-ban.
 
 </details>
 
@@ -43,7 +39,7 @@ A virtuális memória kiindulópontja a **RAM és a lemez mint kétszintű memó
 - **Egyszerű, saját nézet.** **Virtuális** memóriával *minden folyamat úgy látja, mintha az egész memória egyedül az övé lenne, összefüggően, 0-tól a maximumig*. A programot így rögzített címekre lehet lefordítani, akárhová kerül is valójában a RAM-ban (**áthelyezés**, relokáció), és a programnak egyáltalán nem kell tudnia a többi programról.
 - **Több memória, mint amennyi RAM van.** A virtuális memória kiterjeszti a RAM-ot a lemezre: az éppen nem szükséges lapok ott várakozhatnak, és az összes folyamat együttes memóriája meghaladhatja a fizikai RAM méretét.
 
-Az ábra azt a kérdést teszi fel, amellyel minden kezdődik: mi történik, ha megérkezik egy ötödik folyamat, vagy az 1. folyamat nőni akar, és nincs elég nagy szabad darab a RAM-ban? Egymás mellé téve a célok: a **védelem** (elválasztás), a **RAM-nál nagyobb programok** és az **áthelyezés**, amelyet pozitívan is megfogalmazhatunk, mint a **címek újrafelhasználását**: minden folyamat kezdődhet a 0 címen, és ugyanazokat a címeket használhatja, mint az összes többi, mert mindegyiknek saját leképezése van. Csak a második cél függ attól, hogy kevés a RAM. A másik kettő akármennyi RAM mellett is számít: a [linuxos szakasz](#ugyanezek-az-elvek-linuxon-x86-64) gépén egyáltalán nincs lapozóterület (swap), és mégis minden folyamat a saját virtuális címtartományában fut.
+Az ábra azt a kérdést teszi fel, amellyel minden kezdődik: mi történik, ha megérkezik egy ötödik folyamat, vagy az 1. folyamat nőni akar, és nincs elég nagy szabad darab a RAM-ban? Egymás mellé téve a célok: a **védelem** (elválasztás), a **RAM-nál nagyobb programok** és az **áthelyezés**, amelyet pozitívan is megfogalmazhatunk, mint a **címek újrafelhasználását**: minden folyamat kezdődhet a 0 címen, és ugyanazokat a címeket használhatja, mint az összes többi, mert mindegyiknek saját leképezése van. Csak a második cél függ attól, hogy kevés a RAM. A másik kettő akármennyi RAM mellett is számít: a [linuxos szakasz](#ugyanezek-az-elvek-linuxon-x86-64) gépén egyáltalán nincs swap, és mégis minden folyamat a saját virtuális címtartományában fut.
 
 Virtuális memóriát először a Manchesteri Egyetem **Atlas** számítógépén valósítottak meg, amely 1962-ben kezdte meg működését. Tervezői *egyszintű tárolórendszernek* (one-level storage system) nevezték: a programozó egyetlen nagy memóriát látott, a hardver és a felügyelőprogram pedig automatikusan mozgatta az 512 szavas lapokat a kis ferritmemória és egy mágnesdob között (Kilburn et al., 1962). Ma minden általános célú operációs rendszer ugyanerre az elvre épül.
 
@@ -166,23 +162,23 @@ A **szegmentálás** a régebbi alternatíva: a memóriát változó méretű lo
 
 ## A TLB: gyorsítótár a címfordításokhoz
 
-Minden memória-hozzáféréshez címfordítás kell, és ha mindegyikhez laptábla-bejárásra volna szükség, az minden hozzáférés költségét megtöbbszörözné. A CPU ezért a legutóbbi fordításokat a **TLB**-ben (translation lookaside buffer, címfordítási gyorsítótár) tartja, amely a laptábla-bejegyzések kicsi, gyors gyorsítótára:
+Minden memória-hozzáféréshez címfordítás kell, és ha mindegyikhez laptábla-bejárásra volna szükség, az minden hozzáférés költségét megtöbbszörözné. A CPU ezért a legutóbbi fordításokat a **TLB**-ben (translation lookaside buffer) tartja, amely a laptábla-bejegyzések kicsi, gyors gyorsítótára:
 
 ![A virtuális cím a TLB-hez megy; találatnál azonnal kijön a fizikai cím, hiánynál laptábla-bejárás állítja elő; a fizikai cím ezután a gyorsítótárhoz, hiány esetén a RAM-hoz megy](tlb-path.svg)
 
 TLB-**találatnál** a fordítás egy-két órajelciklus alatt rendelkezésre áll, és a fizikai cím továbbmegy az előző előadás gyorsítótárához. TLB-**hiánynál** x86-on és ARM-on maga a hardver járja be a laptáblákat (néhány más architektúrán az operációs rendszer teszi ezt szoftveresen), és az eredményt eltárolja a TLB-ben. Mivel a bejárás az adatgyorsítótárakon keresztül olvassa a laptábla-bejegyzéseket, egy TLB-hiány gyakran jóval olcsóbb négy RAM-hozzáférésnél, de így is költséges.
 
-Egy TLB első szintjén jellemzően néhány tucat, a második szintjén ezer-kétezer bejegyzés van (az alább használt processzorcsaládon adatokra 64 bejegyzés és 1536 közös bejegyzés; ez ugyanaz a TLB, mint a Skylake szervermagoké; Intel Corporation, 2024). 4 KiB-os lapokkal az 1536 bejegyzés 6 MiB-ot fed le: ez a **TLB lefedettsége** (TLB reach). Azok a programok, amelyek ennél több memóriát használnak véletlenszerű sorrendben, TLB-hiányoktól szenvednek, ezért a processzorok **óriáslapokat** (huge page) is támogatnak (x86-64-en 2 MiB és 1 GiB méretűeket): ekkor egy bejegyzés 512-szer, illetve 262 144-szer több memóriát fed le. A [linuxos szakasz](#a-címfordítás-ára) mérése elválasztja a címfordítás költségét magának az adatnak a költségétől: amikor az adat a gyorsítótárban volt, a 4 KiB-os lapok hozzáférésenként körülbelül 2,3 ns-mal növelték az időt, amíg a második szintű TLB még lefedte a lapokat, és 10–130 ns-mal, amikor már túlcsordult.
+Egy TLB első szintjén jellemzően néhány tucat, a második szintjén ezer-kétezer bejegyzés van (az alább használt processzorcsaládon adatokra 64 bejegyzés és 1536 közös bejegyzés; ez ugyanaz a TLB, mint a Skylake szervermagoké; Intel Corporation, 2024). 4 KiB-os lapokkal az 1536 bejegyzés 6 MiB-ot fed le: ez a **TLB lefedettsége** (TLB reach). Azok a programok, amelyek ennél több memóriát használnak véletlenszerű sorrendben, TLB-hiányoktól szenvednek, ezért a processzorok **huge page**-eket is támogatnak (x86-64-en 2 MiB és 1 GiB méretűeket): ekkor egy bejegyzés 512-szer, illetve 262 144-szer több memóriát fed le. A [linuxos szakasz](#a-címfordítás-ára) mérése elválasztja a címfordítás költségét magának az adatnak a költségétől: amikor az adat a gyorsítótárban volt, a 4 KiB-os lapok hozzáférésenként körülbelül 2,3 ns-mal növelték az időt, amíg a második szintű TLB még lefedte a lapokat, és 10–130 ns-mal, amikor már túlcsordult.
 
 Mivel a TLB az aktuális címtartomány fordításait tartalmazza, környezetváltáskor ezeket érvényteleníteni kell, vagy címtartomány-azonosítóval kell megcímkézni őket (x86-on PCID, ARM-on ASID), hogy több folyamat bejegyzései egyszerre lehessenek benne, ahogy az [előző előadás](../07-two-level-memory-and-cache/#miért-fontos-ez-az-operációs-rendszernek) említette.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> TLB, találat, hiány, laptábla-bejárás, TLB-lefedettség, óriáslap, PCID/ASID</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> TLB, találat, hiány, laptábla-bejárás, TLB-lefedettség, huge page, PCID/ASID</summary>
 
-- **TLB** (translation lookaside buffer, címfordítási gyorsítótár): apró memória a CPU-ban, amely nagyjából egy-kétezer friss lapfordításra emlékszik, így a laptáblát csak ritkán kell elolvasni.
+- **TLB** (translation lookaside buffer): apró memória a CPU-ban, amely nagyjából egy-kétezer friss lapfordításra emlékszik, így a laptáblát csak ritkán kell elolvasni.
 - **Laptábla-bejárás:** egy fordítás kikeresése a laptáblákban, szintről szintre, ha a TLB nem tudja.
 - **TLB-lefedettség (TLB reach):** mennyi memóriát tud a TLB egyszerre lefedni: a bejegyzések száma × a lapméret.
-- **Óriáslap (huge page):** 4 KiB helyett 2 MiB-os vagy 1 GiB-os lap, így egy TLB-bejegyzés sokkal több memóriát fed le.
+- **Huge page:** 4 KiB helyett 2 MiB-os vagy 1 GiB-os lap, így egy TLB-bejegyzés sokkal több memóriát fed le.
 - **PCID, ASID:** egy szám, amely megjelöli, melyik folyamathoz tartozik egy TLB-bejegyzés.
 
 </details>
@@ -193,25 +189,25 @@ Ha az érvényességi bit 0, vagy a hozzáférés nem megengedett, a CPU laphib�
 
 - **A cím egyik területhez sem tartozik, vagy a hozzáférés sérti a terület jogait:** programhiba; a Linux `SIGSEGV` szignált küld, ami általában a program végét jelenti.
 - **Igény szerinti lapozás:** a terület érvényes, de a lapot még sosem használták. A Linux „lustán” ad memóriát a folyamatoknak: a `malloc` és az `mmap` csak virtuális címeket foglal le, fizikai keretet minden lap csak az első hozzáféréskor kap. A [linuxos szakasz](#igény-szerinti-lapozás) 1 GiB „lefoglalt” memóriát mutat 1 MiB használt RAM mellett – egészen addig, amíg a program hozzá nem nyúl.
-- **Írásra másolás (copy-on-write):** a `fork()` után a szülő és a gyermek minden lapot csak olvashatóként közösen használ. Egy közös lapra történő első írás laphibát okoz, és a kernel az író folyamatnak saját másolatot ad. A `fork()` ezért nagy folyamatoknál is gyors ([linuxos szakasz](#írásra-másolás-copy-on-write)).
-- **A lap a lemezen van:** kilapozták (swap), vagy egy memóriába leképezett fájlhoz tartozik, amely nincs benne a lapgyorsítótárban (page cache). A kernelnek be kell olvasnia a lemezről; ez a **nagyobb (major) laphiba**: a folyamat az [ütemezésről szóló előadás](../06-concurrency-deadlocks-scheduling/#a-folyamatok-állapottere) *várakozó* állapotában vár, és közben más folyamatok futnak. Azok a laphibák, amelyekhez nem kell lemezművelet (igény szerint kiosztott nullázott lapok, írásra másolás, a lapgyorsítótárban már bent lévő lapok), a **kisebb (minor) laphibák**.
+- **Copy-on-write:** a `fork()` után a szülő és a gyermek minden lapot csak olvashatóként közösen használ. Egy közös lapra történő első írás laphibát okoz, és a kernel az író folyamatnak saját másolatot ad. A `fork()` ezért nagy folyamatoknál is gyors ([linuxos szakasz](#copy-on-write)).
+- **A lap a lemezen van:** kilapozták (swap), vagy egy memóriába leképezett fájlhoz tartozik, amely nincs benne a page cache-ben. A kernelnek be kell olvasnia a lemezről; ez a **major laphiba**: a folyamat az [ütemezésről szóló előadás](../06-concurrency-deadlocks-scheduling/#a-folyamatok-állapottere) *várakozó* állapotában vár, és közben más folyamatok futnak. Azok a laphibák, amelyekhez nem kell lemezművelet (igény szerint kiosztott nullázott lapok, copy-on-write, a page cache-ben már bent lévő lapok), a **minor laphibák**.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> laphibakezelő, VMA, SIGSEGV, igény szerinti lapozás, „lusta”, írásra másolás, fork, nagyobb és kisebb laphiba</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> laphibakezelő, VMA, SIGSEGV, igény szerinti lapozás, „lusta”, copy-on-write, fork, major és minor laphiba</summary>
 
 - **Laphibakezelő:** a kernelnek az a része, amely laphiba esetén lefut.
 - **VMA** (virtual memory area, virtuális memóriaterület): egy folyamat címtartományának egy területe, például a kódja, a kupaca (heap) vagy egy leképezett fájl, saját jogokkal.
 - **SIGSEGV** („segmentation fault”, szegmentálási hiba): az a szignál, amely közli a programmal, hogy olyan memóriához nyúlt, amelyhez nem szabad.
 - **Igény szerinti lapozás, „lusta” memóriakiosztás:** a lapot csak akkor adjuk oda, amikor tényleg használják, nem akkor, amikor kérik – mint egy étterem, amely csak akkor főzi meg az ételt, amikor valaki megrendeli.
-- **Írásra másolás (copy-on-write):** két folyamat közösen használ egy lapot, amíg egyikük meg nem változtatja; csak ekkor kap saját másolatot.
+- **Copy-on-write:** két folyamat közösen használ egy lapot, amíg egyikük meg nem változtatja; csak ekkor kap saját másolatot.
 - **fork():** az a rendszerhívás, amely az aktuális folyamat másolataként új folyamatot hoz létre.
-- **Nagyobb (major) laphiba:** a lapot a lemezről kell beolvasni (lassú). **Kisebb (minor) laphiba:** a lap lemez nélkül is előteremthető (gyors).
+- **Major laphiba:** a lapot a lemezről kell beolvasni (lassú). **Minor laphiba:** a lap lemez nélkül is előteremthető (gyors).
 
 </details>
 
-### Egy nagyobb laphiba lépésről lépésre
+### Egy major laphiba lépésről lépésre
 
-A nagyobb laphiba az a pont, ahol a hardver, a megszakítási rendszer, az ütemező és a lapcsere mind együttműködik:
+A major laphiba az a pont, ahol a hardver, a megszakítási rendszer, az ütemező és a lapcsere mind együttműködik:
 
 ![Folyamatábra: a hardver megnézi a TLB-t, bejárja a laptáblát, és laphibát vált ki, ha a lap érvénytelen; az operációs rendszer ellenőrzi a címet, keretet keres (ha kell, kitesz egy áldozatot, és visszaírja, ha módosított), elindítja a lemezolvasást, egy másik folyamatot futtat, a lemez megszakításakor pedig frissíti a laptáblát, és hagyja, hogy a folyamat újraindítsa az utasítást](page-fault-flow.svg)
 
@@ -223,7 +219,7 @@ A nagyobb laphiba az a pont, ahol a hardver, a megszakítási rendszer, az ütem
 6. **Megszakítás.** Amikor az átvitel befejeződött, a lemez **megszakítást** kér. A kernel kitölti a laptábla-bejegyzést (keretszám, érvényes = 1), és a folyamat futásra kész lesz.
 7. **Újraindítás.** Amikor a folyamat újra fut, a hibát okozó utasítást az elejétől újra végrehajtja, és ezúttal érvényes lapot talál.
 
-Maga a laphiba kivétel, amelyet az utasítás szinkron módon vált ki; csak a lemezolvasás befejeződése egy eszköz megszakításkérése, a [megszakításokról szóló előadás](../05-interrupts/#a-megszakítások-osztályai) fogalmaival. Az 5. és a 6. lépés az [ütemezésről szóló előadás](../06-concurrency-deadlocks-scheduling/#a-folyamatok-állapottere) *várakozó* és *futásra kész* állapota. A 3. lépésben a sorrend lényeges: a keretnek szabadnak kell lennie, mielőtt az olvasás elindulhat, így egy módosított áldozat miatt a hibát okozó folyamat egy írásra *és* egy olvasásra is vár. Egy kisebb (minor) laphiba kihagyja a 4–6. lépést.
+Maga a laphiba kivétel, amelyet az utasítás szinkron módon vált ki; csak a lemezolvasás befejeződése egy eszköz megszakításkérése, a [megszakításokról szóló előadás](../05-interrupts/#a-megszakítások-osztályai) fogalmaival. Az 5. és a 6. lépés az [ütemezésről szóló előadás](../06-concurrency-deadlocks-scheduling/#a-folyamatok-állapottere) *várakozó* és *futásra kész* állapota. A 3. lépésben a sorrend lényeges: a keretnek szabadnak kell lennie, mielőtt az olvasás elindulhat, így egy módosított áldozat miatt a hibát okozó folyamat egy írásra *és* egy olvasásra is vár. Egy minor laphiba kihagyja a 4–6. lépést.
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> MMU, CR2, DMA, egy utasítás újraindítása</summary>
@@ -237,7 +233,7 @@ Maga a laphiba kivétel, amelyet az utasítás szinkron módon vált ki; csak a 
 
 ### Egy laphiba ára
 
-A nagyobb laphibák drágák: gyors SSD-n mikroszekundumokba, merevlemezen milliszekundumokba kerülnek, szemben egy memória-hozzáférés körülbelül 100 ns-ával. Az előző előadás kétszintű képlete megmutatja, milyen ritkának kell lenniük. $p$ laphiba-gyakoriság, 100 ns memória-hozzáférési idő és 8 ms laphiba-kiszolgálási idő mellett
+A major laphibák drágák: gyors SSD-n mikroszekundumokba, merevlemezen milliszekundumokba kerülnek, szemben egy memória-hozzáférés körülbelül 100 ns-ával. Az előző előadás kétszintű képlete megmutatja, milyen ritkának kell lenniük. $p$ laphiba-gyakoriság, 100 ns memória-hozzáférési idő és 8 ms laphiba-kiszolgálási idő mellett
 
 $$T = (1 - p) \cdot 100 \text{ ns} + p \cdot 8 \text{ ms}$$
 
@@ -245,15 +241,15 @@ $$T = (1 - p) \cdot 100 \text{ ns} + p \cdot 8 \text{ ms}$$
 
 **A módosított áldozat megduplázza a költséget.** Ha az új lap keretéből előbb egy módosított (dirty) lapot kell kiüríteni, a laphibához egy lemezírás és egy lemezolvasás kell. Egy gyors, durva becslés megmutatja a hatást: egy memória-hozzáférés tartson 1 időegységig, egy lemezátvitel 10 000 egységig, és 1000 hozzáférésből egy okozzon laphibát. Tiszta áldozatokkal 1000 hozzáférés 1000 + 10 000 = 11 000 egységig tart, 11-szer annyi ideig, mint laphibák nélkül; módosított áldozatokkal 1000 + 10 000 + 10 000 = 21 000 egységig, 21-szer annyi ideig. (A laphiba-gyakoriság szándékosan irreálisan magas; a fenti képlet megmutatja, hogy a valódi laphiba-gyakoriságnak ezerszer kisebbnek kell lennie.) Az operációs rendszerek ezért igyekeznek az írást és az olvasás egy részét is kivinni a laphibából:
 
-- **Tiszta keretek készenlétben tartása.** Háttérszálak még azelőtt visszanyerik és megtisztítják a lapokat, hogy elfogyna a memória. Linuxon a `kswapd` lapokat szabadít fel, amikor a szabad memória egy alsó vízjel (watermark) alá esik, a flusher szálak pedig a háttérben írják ki a módosított lapokat a lemezre, ha a módosított adat meghaladja a memória egy hányadát (`vm.dirty_background_ratio`), vagy túl régóta módosított (`vm.dirty_expire_centisecs`). Így egy laphiba általában szabad keretet talál, vagy olyan tiszta áldozatot, amely azonnal újra felhasználható (The kernel development community, n.d.-a).
-- **Előbetöltés.** A hibát okozó lapnál többet olvasunk be, a térbeli lokalitásra fogadva: ez az **előlapozás** (prepaging) vagy **előreolvasás** (read-ahead). A Linux egy szekvenciálisan olvasó folyamat előtt előre beolvassa a fájladatokat, egy kilapozott lapon bekövetkező laphibánál pedig egyszerre $2^n$ szomszédos lapot olvas be a swapről, ahol $n$ a `vm.page-cluster` beállítás (alapértéke 3: 8 lap). A [nagyobb laphibák mérésében](#nagyobb-major-laphibák) látott fault-around ugyanez a fogadás a már memóriában lévő lapok leképezésére.
+- **Tiszta keretek készenlétben tartása.** Háttérszálak még azelőtt visszanyerik és megtisztítják a lapokat, hogy elfogyna a memória. Linuxon a `kswapd` lapokat szabadít fel, amikor a szabad memória egy alsó küszöb (low watermark) alá esik, a flusher szálak pedig a háttérben írják ki a módosított lapokat a lemezre, ha a módosított adat meghaladja a memória egy hányadát (`vm.dirty_background_ratio`), vagy túl régóta módosított (`vm.dirty_expire_centisecs`). Így egy laphiba általában szabad keretet talál, vagy olyan tiszta áldozatot, amely azonnal újra felhasználható (The kernel development community, n.d.-a).
+- **Előbetöltés.** A hibát okozó lapnál többet olvasunk be, a térbeli lokalitásra fogadva: ez az **előlapozás** (prepaging) vagy **előreolvasás** (read-ahead). A Linux egy szekvenciálisan olvasó folyamat előtt előre beolvassa a fájladatokat, egy kilapozott lapon bekövetkező laphibánál pedig egyszerre $2^n$ szomszédos lapot olvas be a swapről, ahol $n$ a `vm.page-cluster` beállítás (alapértéke 3: 8 lap). A [major laphibák mérésében](#major-laphibák) látott fault-around ugyanez a fogadás a már memóriában lévő lapok leképezésére.
 
 A [linuxos szakasz](#a-laphibák-olcsón-tartása) megmutatja ezeket a beállításokat az alább használt gépen.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> vízjel, kswapd, flusher szálak, előlapozás, előreolvasás</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> watermark, kswapd, flusher szálak, előlapozás, előreolvasás</summary>
 
-- **Vízjel (watermark):** a szabad memória egy szintje; ez alatt a kernel elkezd lapokat felszabadítani, mint amikor feltöltöd a hűtőt, amikor már csak két üveg maradt benne.
+- **Watermark:** a szabad memória egy szintje; ez alatt a kernel elkezd lapokat felszabadítani, mint amikor feltöltöd a hűtőt, amikor már csak két üveg maradt benne.
 - **kswapd:** az a Linux-kernelszál, amely a háttérben szabadít fel memóriát, hogy a programoknak ne kelljen erre várniuk.
 - **Flusher szálak:** kernelszálak, amelyek a megváltozott (dirty) adatokat a háttérben kiírják a lemezre.
 - **Előlapozás, előreolvasás:** lapok beolvasása a lemezről, még mielőtt kérnék őket, mert valószínűleg hamarosan szükség lesz rájuk.
@@ -285,7 +281,7 @@ Egy folyamat **munkahalmaza** (working set) azoknak a lapoknak a halmaza, amelye
 
 ![Szimulált laphiba-arány a keretek számának függvényében: a 12 lapos munkahalmaz alatt magas és meredeken csökken, fölötte alacsony](thrashing.svg)
 
-Ha a memóriában lévő folyamatoknak együtt több keretre van szükségük, mint amennyi van, idejüket a lapok mozgatására való várakozással töltik, és szinte semmit sem számolnak: ez a **vergődés** (thrashing). Az átbocsátóképesség összeomlik, és egy naiv ütemező, amely további folyamatokat enged be, mert a CPU tétlennek látszik, csak ront a helyzeten (Denning, 1968b). A gyógymód kevesebb folyamat futtatása: az [ütemezésről szóló előadás](../06-concurrency-deadlocks-scheduling/#a-folyamatok-állapottere) középtávú ütemezője felfüggeszt néhányat, Linuxon pedig az OOM killer (out-of-memory killer, memóriahiány esetén folyamatot leállító mechanizmus) leállít egyet, ha már semmi más nem segít.
+Ha a memóriában lévő folyamatoknak együtt több keretre van szükségük, mint amennyi van, idejüket a lapok mozgatására való várakozással töltik, és szinte semmit sem számolnak: ez a **vergődés** (thrashing). Az áteresztőképesség (throughput) összeomlik, és egy naiv ütemező, amely további folyamatokat enged be, mert a CPU tétlennek látszik, csak ront a helyzeten (Denning, 1968b). A gyógymód kevesebb folyamat futtatása: az [ütemezésről szóló előadás](../06-concurrency-deadlocks-scheduling/#a-folyamatok-állapottere) középtávú ütemezője felfüggeszt néhányat, Linuxon pedig az OOM killer (out-of-memory killer, memóriahiány esetén folyamatot leállító mechanizmus) leállít egyet, ha már semmi más nem segít.
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> áldozat, FIFO, OPT, LRU, óra, accessed bit, öregítés, aktív/inaktív lista, Bélády-anomália, veremalgoritmus, munkahalmaz, vergődés, OOM killer</summary>
@@ -311,7 +307,7 @@ A gyorsítótárak és a virtuális memória egyaránt lokalitásra épülő ké
 | | Gyorsítótár | Virtuális memória |
 |---|---|---|
 | egység | sor (blokk) | lap / keret (vagy szegmens) |
-| egységméret | 32–128 bájt, általában 64 | 4–16 KiB, továbbá 2 MiB-os és 1 GiB-os óriáslapok |
+| egységméret | 32–128 bájt, általában 64 | 4–16 KiB, továbbá 2 MiB-os és 1 GiB-os huge page-ek |
 | a gyors szint kapacitása | 32 KiB-tól (L1) több tíz MiB-ig (L3) | GiB nagyságrendű RAM (egy PC-ben jellemzően 8–64 GiB) |
 | a hiány neve | gyorsítótár-hiány (cache miss) | laphiba |
 | egy hiány költsége | 10–100 ns | µs (SSD) – ms (merevlemez) |
@@ -320,7 +316,7 @@ A gyorsítótárak és a virtuális memória egyaránt lokalitásra épülő ké
 | csere | nincs (direkt leképezésű), véletlen vagy pszeudo-LRU hardverben | az LRU szoftveres közelítései (óra, öregítés, aktív/inaktív listák) |
 | írás | átíró (write-through) vagy – ma többnyire – visszaíró (write-back) | mindig visszaíró (dirty bit) |
 
-A virtuális memória mindig visszaíró: ha minden írást azonnal a lemezre is ki kellene írni, minden egyes írás milliszekundumokig tartana. A gyorsítótárak bármelyik stratégiát használhatják; egyes L1 gyorsítótárak átírók, de ma a legtöbb gyorsítótár visszaíró, ahogy az [előző előadás](../07-two-level-memory-and-cache/#a-direkt-leképezésű-gyorsítótár) elmagyarázta. Ugyanez az érvelés magyarázza az elhelyezést és a cserét: mivel egy nagyobb laphiba százezer–millió órajelciklusba kerül, az operációs rendszer megengedheti magának a teljes asszociativitást és az áldozat gondos kiválasztását, míg egy gyorsítótárnak egyetlen ciklus alatt kell döntenie.
+A virtuális memória mindig visszaíró: ha minden írást azonnal a lemezre is ki kellene írni, minden egyes írás milliszekundumokig tartana. A gyorsítótárak bármelyik stratégiát használhatják; egyes L1 gyorsítótárak átírók, de ma a legtöbb gyorsítótár visszaíró, ahogy az [előző előadás](../07-two-level-memory-and-cache/#a-direkt-leképezésű-gyorsítótár) elmagyarázta. Ugyanez az érvelés magyarázza az elhelyezést és a cserét: mivel egy major laphiba százezer–millió órajelciklusba kerül, az operációs rendszer megengedheti magának a teljes asszociativitást és az áldozat gondos kiválasztását, míg egy gyorsítótárnak egyetlen ciklus alatt kell döntenie.
 
 ## Ugyanezek az elvek Linuxon (x86-64)
 
@@ -370,7 +366,7 @@ $ cat /proc/self/maps
 ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0                  [vsyscall]
 ```
 
-A program kódja olvasható és végrehajtható, de nem írható (`r-xp`); az adatai írhatók, de nem végrehajthatók (`rw-p`); a C-könyvtár a fájljából van leképezve, és minden más, azt használó folyamattal közös (a `p`, azaz privát, írásra másolást jelent: az a lap, amelybe egy folyamat ír, a saját másolatává válik, de azok a lapok, amelyekbe senki sem ír, a lapgyorsítótáron keresztül fizikailag közösek maradnak); a kupac (heap) és a verem (stack) anonim memória. Minden cím virtuális, és a `[vsyscall]` kivételével (ez egy örökölt kernellap a címtartomány legtetején, a régi programok kedvéért maradt meg) mind $2^{47}$ alatt van: a 48 bites címtartomány alsó fele a folyamaté, a felső fele a kernelé. A címek minden futtatáskor változnak, mert a Linux véletlenszerűen helyezi el a területeket (**ASLR**, address space layout randomisation, a címtartomány elrendezésének véletlenítése; itt `/proc/sys/kernel/randomize_va_space` = 2), ami megnehezíti az ismert címekre építő támadásokat:
+A program kódja olvasható és végrehajtható, de nem írható (`r-xp`); az adatai írhatók, de nem végrehajthatók (`rw-p`); a C-könyvtár a fájljából van leképezve, és minden más, azt használó folyamattal közös (a `p`, azaz privát, copy-on-write leképezést jelent: az a lap, amelybe egy folyamat ír, a saját másolatává válik, de azok a lapok, amelyekbe senki sem ír, a page cache-en keresztül fizikailag közösek maradnak); a kupac (heap) és a verem (stack) anonim memória. Minden cím virtuális, és a `[vsyscall]` kivételével (ez egy örökölt kernellap a címtartomány legtetején, a régi programok kedvéért maradt meg) mind $2^{47}$ alatt van: a 48 bites címtartomány alsó fele a folyamaté, a felső fele a kernelé. A címek minden futtatáskor változnak, mert a Linux véletlenszerűen helyezi el a területeket (**ASLR**, address space layout randomisation, a címtartomány elrendezésének véletlenítése; itt `/proc/sys/kernel/randomize_va_space` = 2), ami megnehezíti az ismert címekre építő támadásokat:
 
 ```console
 $ grep -E 'heap|libc.so' /proc/self/maps | head -2
@@ -408,19 +404,19 @@ virtual page 0x7f8a2f426 -> not in RAM (never touched)
 virtual page 0x7f8a2f427 -> not in RAM (never touched)
 ```
 
-Ez a [lapozásról szóló szakasz](#lapozás) ábrája egy valódi rendszeren: összefüggő virtuális lapok, szétszórt fizikai keretek. A két lapnak, amelybe sosem írtunk, egyáltalán nincs kerete: ez az igény szerinti lapozás. (A Linux 4.2 óta a keretszámok 0-ként jelennek meg, hacsak az olvasónak nincs rendszergazdai joga (a `CAP_SYS_ADMIN` képesség; a Linux 4.0 és 4.1 teljesen letiltotta a fájlt), mert a fizikai címek ismerete segíti az olyan támadásokat, mint a Rowhammer.)
+Ez a [lapozásról szóló szakasz](#lapozás) ábrája egy valódi rendszeren: összefüggő virtuális lapok, szétszórt fizikai keretek. A két lapnak, amelybe sosem írtunk, egyáltalán nincs kerete: ez az igény szerinti lapozás. (A Linux 4.2 óta a keretszámok 0-ként jelennek meg, hacsak az olvasónak nincs rendszergazdai joga (a `CAP_SYS_ADMIN` capability; a Linux 4.0 és 4.1 teljesen letiltotta a fájlt), mert a fizikai címek ismerete segíti az olyan támadásokat, mint a Rowhammer.)
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> pagemap, keretszám, Rowhammer, képesség</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> pagemap, keretszám, Rowhammer, capability</summary>
 
 - **pagemap:** egy különleges fájl, amelyben a kernel egy folyamat minden virtuális lapjáról megmondja, bent van-e a RAM-ban, és melyik keretben.
 - **Keretszám (PFN, page frame number):** egy 4 KiB-os keret sorszáma a fizikai RAM-ban.
 - **Rowhammer:** olyan támadás, amely egy memóriasort nagyon gyorsan, sokszor egymás után olvas vagy ír, amíg a szomszédos sorban bitek át nem billennek; jobban működik, ha a támadó ismeri a fizikai címeket.
-- **Képesség (capability, `CAP_SYS_ADMIN`):** a rendszergazdai jogok egy darabja a Linuxban.
+- **Capability (`CAP_SYS_ADMIN`):** a rendszergazdai jogok egy darabja a Linuxban.
 
 </details>
 
-### Írásra másolás (copy-on-write)
+### Copy-on-write
 
 A `cow.c` ír egy lapra, elágazik (fork), majd kiírja ugyanannak a változónak a virtuális címét, értékét és fizikai keretét a szülőben és a gyermekben:
 
@@ -454,21 +450,21 @@ touching took 242 ms
 page tables of this process: 	    2096 kB
 ```
 
-Az 1 GiB-os `mmap` semmibe sem kerül: amíg a lapokhoz nem nyúlunk, nem használ RAM-ot. Ezután a 262 144 lap mindegyike egy-egy kisebb laphibát okoz, mindent együtt számolva laponként körülbelül 1,6 µs-ot. Ennek nem egésze jut a laphibák kezelésére: a kernelnek minden új keretet ki is kell nulláznia (hogy egyetlen folyamat se olvashassa egy másik régi adatait), és már 1 GiB kinullázása is az idő jó részét elviszi. Ezért voltak az óriáslapok, ötszázszor kevesebb laphibával, csak 1,7-szer gyorsabbak (242 ms szemben a 408 ms-mal). A 2 MiB-os átlátszó óriáslapokkal (transparent huge pages, `madvise(MADV_HUGEPAGE)`) egy laphiba egyszerre 512 lapot ad, és 512 laphiba elég (plusz ugyanaz a 2 egyéb, ide nem tartozó laphiba, mint az első futásban). 1 GiB-nyi 4 KiB-os lap laptáblái körülbelül 2 MiB-ot foglalnak (262 144 darab 8 bájtos bejegyzés), ami az általuk leírt memória 0,2%-a. (Óriáslapoknál a kernel minden óriáslaphoz tartalékban tart egy laptáblát, hogy később 4 KiB-os lapokra bonthassa, ezért nem csökken ez a szám.)
+Az 1 GiB-os `mmap` semmibe sem kerül: amíg a lapokhoz nem nyúlunk, nem használ RAM-ot. Ezután a 262 144 lap mindegyike egy-egy minor laphibát okoz, mindent együtt számolva laponként körülbelül 1,6 µs-ot. Ennek nem egésze jut a laphibák kezelésére: a kernelnek minden új keretet ki is kell nulláznia (hogy egyetlen folyamat se olvashassa egy másik régi adatait), és már 1 GiB kinullázása is az idő jó részét elviszi. Ezért voltak a huge page-ek, ötszázszor kevesebb laphibával, csak 1,7-szer gyorsabbak (242 ms szemben a 408 ms-mal). A 2 MiB-os transparent huge page-ekkel (THP, `madvise(MADV_HUGEPAGE)`) egy laphiba egyszerre 512 lapot ad, és 512 laphiba elég (plusz ugyanaz a 2 egyéb, ide nem tartozó laphiba, mint az első futásban). 1 GiB-nyi 4 KiB-os lap laptáblái körülbelül 2 MiB-ot foglalnak (262 144 darab 8 bájtos bejegyzés), ami az általuk leírt memória 0,2%-a. (Huge page-eknél a kernel minden huge page-hez tartalékban tart egy laptáblát, hogy később 4 KiB-os lapokra bonthassa, ezért nem csökken ez a szám.)
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> rezidens memória, getrusage, átlátszó óriáslapok, madvise, nullázás</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> rezidens memória, getrusage, transparent huge page-ek, madvise, nullázás</summary>
 
 - **Rezidens memória:** egy program memóriájából mennyi van éppen ténylegesen a RAM-ban.
 - **getrusage:** rendszerhívás, amely megmondja a programnak, mennyi erőforrást használt, többek között hány laphibát okozott.
-- **Átlátszó óriáslapok (transparent huge pages, THP):** a Linux magától használ 2 MiB-os lapokat, anélkül, hogy a programnak külön kérnie kellene; `madvise` beállítás mellett csak ott, ahol a program a **madvise** hívással kéri – ez a hívás tippeket ad a kernelnek arról, hogyan fogják a memóriát használni.
+- **Transparent huge page-ek (THP):** a Linux magától használ 2 MiB-os lapokat, anélkül, hogy a programnak külön kérnie kellene; `madvise` beállítás mellett csak ott, ahol a program a **madvise** hívással kéri – ez a hívás tippeket ad a kernelnek arról, hogyan fogják a memóriát használni.
 - **Nullázás:** egy új keret feltöltése nullákkal, hogy egyetlen program se lássa a másik által hátrahagyott adatokat.
 
 </details>
 
-### Nagyobb (major) laphibák
+### Major laphibák
 
-A `majfault.c` leképez egy 256 MiB-os fájlt, és minden lapjából beolvas egy bájtot, először a lapgyorsítótár kiürítése után, majd még egyszer:
+A `majfault.c` leképez egy 256 MiB-os fájlt, és minden lapjából beolvas egy bájtot, először a page cache kiürítése után, majd még egyszer:
 
 ```console
 $ head -c 256M /dev/urandom > data.bin
@@ -479,14 +475,14 @@ $ ./majfault data.bin
 65536 pages: 0 major + 4098 minor faults, 10 ms (0.1 us per page)
 ```
 
-Első alkalommal minden lapot a (virtuális) lemezről kell beolvasni: 65 536 nagyobb laphiba, egyenként 57 µs. Második alkalommal a lapok már a lapgyorsítótárban vannak, így csak a leképezést kell létrehozni: kisebb laphibák, és csak 4098 darab, mert a kernel a gyorsítótárban lévő szomszédos lapokat is leképezi („fault-around”, egyszerre 16 lapot). Laponként a (gyors, felhőbeli) lemezről olvasás körülbelül 400-szor annyiba került, mint egy gyorsítótárban lévő lap leképezése (57 µs szemben körülbelül 0,15 µs-mal; 10 ms / 65 536 lap, amit a kimenet 0,1-re kerekít). Laphibánként kisebb a különbség, körülbelül 24-szeres (57 µs szemben a 10 ms / 4098 ≈ 2,4 µs-mal), mert minden kisebb laphiba 16 lapot képez le. Merevlemezen, olvasásonként milliszekundumokkal, a laponkénti szorzó több tízezer volna.
+Első alkalommal minden lapot a (virtuális) lemezről kell beolvasni: 65 536 major laphiba, egyenként 57 µs. Második alkalommal a lapok már a page cache-ben vannak, így csak a leképezést kell létrehozni: minor laphibák, és csak 4098 darab, mert a kernel a gyorsítótárban lévő szomszédos lapokat is leképezi („fault-around”, egyszerre 16 lapot). Laponként a (gyors, felhőbeli) lemezről olvasás körülbelül 400-szor annyiba került, mint egy gyorsítótárban lévő lap leképezése (57 µs szemben körülbelül 0,15 µs-mal; 10 ms / 65 536 lap, amit a kimenet 0,1-re kerekít). Laphibánként kisebb a különbség, körülbelül 24-szeres (57 µs szemben a 10 ms / 4098 ≈ 2,4 µs-mal), mert minden minor laphiba 16 lapot képez le. Merevlemezen, olvasásonként milliszekundumokkal, a laponkénti szorzó több tízezer volna.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> lapgyorsítótár, drop_caches, fault-around, KiB/MiB/GiB, µs</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> page cache, drop_caches, fault-around, KiB/MiB/GiB, µs</summary>
 
-- **Lapgyorsítótár (page cache):** a RAM-nak az a része, ahol a Linux a nemrég használt fájltartalmak másolatait tartja, hogy ne kelljen őket újra a lemezről olvasni.
-- **drop_caches:** egy fájl, amelyen keresztül a rendszergazda utasíthatja a Linuxot a lapgyorsítótár kiürítésére (az ilyen kísérletekhez).
-- **Fault-around:** egy fájllap kisebb laphibájánál a kernel a lapgyorsítótárban már bent lévő szomszédos lapokat is leképezi, mert valószínű, hogy hamarosan szükség lesz rájuk.
+- **Page cache:** a RAM-nak az a része, ahol a Linux a nemrég használt fájltartalmak másolatait tartja, hogy ne kelljen őket újra a lemezről olvasni.
+- **drop_caches:** egy fájl, amelyen keresztül a rendszergazda utasíthatja a Linuxot a page cache kiürítésére (az ilyen kísérletekhez).
+- **Fault-around:** egy fájllap minor laphibájánál a kernel a page cache-ben már bent lévő szomszédos lapokat is leképezi, mert valószínű, hogy hamarosan szükség lesz rájuk.
 - **KiB, MiB, GiB:** 1024 bájt, 1024 KiB, 1024 MiB. **µs** (mikroszekundum): a másodperc milliomod része; **ns** (nanoszekundum): a mikroszekundum ezredrésze.
 
 </details>
@@ -553,12 +549,12 @@ huge pages in use by this process:   1048576 kB
 
 ![Mért hozzáférési idő az érintett lapok számának függvényében, 4 KiB-os és 2 MiB-os lapokkal](tlb-measured.svg)
 
-4 KiB-os lapokkal az idő azonnal megnő, amint a lapok száma meghaladja az első szintű adat-TLB 64 bejegyzését (256 lap: 1,5 helyett 3,8 ns), és meredeken nő a második szint 1536 bejegyzésén túl (4096 lap: 14,9 ns). 2 MiB-os lapokkal az egész gigabájthoz mindössze 512 fordítás kell, és ugyanezek a hozzáférések 1,5, illetve 4,3 ns-ba kerülnek. A különbség a címfordítás ára (beleértve azt a gyorsítótár-helyet is, amelyet a bejárások által behozott laptábla-bejegyzések foglalnak el): hozzáférésenként körülbelül 2,3 ns, amíg a második szintű TLB még talál (256 és 1024 lap), és 10–130 ns, amikor már túlcsordul (4096 lap és fölötte). Ezért használnak az adatbázisok és a virtuális gépek óriáslapokat.
+4 KiB-os lapokkal az idő azonnal megnő, amint a lapok száma meghaladja az első szintű adat-TLB 64 bejegyzését (256 lap: 1,5 helyett 3,8 ns), és meredeken nő a második szint 1536 bejegyzésén túl (4096 lap: 14,9 ns). 2 MiB-os lapokkal az egész gigabájthoz mindössze 512 fordítás kell, és ugyanezek a hozzáférések 1,5, illetve 4,3 ns-ba kerülnek. A különbség a címfordítás ára (beleértve azt a gyorsítótár-helyet is, amelyet a bejárások által behozott laptábla-bejegyzések foglalnak el): hozzáférésenként körülbelül 2,3 ns, amíg a második szintű TLB még talál (256 és 1024 lap), és 10–130 ns, amikor már túlcsordul (4096 lap és fölötte). Ezért használnak az adatbázisok és a virtuális gépek huge page-eket.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> mutatókövetés, taskset, L1/L2 gyorsítótár</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> pointer chasing, taskset, L1/L2 gyorsítótár</summary>
 
-- **Mutatókövetés (pointer chase):** minden memóriaolvasás a következő olvasás címét adja, így a CPU nem tud előre találgatni, és nem tud egyszerre többet olvasni: minden hozzáférést külön mérünk.
+- **Pointer chasing:** minden memóriaolvasás a következő olvasás címét adja, így a CPU nem tud előre találgatni, és nem tud egyszerre többet olvasni: minden hozzáférést külön mérünk.
 - **taskset:** parancs, amely egy programot egy kiválasztott CPU-magon tart, hogy a mérést ne zavarja a magok közötti vándorlás.
 - **L1, L2 gyorsítótár:** a CPU legkisebb és leggyorsabb gyorsítótárai, amelyeket az előző előadás tárgyalt.
 
@@ -622,14 +618,14 @@ Node 0, zone    DMA32      4      2      2      2      4      3      4      5   
 Node 0, zone   Normal   1040   1332   1862   1195    564    570   1006    497    133     14    260
 ```
 
-A `Normal` zónában a szabad blokkok többsége *darabszám szerint* kicsi (1–8 keret, a használt keretek között), de *méret szerint* a szabad memória nagy része még mindig nagy blokkokban van: 260 darab 4 MiB-os blokk nagyjából 1 GiB, míg a 0–3. rendű blokkok együtt körülbelül 81 MiB-ot tesznek ki. Ez a gép csak rövid ideje futott; egy régóta futó, terhelt gépen a nagy rendek elfogynak. A fizikailag összefüggő memóriára vonatkozó kérést, például egy 2 MiB-os óriáslapot (9. rend), csak a nagyobb blokkokból lehet kiszolgálni; ha ezek elfogynak, a kernel `kcompactd` szála lapok mozgatásával tömöríti a memóriát, ami azért lehetséges, mert a folyamatok csak virtuális címeket látnak. A lapozás a fizikai fragmentációt a programok számára láthatatlanná teszi, a kernel számára azonban nem.
+A `Normal` zónában a szabad blokkok többsége *darabszám szerint* kicsi (1–8 keret, a használt keretek között), de *méret szerint* a szabad memória nagy része még mindig nagy blokkokban van: 260 darab 4 MiB-os blokk nagyjából 1 GiB, míg a 0–3. rendű blokkok együtt körülbelül 81 MiB-ot tesznek ki. Ez a gép csak rövid ideje futott; egy régóta futó, terhelt gépen a nagy rendek elfogynak. A fizikailag összefüggő memóriára vonatkozó kérést, például egy 2 MiB-os huge page-et (9. rend), csak a nagyobb blokkokból lehet kiszolgálni; ha ezek elfogynak, a kernel `kcompactd` szála lapok mozgatásával tömöríti a memóriát, ami azért lehetséges, mert a folyamatok csak virtuális címeket látnak. A lapozás a fizikai fragmentációt a programok számára láthatatlanná teszi, a kernel számára azonban nem.
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> méretosztály, malloc_usable_size, buddy allokátor, rend, zóna, kcompactd</summary>
 
 - **Méretosztály:** a `malloc` csak bizonyos méretű blokkokat ad ki; a kérést a következő ilyen méretre kerekíti fel.
 - **malloc_usable_size:** függvény, amely megmondja, valójában mekkora a kapott blokk.
-- **Buddy allokátor („pajtás”-foglaló):** a kernel fizikaikeret-foglalója. A szabad memóriát 1, 2, 4, 8 … keretes blokkokban tartja; ha kisebb blokk kell, egy blokkot kettévág (a két fél egymás „pajtása”, buddy), és két szabad pajtást újra egyesít.
+- **Buddy allokátor:** a kernel fizikaikeret-foglalója. A szabad memóriát 1, 2, 4, 8 … keretes blokkokban tartja; ha kisebb blokk kell, egy blokkot kettévág (a két fél egymás „pajtása”, buddy), és két szabad pajtást újra egyesít.
 - **Rend (order):** egy buddy-blokk méretosztálya: a *k*-adrendű blokk $2^k$ keretből áll.
 - **Zóna:** a fizikai RAM egy saját szabályokkal rendelkező része: DMA és DMA32 a régi eszközöknek, amelyek csak az alacsony címeket érik el, Normal minden másnak.
 - **kcompactd:** kernelszál, amely lapokat mozgat, hogy nagy szabad blokkokat hozzon létre.
@@ -720,13 +716,13 @@ frames  LRU faults  fault rate
 ## Laborfeladatok
 
 1. **A saját címtartományod.** Írj C programot, amely kiírja egy globális változó, egy helyi változó, egy `malloc`-kal foglalt blokk, egy függvény és a `main` címét, majd elalszik. Keresd meg mindegyik címet a `/proc/PID/maps` fájlban. Futtasd háromszor: mely címek változnak, és miért? Egy futtatásnál kapcsold ki az ASLR-t a `setarch -R ./prog` paranccsal, és hasonlítsd össze.
-2. **Virtuálisból fizikai.** Root-ként bővítsd ki a `v2p.c` programot úgy, hogy 64 lapot képezzen le, és számold meg, hány közülük fizikailag folytatása az előzőnek. Ezután képezz le 4 MiB-ot 2 MiB-ra igazítva, ahogy a `tlb.c` teszi, a `MADV_HUGEPAGE` beállítással, és ellenőrizd egy óriáslapon belül az egymást követő 4 KiB-os lapok keretszámait.
+2. **Virtuálisból fizikai.** Root-ként bővítsd ki a `v2p.c` programot úgy, hogy 64 lapot képezzen le, és számold meg, hány közülük fizikailag folytatása az előzőnek. Ezután képezz le 4 MiB-ot 2 MiB-ra igazítva, ahogy a `tlb.c` teszi, a `MADV_HUGEPAGE` beállítással, és ellenőrizd egy huge page-en belül az egymást követő 4 KiB-os lapok keretszámait.
 3. **Címfordítás kézzel.** Egy 4 KiB-os lapokat használó 32 bites rendszeren fordítsd le a `0x00000FFF`, `0x00001000` és `0x00403A7C` virtuális címeket egy olyan laptáblával, amelyben a 0. lap → 7. keret, az 1. lap → nincs jelen, a `0x403`-as lap → `0x12DC6`-os keret. Melyik hozzáférés okoz laphibát? x86-64-re bontsd fel a `0x00007F8A2F422ABC` címet négy 9 bites indexére és az eltolásra.
 4. **A laptábla mérete.** Mekkora egy lapos laptábla 32 bites címtartományhoz 4 KiB-os lapokkal és 4 bájtos bejegyzésekkel? Hány lapnyi laptábla kell az x86-64 négyszintű sémájával egy 8 MiB összefüggő memóriát használó folyamatnak? Ellenőrizd a `faults.c` segítségével (változtasd meg a `SIZE` konstansát, és hasonlítsd össze a VmPTE értékét előtte és utána) 8 MiB, 64 MiB és 1 GiB leképezésével.
-5. **Igény szerinti lapozás és írásra másolás.** Módosítsd a `faults.c` programot úgy, hogy a memória érintése után elágazzon (fork), és a gyermek írjon minden lapra. Hány kisebb laphibát okoz a gyermek, és mennyi ideig tart maga a `fork()`? Hasonlítsd össze egy olyan gyermekkel, amely csak olvas.
+5. **Igény szerinti lapozás és copy-on-write.** Módosítsd a `faults.c` programot úgy, hogy a memória érintése után elágazzon (fork), és a gyermek írjon minden lapra. Hány minor laphibát okoz a gyermek, és mennyi ideig tart maga a `fork()`? Hasonlítsd össze egy olyan gyermekkel, amely csak olvas.
 6. **TLB.** Futtasd a `tlb` és a `tlb huge` programot a saját gépeden, és keresd meg a lépcsőket. Nézz utána a processzorod TLB-méreteinek (`cpuid -1 | grep -i tlb`, vagy a gyártó dokumentációja), és ellenőrizd, hogy a lépcsők illeszkednek-e a bejegyzések számához.
 7. **Lapcsere.** Futtasd a `python3 pagesim.py trace lru 3 3 2 1 0 3 2 4 3 2 1 0 4` parancsot, majd ugyanezt `opt`-tal és `clock`-kal, aztán add hozzá az öregítő algoritmust a `pagesim.py`-hoz, és futtasd ugyanazon a sorozaton. Ezután keresd meg egy kis szkripttel a legrövidebb, 5 különböző lapot használó hivatkozási sorozatot, amely FIFO-nál Bélády-anomáliát mutat, és ellenőrizd, hogy az LRU 1000 véletlen sorozaton sem mutatja soha.
-8. **Vergődés élesben.** Egy memóriakorláttal futó virtuális gépben vagy konténerben (például `sudo systemd-run --scope -p MemoryMax=256M ./prog`, bekapcsolt swappal) futtass egy programot, amely véletlenszerűen 200, 250, 300 és 400 MiB memóriát érint. Mérd a futásidejét és a nagyobb laphibáinak számát. Hol kezdődik a vergődés?
+8. **Vergődés élesben.** Egy memóriakorláttal futó virtuális gépben vagy konténerben (például `sudo systemd-run --scope -p MemoryMax=256M ./prog`, bekapcsolt swappal) futtass egy programot, amely véletlenszerűen 200, 250, 300 és 400 MiB memóriát érint. Mérd a futásidejét és a major laphibáinak számát. Hol kezdődik a vergődés?
 9. **Lokalitás nélkül, és egy laphiba ára.** Futtasd a `python3 pagesim.py random` parancsot, és magyarázd meg, miért adja mindhárom algoritmus az $1 - F/P$ értéket. Ezután vedd fel az összehasonlításba az `opt`-ot is (2000 hivatkozáson, mert az OPT ebben a szimulátorban lassú): miért teljesíthet az OPT sokkal jobban még véletlenszerű hivatkozásoknál is? Végül [egy laphiba árának](#egy-laphiba-ára) modelljével (memória-hozzáférés 1 egység, lemezátvitel 10 000 egység) számítsd ki a lassulást 10 000 hozzáférésenként egy laphiba mellett, ha egyik áldozat sem módosított, ha az áldozatok fele módosított, illetve ha mindegyik az.
 
 ## Ellenőrző kérdések
@@ -738,17 +734,17 @@ frames  LRU faults  fault rate
 5. Írd le lépésről lépésre egy 32 bites virtuális cím fordítását 4 KiB-os lapokkal, a laptábla-bázisregiszter szerepével együtt. Mi történik környezetváltáskor?
 6. Mit csinál egy laptábla-bejegyzés érvényességi bitje és hozzáférési jogosultság bitjei? Mi történik, ha egy hozzáférés megsérti őket?
 7. Miért hierarchikusak a laptáblák? Hogyan bontjuk fel x86-64-en a 48 bites címet, és mekkora egy-egy tábla?
-8. Mi a TLB, miért van rá szükség, és mi a TLB lefedettsége? Hogyan segítenek az óriáslapok?
-9. Mi történik laphibakor? Különböztesd meg az igény szerinti lapozást, az írásra másolást, valamint a kisebb és nagyobb laphibát, mindegyikre egy-egy példával.
+8. Mi a TLB, miért van rá szükség, és mi a TLB lefedettsége? Hogyan segítenek a huge page-ek?
+9. Mi történik laphibakor? Különböztesd meg az igény szerinti lapozást, a copy-on-write mechanizmust, valamint a minor és a major laphibát, mindegyikre egy-egy példával.
 10. Számítsd ki az effektív hozzáférési időt $10^{-5}$ laphiba-gyakoriság, 100 ns memória-hozzáférés és 8 ms laphiba-kiszolgálási idő mellett. Milyen laphiba-gyakoriság tartja a lassulást 10% alatt?
 11. Írd le a FIFO, az OPT, az LRU és az óra-algoritmust. Miért nem használnak pontos LRU-t a virtuális memóriához, és mit használ a Linux?
 12. Reprodukáld a Bélády-anomália klasszikus példáját 3 és 4 kerettel. Miért nem mutathatja az LRU az anomáliát?
 13. Mi a munkahalmaz, és mi a vergődés? Hogyan előzheti meg az operációs rendszer a vergődést?
 14. Hasonlítsd össze a gyorsítótárakat és a virtuális memóriát: egység, méret, egy hiány költsége, elhelyezés, csere és írási stratégia. Magyarázd meg mindegyik különbséget a hiány költségével.
-15. Mit mutattak a linuxos mérések az igény szerinti lapozásról, az írásra másolásról, a nagyobb laphibákról és a TLB-ről? Mindegyikhez adj meg egy számot.
+15. Mit mutattak a linuxos mérések az igény szerinti lapozásról, a copy-on-write-ról, a major laphibákról és a TLB-ről? Mindegyikhez adj meg egy számot.
 16. Mi az overlay és a tárcsere (swapping)? Mindkettő mely problémáit oldotta meg a lapozás? Mit jelent ma Linuxon a „swap”?
 17. 16 lapra vonatkozó, egyenletesen véletlenszerű hivatkozásoknál milyen laphiba-gyakoriságra számítasz 4 és 8 kerettel, és miért nem függ ez az algoritmustól? Hogyan mond ellent a Bélády-anomália annak a várakozásnak, hogy több keret mindig kevesebb laphibát jelent?
-18. Egy rendszerben 16 bites virtuális címek, 4 KiB-os lapok és 7 bites keretszámok vannak. Milyen hosszú a lapszám, az eltolás és a fizikai cím? Fordítsd le a `0x2ABC` virtuális címet, ha a 2. lap a `0x5D` keretben van. Ezután sorold fel sorrendben egy nagyobb laphiba lépéseit, és mondd meg, miért teszi körülbelül kétszer lassabbá egy módosított áldozat.
+18. Egy rendszerben 16 bites virtuális címek, 4 KiB-os lapok és 7 bites keretszámok vannak. Milyen hosszú a lapszám, az eltolás és a fizikai cím? Fordítsd le a `0x2ABC` virtuális címet, ha a 2. lap a `0x5D` keretben van. Ezután sorold fel sorrendben egy major laphiba lépéseit, és mondd meg, miért teszi körülbelül kétszer lassabbá egy módosított áldozat.
 
 <details>
 <summary><strong>Megoldókulcs (oktatóknak)</strong></summary>
@@ -760,19 +756,19 @@ frames  LRU faults  fault rate
 5. Eltolás = alsó 12 bit; lapszám = felső 20 bit; a bejegyzés címe = PTBR + lapszám × bejegyzésméret; ha érvényes és a jogok megengedik, a fizikai cím = keretszám × 4096 + eltolás; különben laphiba. Környezetváltáskor az operációs rendszer betölti az új folyamat PTBR-jét (CR3), ezzel az egész címtartományt átváltja (és a TLB-t ki kell üríteni vagy címkézni kell).
 6. Érvényességi bit: a lap egy keretben van; ha 0, laphiba, és az operációs rendszer betölti a lapot, vagy leállítja a programot. Jogok (R/W/X, user/supervisor): a tiltott hozzáférés laphibát okoz, amelyet az operációs rendszer SIGSEGV-vé alakít.
 7. Egy lapos tábla 32 biten folyamatonként 4 MiB volna, 64 biten pedig lehetetlenül nagy; szintekkel csak a használt területekhez léteznek táblák. x86-64: 9 + 9 + 9 + 9 indexbit + 12 eltolásbit; minden táblában 512 nyolcbájtos bejegyzés van = 4 KiB.
-8. A legutóbbi fordítások kis gyorsítótára a CPU-ban; azért kell, mert egy laptábla-bejárás hozzáférésenként akár négy memóriaolvasást igényel. Lefedettség = bejegyzések × lapméret (1536 × 4 KiB = 6 MiB). Az óriáslapok 512-szeresére (2 MiB) vagy 262 144-szeresére (1 GiB) növelik a lefedettséget.
-9. A CPU átadja a vezérlést a kernelnek, amely a címet a folyamat területeivel veti össze: érvénytelen → SIGSEGV; sosem használt lap → nullázott keret kiosztása (igény szerinti lapozás, kisebb laphiba); írás egy fork utáni, közös, írásra másolandó lapra → másolás (kisebb); a lap a lemezen van → beolvasás, miközben a folyamat vár (nagyobb). Számpéldák a mérésekből: 262 144 kisebb laphiba 1 GiB-ra; nagyobb laphibánként 57 µs.
+8. A legutóbbi fordítások kis gyorsítótára a CPU-ban; azért kell, mert egy laptábla-bejárás hozzáférésenként akár négy memóriaolvasást igényel. Lefedettség = bejegyzések × lapméret (1536 × 4 KiB = 6 MiB). A huge page-ek 512-szeresére (2 MiB) vagy 262 144-szeresére (1 GiB) növelik a lefedettséget.
+9. A CPU átadja a vezérlést a kernelnek, amely a címet a folyamat területeivel veti össze: érvénytelen → SIGSEGV; sosem használt lap → nullázott keret kiosztása (igény szerinti lapozás, minor laphiba); írás egy fork utáni, közös, copy-on-write lapra → másolás (minor); a lap a lemezen van → beolvasás, miközben a folyamat vár (major). Számpéldák a mérésekből: 262 144 minor laphiba 1 GiB-ra; major laphibánként 57 µs.
 10. T = 0,99999 × 100 + 0,00001 × 8 000 000 ≈ 100 + 80 = 180 ns (80%-kal lassabb). 10% alatti lassuláshoz: 110 > 100 + p × (8 000 000 − 100), p < 1,25 × 10⁻⁶.
 11. A FIFO a legrégebbit teszi ki; az OPT azt, amelyet a legtávolabbi jövőben használnak; az LRU a legrégebben használtat; az óra körbejárja a kereteket, és az első olyat teszi ki, amelynek accessed bitje törölt, a bitek törlésével menet közben. A pontos LRU minden memória-hozzáférésnél frissítést igényelne; a Linux az accessed bitekre épülő aktív/inaktív listákat (és opcionálisan MGLRU-t) használ.
 12. A 3 2 1 0 3 2 4 3 2 1 0 4 sorozat: FIFO 3 kerettel 9, 4 kerettel 10 laphiba. Az LRU veremalgoritmus: az n legutóbb használt lap mindig benne van az n + 1 legutóbb használt lap között, így több keret csak segíthet.
 13. Egy közelmúltbeli időablakban használt lapok. Vergődés: túl kevés keret a munkahalmazokhoz, így a folyamatok többnyire a lapozásra várnak. Megelőzés: kevesebb folyamat tartása a memóriában (néhány felfüggesztése vagy leállítása), mindegyiknek a munkahalmazához elég keret biztosítása, vagy memóriabővítés.
-14. Sor (64 B) vs. lap (4 KiB); KiB–MiB vs. GiB; 10–100 ns vs. µs–ms; csoportasszociatív vs. teljesen asszociatív; hardveres véletlen/pszeudo-LRU vs. szoftveres LRU-közelítések; átíró vagy visszaíró vs. mindig visszaíró. Egy nagyobb laphiba százezer–millió ciklusba kerül, így az operációs rendszer megengedheti magának a teljes asszociativitást és a gondos cserét, és minden szükségtelen lemezírást el kell kerülnie.
-15. Igény szerinti lapozás: 1 GiB leképezve 1 MiB rezidens memóriával, amíg nem érintettük, utána 262 144 laphiba. Írásra másolás: a gyermek csak íráskor kapott új keretet (0x1802b2). Nagyobb laphibák: laponként 57 µs, szemben a gyorsítótárból kb. 0,15 µs-mal. TLB: 4096 lapnál hozzáférésenként 14,9 ns vs. 4,3 ns 4 KiB-os, illetve 2 MiB-os lapokkal.
+14. Sor (64 B) vs. lap (4 KiB); KiB–MiB vs. GiB; 10–100 ns vs. µs–ms; csoportasszociatív vs. teljesen asszociatív; hardveres véletlen/pszeudo-LRU vs. szoftveres LRU-közelítések; átíró vagy visszaíró vs. mindig visszaíró. Egy major laphiba százezer–millió ciklusba kerül, így az operációs rendszer megengedheti magának a teljes asszociativitást és a gondos cserét, és minden szükségtelen lemezírást el kell kerülnie.
+15. Igény szerinti lapozás: 1 GiB leképezve 1 MiB rezidens memóriával, amíg nem érintettük, utána 262 144 laphiba. Copy-on-write: a gyermek csak íráskor kapott új keretet (0x1802b2). Major laphibák: laponként 57 µs, szemben a gyorsítótárból kb. 0,15 µs-mal. TLB: 4096 lapnál hozzáférésenként 14,9 ns vs. 4,3 ns 4 KiB-os, illetve 2 MiB-os lapokkal.
 16. Overlay: a programozó a programot egy rezidens részre és olyan fázisokra bontja, amelyek sorban töltődnek be egyetlen overlay-területre. Tárcsere: az operációs rendszer teljes feladatokat mozgat a memória és egy swap-terület között. Az overlay a programozót terheli, és a memória méretétől függ; a tárcsere egész folyamatokat mozgat (a költség a mérettel arányos), visszahozáskor összefüggő lyukat igényel, és a RAM-nál nagyobb feladatot nem tud futtatni. A lapozás automatikusan, csak a használt lapokat mozgatja, bármelyik keretbe. Linuxon a swap az a lemezterület, ahová a RAM-ból kitett egyes anonim lapok kerülnek.
 17. $1 - F/P$: 4 kerettel 75%, 8 kerettel 50% (a szimulátorban 75,0% és 49,7–49,9%). Minden lapra ugyanakkora eséllyel hivatkozunk legközelebb, így nem számít, mely lapokat tartjuk meg, csak az, hogy hányat. Bélády-anomália: FIFO-val és a 3 2 1 0 3 2 4 3 2 1 0 4 sorozattal 4 keret 10, 3 keret csak 9 laphibát ad; ez azért fordulhat elő, mert a FIFO nem veremalgoritmus.
 18. Lapszám 4 bit, eltolás 12 bit, fizikai cím 7 + 12 = 19 bit (512 KiB). `0x2ABC` → 2. lap, `0xABC` eltolás → fizikai cím `0x5DABC` (a keretszámot az eltolás elé írjuk). Lépések: kivétel, a cím és a jogok ellenőrzése, keret keresése (módosított áldozat kitétele és visszaírása), a lemezolvasás elindítása, egy másik folyamat futtatása, a lemez megszakítása, a laptábla-bejegyzés frissítése, az utasítás újraindítása. A módosított áldozatot ki kell írni, mielőtt a keretét újra fel lehetne használni, így a laphiba egyetlen olvasás helyett egy lemezírásba és egy lemezolvasásba kerül.
 
-**A laborfeladatok megoldásai.** 3. labor: `0x00000FFF` → 7. keret, fizikai cím `0x00007FFF`; `0x00001000` → 1. lap, nincs jelen: laphiba; `0x00403A7C` → `0x12DC6A7C`. `0x00007F8A2F422ABC`: indexek 0xFF (255), 0x28 (40), 0x17A (378), 0x22 (34), eltolás 0xABC. 4. labor: 2²⁰ × 4 B = 4 MiB; 8 MiB összefüggő (és igazított) memóriához: a 4., 3. és 2. szinten egy-egy tábla, az 1. szinten 4 tábla (2048 bejegyzés / 512), összesen 7 lap = 28 KiB, elméletben. Mérve a VmPTE csak körülbelül 4–5 lappal (16–20 kB) nő: az új terület általában a könyvtárak mellé kerül, amelyek felsőbb szintű táblái már léteznek, és a VmPTE nem számolja a legfelső szintű táblát. 5. labor: a gyermek által írt minden lapra egy kisebb laphiba (1 GiB-ra 262 144); magának a forknak át kell másolnia a laptáblákat, körülbelül 2 MiB-ot, ami milliszekundumokig tart; egy olvasó gyermek egyáltalán nem okoz másolást és laphibát. 7. labor: legfeljebb 5 különböző lapot használó, legfeljebb 12 hivatkozásból álló összes sorozat kimerítő keresése megmutatja, hogy a 12 a legkisebb hossz, és hogy a lapok átnevezésétől eltekintve az ábra sorozata (3 kontra 4 kerettel) az egyetlen ilyen 12 hosszú sorozat. 9. labor: az OPT ismeri a jövőt, ezért lokalitás nélkül is azokat a lapokat tartja meg, amelyekre a leghamarabb lesz szükség; 16 lapra vonatkozó 2000 véletlen hivatkozáson 4, 8 és 12 kerettel körülbelül 50%, 25% és 10% a laphiba-gyakorisága, szemben a FIFO és az LRU körülbelül 74%, 49% és 24%-ával. A lassulás 10 000 hozzáférésenként egy laphibánál: (10 000 + 10 000) / 10 000 = 2-szeres tiszta áldozatokkal, 2,5-szörös, ha a felük módosított, és 3-szoros, ha mindegyik az.
+**A laborfeladatok megoldásai.** 3. labor: `0x00000FFF` → 7. keret, fizikai cím `0x00007FFF`; `0x00001000` → 1. lap, nincs jelen: laphiba; `0x00403A7C` → `0x12DC6A7C`. `0x00007F8A2F422ABC`: indexek 0xFF (255), 0x28 (40), 0x17A (378), 0x22 (34), eltolás 0xABC. 4. labor: 2²⁰ × 4 B = 4 MiB; 8 MiB összefüggő (és igazított) memóriához: a 4., 3. és 2. szinten egy-egy tábla, az 1. szinten 4 tábla (2048 bejegyzés / 512), összesen 7 lap = 28 KiB, elméletben. Mérve a VmPTE csak körülbelül 4–5 lappal (16–20 kB) nő: az új terület általában a könyvtárak mellé kerül, amelyek felsőbb szintű táblái már léteznek, és a VmPTE nem számolja a legfelső szintű táblát. 5. labor: a gyermek által írt minden lapra egy minor laphiba (1 GiB-ra 262 144); magának a forknak át kell másolnia a laptáblákat, körülbelül 2 MiB-ot, ami milliszekundumokig tart; egy olvasó gyermek egyáltalán nem okoz másolást és laphibát. 7. labor: legfeljebb 5 különböző lapot használó, legfeljebb 12 hivatkozásból álló összes sorozat kimerítő keresése megmutatja, hogy a 12 a legkisebb hossz, és hogy a lapok átnevezésétől eltekintve az ábra sorozata (3 kontra 4 kerettel) az egyetlen ilyen 12 hosszú sorozat. 9. labor: az OPT ismeri a jövőt, ezért lokalitás nélkül is azokat a lapokat tartja meg, amelyekre a leghamarabb lesz szükség; 16 lapra vonatkozó 2000 véletlen hivatkozáson 4, 8 és 12 kerettel körülbelül 50%, 25% és 10% a laphiba-gyakorisága, szemben a FIFO és az LRU körülbelül 74%, 49% és 24%-ával. A lassulás 10 000 hozzáférésenként egy laphibánál: (10 000 + 10 000) / 10 000 = 2-szeres tiszta áldozatokkal, 2,5-szörös, ha a felük módosított, és 3-szoros, ha mindegyik az.
 
 </details>
 

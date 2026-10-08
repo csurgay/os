@@ -2,10 +2,6 @@
 
 *Operating Systems lecture: how hard disks and SSDs store data, and how a file system turns numbered blocks into named files and directories: inodes, directories, hard and symbolic links, allocation, journaling, and four real file systems, FAT16, ext4, XFS and NTFS, taken apart on Linux*
 
-Previous: [Virtual Memory](../08-virtual-memory/). Next: [Access Control: Permissions, ACLs and SELinux](../10-access-control/).
-
-> **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
-
 ## Learning objectives
 
 The [previous lecture](../08-virtual-memory/) used the disk as the slow, large level of memory. This lecture looks at the disk in its own right: as the place where data must survive power failures, crashes and decades, organised so that people and programs can find it by name.

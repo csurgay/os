@@ -106,7 +106,7 @@ def states():
     p.append(path("M440 368C436 400 430 420 425 446", m, width=1.4)); p.append(label(446, 412, "kivitel", 11.5, anchor="start"))
     p.append(path("M346 478H226", m, width=1.4)); p.append(label(286, 470, "esemény", 11.5))
     p.append(text(24, 566, "Stallingsnál: Ready/Suspend és Blocked/Suspend. Linuxban a futásra kész és a futó egyaránt „R”, a várakozó S vagy D,", 11.5, cls="quiet"))
-    p.append(text(24, 584, "a felfüggesztett állapotok szerepét pedig a leállított folyamatok (T) és a lapozóterületre kivitt memória tölti be.", 11.5, cls="quiet"))
+    p.append(text(24, 584, "a felfüggesztett állapotok szerepét pedig a leállított folyamatok (T) és a swapre kivitt memória tölti be.", 11.5, cls="quiet"))
     return svg(870, 600, title, "\n".join(p))
 
 
@@ -141,13 +141,13 @@ def reorder():
         p.append(text(x + 14, 138, f"3. flag[{1 - i}] olvasása → 0 (régi!)", 12, 600))
         p.append(text(x + 14, 158, "4. belép a kritikus szakaszba", 12, cls="bad"))
         p.append(rect(x + 196, 82, 130, 64, "c2", rx=6))
-        p.append(text(x + 261, 102, "tárolópuffer", 11.5, 600, anchor="middle"))
+        p.append(text(x + 261, 102, "store buffer", 11.5, 600, anchor="middle"))
         p.append(text(x + 261, 120, f"flag[{i}] = 1", 11, anchor="middle")); p.append(text(x + 261, 136, f"turn = {1 - i}", 11, anchor="middle"))
         p.append(path(f"M{x + 261} 146V246", m, width=1.4, dash="5 4"))
         p.append(text(x + 268, 226, "később íródik ki", 11, cls="quiet"))
     p.append(rect(40, 250, 770, 40, "acc", rx=8))
     p.append(text(425, 275, "közös memória:  flag[0] = 0,  flag[1] = 0  (még mindig)", 12.5, 600, anchor="middle"))
-    p.append(text(24, 318, "Az írások a tárolópufferben várnak, az olvasások egyenesen a memóriához mennek: mindkét mag 0-nak látja a másik jelzőjét.", 11.5, cls="quiet"))
+    p.append(text(24, 318, "Az írások a store bufferben várnak, az olvasások egyenesen a memóriához mennek: mindkét mag 0-nak látja a másik jelzőjét.", 11.5, cls="quiet"))
     p.append(text(24, 336, "A 2. és 3. lépés közötti teljes memóriakorlát (mfence vagy lock előtagú utasítás) kiüríti a puffert: a kizárás helyreáll.", 11.5, cls="quiet"))
     return svg(850, 352, title, "\n".join(p))
 

@@ -2,10 +2,6 @@
 
 *Operációs rendszerek előadás: hogyan alakítja az emberi észlelés, emlékezet és érzelem egy operációs rendszer felhasználói felületét, a parancssortól és az asztali felülettől a telefonokig, órákig, szemüvegekig és robotokig*
 
-Előző: [Minőség, üzleti szempontok és az Enterprise Linux ökoszisztéma](../02-quality-and-enterprise-linux/). Következő: [Az utasítás-végrehajtási ciklus](../04-fetch-execute-cycle/).
-
-> **Hogyan olvasd ezt az előadást?** Ahol új rövidítés vagy fogalom jelenik meg, utána egy **Egyszerűen elmagyarázva** feliratú doboz következik. Kattints rá, és kinyílik egy köznapi nyelvű magyarázat. Ha már ismered a fogalmakat, nyugodtan átugorhatod ezeket a dobozokat.
-
 ## Tanulási célok
 
 Az első két előadás kívülről nézte az operációs rendszereket: honnan jöttek, és mennyire jók. A minőség egy részéről azonban nem a gép dönt, hanem az az ember, aki előtte ül. Ez az előadás azt vizsgálja, mit kell egy operációs rendszer felhasználói felületének figyelembe vennie az emberi észlelésből, emlékezetből, jártasságból és érzelmekből, és hogyan változtak a válaszok a termináltól a telefonon és az órán át a fejre szerelt eszközökig.
@@ -16,11 +12,11 @@ Az előadás végére a hallgatók képesek lesznek:
 - felvázolni az operációs rendszerek felületeinek fejlődését: parancssor, asztali grafikus felület, tollal vezérelt számítógépek, érintőképernyős telefonok, viselhető eszközök, hangvezérlés és térbeli számítástechnika;
 - a világosságot sorrendre, a színezetet kategóriákra használni, kontrasztot mérni, és színtévesztők számára is használható felületet tervezni;
 - megmagyarázni a rövid távú memória korlátait, a tömbösítést (chunking), valamint a széles és a mély menük közötti kompromisszumot;
-- megkülönböztetni az affordanciát a jelölőtől (signifier), és alkalmazni őket a grafikus vezérlőelemekre és az érintési célpontokra, Fitts törvényének segítségével;
+- megkülönböztetni az affordanciát a signifiertől (a cselekvést jelző jeltől), és alkalmazni őket a grafikus vezérlőelemekre és az érintési célpontokra, Fitts törvényének segítségével;
 - megmagyarázni a felismerés és a felidézés különbségét, és azt, hogyan kerülik meg a parancssoros és a hangalapú felületek a felidézés nehézségét;
 - kezdőknek és szakértőknek egyaránt tervezni, ugyanahhoz a művelethez több utat kínálva;
-- bemutatni az affektív számítástechnikát, alkalmazásait és kockázatait (hírfolyamok, FOMO, sötét minták), valamint az erre válaszoló szabályozást;
-- megmagyarázni a kölcsönös tekintet szerepét, a tekintetkorrekciót és mellékhatásait, a hátborzongató völgy (uncanny valley) hipotézisét és a robotok etológiai megközelítését;
+- bemutatni az affective computingot, alkalmazásait és kockázatait (hírfolyamok, FOMO, sötét minták), valamint az erre válaszoló szabályozást;
+- megmagyarázni a kölcsönös tekintet szerepét, a tekintetkorrekciót és mellékhatásait, az uncanny valley hipotézisét és a robotok etológiai megközelítését;
 - megmagyarázni a visszajelzés és a válaszidő határait, a hibamegelőzést és a visszavonást, a félbeszakítások árát, valamint az operációs rendszer akadálymentesítési szolgáltatásait;
 - personát és elfogadási kritériumokkal ellátott felhasználói történeteket írni egy operációsrendszer-funkcióhoz, és összekapcsolni őket az előadás használhatósági elveivel;
 - Linuxon alkalmazni Fitts törvényét és a Hick–Hyman-törvényt, valamint a színkontraszt-számításokat.
@@ -148,7 +144,7 @@ Két korlát érvényes. Először: Miller korlátja arra vonatkozik, amit **eml
 
 ## III. Affordanciák: a tárgy elárulja, hogyan kell használni
 
-James Gibson pszichológus egy környezet **affordanciáinak** nevezte azokat a cselekvéseket, amelyeket a környezet egy élőlénynek kínál: a szék ülést kínál, a fogantyú húzást (Gibson, 1979). Donald Norman vitte át a szót a tervezésbe, és később pontosította: az affordancia maga a lehetséges cselekvés, a **jelölő** (signifier) pedig az az érzékelhető jel, amely elárulja, hogy a cselekvés lehetséges, és hol kell végrehajtani (Norman, 2013). Klasszikus példák:
+James Gibson pszichológus egy környezet **affordanciáinak** nevezte azokat a cselekvéseket, amelyeket a környezet egy élőlénynek kínál: a szék ülést kínál, a fogantyú húzást (Gibson, 1979). Donald Norman vitte át a szót a tervezésbe, és később pontosította: az affordancia maga a lehetséges cselekvés, a **signifier** pedig az az érzékelhető jel, amely elárulja, hogy a cselekvés lehetséges, és hol kell végrehajtani (Norman, 2013). Klasszikus példák:
 
 | Tárgy | Az általa jelzett cselekvés |
 |---|---|
@@ -160,11 +156,11 @@ James Gibson pszichológus egy környezet **affordanciáinak** nevezte azokat a 
 
 Az olyan ajtó, amelynek húzófogantyúja van, mégis tolni kell, annyira gyakori hiba, hogy a tervezők „Norman-ajtónak” hívják. A megoldás nem egy „TOLNI” felirat, hanem egy lapos lemez, amelyet csak tolni lehet.
 
-![Négy jelölő: recézett forgatógomb, ablakátméretező fogó, húzófogantyú és bordázott görgetősáv-csúszka](gui-grips.svg)
+![Négy signifier: recézett forgatógomb, ablakátméretező fogó, húzófogantyú és bordázott görgetősáv-csúszka](gui-grips.svg)
 
 **Recézés a képernyőn.** A grafikus felületek ugyanezeket a textúrákat ugyanerre a célra vették át: az ablak sarkán lévő ferde bordák azt mondják, „húzd az átméretezéshez”, egy listaelemen lévő pontoszlop azt, hogy „húzd az áthelyezéshez”, a görgetősáv bordái azt, hogy „fogd meg a görgetéshez”. Az árnyékkal rajzolt gombok megnyomhatónak látszanak, az aláhúzott kék szöveg kattinthatónak.
 
-**A lapos dizájn ára.** A lapos dizájn sok ilyen jelölőt eltüntetett. Egy 71 résztvevős szemmozgáskövetéses vizsgálatban a gyenge kattinthatósági jelölőkkel ellátott oldalakon a felhasználók 22%-kal több időt töltöttek, és 25%-kal több fixációt végeztek, mint ugyanazokon az oldalakon erős jelölőkkel (Moran, 2017). A dizájnrendszerek azóta visszahoztak néhány jelölőt, és az inga tovább leng: az Apple áttetsző **Liquid Glass** dizájnját, amelyet 2025 júniusában jelentett be valamennyi operációs rendszerére (Apple, 2025), korai tesztváltozataiban rossz olvashatósága miatt bírálták, és az Apple a kiadás előtt megnövelte a kontrasztját (Abdullahi, 2025).
+**A lapos dizájn ára.** A lapos dizájn sok ilyen signifiert eltüntetett. Egy 71 résztvevős szemmozgáskövetéses vizsgálatban a gyenge kattinthatósági signifierekkel ellátott oldalakon a felhasználók 22%-kal több időt töltöttek, és 25%-kal több fixációt végeztek, mint ugyanazokon az oldalakon erős signifierekkel (Moran, 2017). A dizájnrendszerek azóta visszahoztak néhány signifiert, és az inga tovább leng: az Apple áttetsző **Liquid Glass** dizájnját, amelyet 2025 júniusában jelentett be valamennyi operációs rendszerére (Apple, 2025), korai tesztváltozataiban rossz olvashatósága miatt bírálták, és az Apple a kiadás előtt megnövelte a kontrasztját (Abdullahi, 2025).
 
 **Méret és távolság: Fitts törvénye.** Egy vezérlőelemnek nemcsak felismerhetőnek, hanem elérhetőnek is kell lennie. Fitts törvénye szerint egy célpontra mutatás ideje a **nehézségi indexszel** (index of difficulty) nő: $ID = \log_2(D/W + 1)$ bit, ahol $D$ a célpont távolsága, $W$ pedig a szélessége (Fitts, 1954; MacKenzie, 1992). Két tervezési szabály következik belőle:
 
@@ -174,10 +170,10 @@ Az olyan ajtó, amelynek húzófogantyúja van, mégis tolni kell, annyira gyako
 Egy kézben tartott telefonon Fitts törvényéhez egy második korlát társul: az elérhetőség, mert a hüvelykujj nem éri el kényelmesen a felső sarkokat; ezért helyezték át a telefonos rendszerek a gyakori vezérlőket a képernyő aljára. Egy órán a célpontok annyira kicsik, hogy a forgatógomb és a hang veszi át a szerepüket; egy headsetben a „mutató” a szem, és célpont lesz bármi, amire ránézünk. Vegyük észre azt is, hogy a képernyő széle csak akkor szél, ha ott megáll a mutató: két monitor között nem az.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> affordancia, jelölő, recézés, szemmozgáskövetés, fixáció, olvashatóság, Fitts törvénye, nehézségi index, pont, sűrűségfüggetlen képpont, CSS-képpont</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> affordancia, signifier, recézés, szemmozgáskövetés, fixáció, olvashatóság, Fitts törvénye, nehézségi index, pont, sűrűségfüggetlen képpont, CSS-képpont</summary>
 
 - **Affordancia:** amit egy tárgy lehetővé tesz: a bögre megfogható, és lehet belőle inni.
-- **Jelölő (signifier):** látható (vagy hallható, tapintható) jel, amely megmutatja, mit és hol lehet csinálni: a bögre füle.
+- **Signifier:** látható (vagy hallható, tapintható) jel, amely megmutatja, mit és hol lehet csinálni: a bögre füle.
 - **Recézés:** apró bordák mintázata fém gombokon és fogantyúkon, amely megakadályozza, hogy az ujjunk megcsússzon.
 - **Szemmozgáskövetés (eyetracking):** kamerával mérjük, hová néz valaki a képernyőn. A **fixáció** a szem rövid megállása egy ponton.
 - **Olvashatóság:** mennyire könnyű elolvasni egy szöveget.
@@ -225,19 +221,19 @@ A menü kiírja a billentyűparancsot a parancs mellé, így a lassú út megtan
 Az érintéses felületek ezt megnehezítették. A gesztusok (elhúzás a képernyő széléről, hosszú nyomás, két ujjas koppintás) gyorsak, de láthatatlanok: nincs menü, amely kiírná őket. A telefonok ezért rövid oktatóanyagokkal és tippekkel tanítják meg a gesztusokat, a legfontosabbakhoz pedig látható gombot is megtartanak.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> kezdő, szakértő, helyi menü, módosítóbillentyű, billentyűparancs, gyorsítóbillentyű, gesztus</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> kezdő, szakértő, helyi menü, módosítóbillentyű, billentyűparancs, gyorsbillentyű, gesztus</summary>
 
 - **Kezdő / szakértő:** aki most ismerkedik a rendszerrel / aki már sokat használta.
 - **Helyi menü:** az a menü, amely jobb kattintásra (vagy hosszú nyomásra) jelenik meg valamin, és az adott dologra vonatkozó műveleteket mutatja.
 - **Módosítóbillentyű:** olyan billentyű, mint a Ctrl, a Shift vagy az Alt, amely megváltoztatja egy másik billentyű vagy egérművelet hatását.
-- **Billentyűparancs, gyorsítóbillentyű (accelerator):** billentyűkombináció, amely közvetlenül végrehajt egy parancsot, például a Ctrl+C a másolást.
+- **Billentyűparancs, gyorsbillentyű (accelerator):** billentyűkombináció, amely közvetlenül végrehajt egy parancsot, például a Ctrl+C a másolást.
 - **Gesztus:** ujjmozdulat az érintőképernyőn, amely egy parancsot jelent, például elhúzás vagy csippentés.
 
 </details>
 
 ## VI. Érzelmek: felületek, amelyek olvassák és irányítják az érzelmeket
 
-Az érzelmek nem mellékesek a megismerés szempontjából. Egy ember **affektív állapota** – nyugodt vagy szorongó, unatkozó vagy frusztrált – befolyásolja, mit vesz észre, hogyan ítél és mit dönt. Rosalind Picard (1997) **affektív számítástechnikának** (affective computing) nevezte el azt a területet, amely ezt beépíti a gépekbe: olyan számítástechnika, amely az érzelmekhez kapcsolódik, belőlük ered, vagy szándékosan befolyásolja őket. Egy affektív rendszer **érzékeli** az érzelmi jeleket (a gépelés ritmusát, a hangot, az arcot, a kattintásokat, azt, hogy mennyi ideig nézünk egy elemet), **előrejelzi** a felhasználó állapotát és reakcióját, és **megváltoztatja** a viselkedését – ezzel pedig a felhasználó érzelmeit is.
+Az érzelmek nem mellékesek a megismerés szempontjából. Egy ember **affektív állapota** – nyugodt vagy szorongó, unatkozó vagy frusztrált – befolyásolja, mit vesz észre, hogyan ítél és mit dönt. Rosalind Picard (1997) **affective computingnak** (az érzelmeket figyelembe vevő számítástechnikának) nevezte el azt a területet, amely ezt beépíti a gépekbe: olyan számítástechnika, amely az érzelmekhez kapcsolódik, belőlük ered, vagy szándékosan befolyásolja őket. Egy affektív rendszer **érzékeli** az érzelmi jeleket (a gépelés ritmusát, a hangot, az arcot, a kattintásokat, azt, hogy mennyi ideig nézünk egy elemet), **előrejelzi** a felhasználó állapotát és reakcióját, és **megváltoztatja** a viselkedését – ezzel pedig a felhasználó érzelmeit is.
 
 ![Hurok: a felhasználó érzelmi állapotától az érzékelésen, az előrejelzésen és a megjelenített tartalom megváltoztatásán át vissza a felhasználóhoz](affective-loop.svg)
 
@@ -247,14 +243,14 @@ Ugyanaz a hurok egészen különböző célokat szolgálhat:
 - **Az elköteleződés (engagement) szolgálata:** a közösségimédia-hírfolyamok (Facebook, YouTube, TikTok) a bejegyzéseket a várható elköteleződés szerint rangsorolják, és az érzelmes tartalom leköt. A webáruházak azt írják ki: „már csak 2 darab van”, „12-en nézik éppen ezt a terméket”. Az ilyen rendszerek által kihasználható érzelmek közé tartozik az **összetartozás** igénye, a mások kirakatéletére irányuló **irigység** és a **lemaradástól való félelem (FOMO, fear of missing out)**, amelyet úgy határoztak meg, mint átható aggodalmat amiatt, hogy mások olyan értékes élményekben lehetnek részesek, amelyekből mi kimaradunk (Przybylski et al., 2013).
 - **A chatbotok** a kettő között helyezkednek el: egy beszélgető rendszer, amely a hangnemét a felhasználóhoz igazítja, vigasztalhat, de hízeleghet is, vagy függőséget alakíthat ki – attól függően, mire optimalizálták.
 
-Hogy az ilyen irányítás nagy léptékben működhet, azt – vitatott módon – egy 2012 januárjában 689 003 Facebook-felhasználón végzett kísérlet sugallta: amikor csökkentették a pozitív bejegyzéseket a hírfolyamukban, valamivel kevesebb pozitív és több negatív szót írtak saját bejegyzéseikben, és fordítva (Kramer et al., 2014). A hatások parányiak voltak, és a kritikusok kétségbe vonták, hogy az érzelmi szavak számolása valóban az érzelmeket méri; a kísérlet ráadásul a felhasználók tájékoztatáson alapuló beleegyezése nélkül futott, és a folyóirat szerkesztőségi aggályközlést (expression of concern) tett közzé róla (Verma, 2014).
+Hogy az ilyen irányítás nagy léptékben működhet, azt – vitatott módon – egy 2012 januárjában 689 003 Facebook-felhasználón végzett kísérlet sugallta: amikor csökkentették a pozitív bejegyzéseket a hírfolyamukban, valamivel kevesebb pozitív és több negatív szót írtak saját bejegyzéseikben, és fordítva (Kramer et al., 2014). A hatások parányiak voltak, és a kritikusok kétségbe vonták, hogy az érzelmi szavak számolása valóban az érzelmeket méri; a kísérlet ráadásul a felhasználók tájékoztatáson alapuló beleegyezése nélkül futott, és a folyóirat szerkesztősége hivatalos figyelmeztetést (*expression of concern*) tett közzé róla (Verma, 2014).
 
 Hogy mekkora kárt okoznak az ilyen rendszerek, máig vitatott, és a tisztességes összefoglalásnak mindkét oldalt be kell mutatnia. A 2020-as *The Social Dilemma* (magyarul: *A társadalmi dilemma*) című dokumentumfilm, amelyben nagy platformok volt munkatársai manipulációként írják le az elköteleződésre optimalizált tervezést (Orlowski, 2020), széles közönséghez juttatta el ezt az érvet; a Facebook azt válaszolta, hogy a film torz, szenzációhajhász képet fest termékei működéséről (Facebook, 2020). Nagy vizsgálatok azt találták, hogy a serdülők digitálistechnológia-használata és jólléte közötti átlagos összefüggés negatív, de nagyon kicsi: a jóllét szórásának legfeljebb 0,4%-át magyarázza (Orben & Przybylski, 2019). Mások szerint az okostelefonok és a közösségi média a 2010-es évek eleje óta tapasztalható kamaszkori szorongás- és depresszió-növekedés fő okai közé tartoznak, és az átlagok elfedik a sérülékeny csoportokat érő súlyos hatásokat (Haidt, 2024); a kritikusok azt felelik, hogy egy ilyen oksági szerep bizonyítékai gyengék (Odgers, 2024). A vita folytatódik.
 
 **Az operációs rendszer szerepe.** A telefonos operációs rendszerek váltak a játékvezetővé az alkalmazások és a felhasználó figyelme között. 2018 óta az iOS (Képernyőidő, Screen Time) és az Android (Digitális jólét, Digital Wellbeing) kimutatja, mennyi időt visz el az egyes alkalmazások használata, és korlátozni is tudja (Apple, 2018); a fókuszmódok és az értesítési beállítások döntik el, melyik alkalmazás mikor zavarhat. A jog is követte a fejleményeket: az EU digitális szolgáltatásokról szóló rendelete (Digital Services Act) megtiltja az online platformoknak, hogy felületüket úgy tervezzék meg, hogy az „megtévessze vagy manipulálja” a felhasználókat (ezek az úgynevezett **sötét minták**, dark patterns; Regulation (EU) 2022/2065, Art. 25), a mesterséges intelligenciáról szóló rendelet (AI Act) pedig 2025. február 2. óta tiltja azokat az MI-rendszereket, amelyek a munkahelyen vagy az oktatásban következtetnek az emberek érzelmeire, kivéve orvosi vagy biztonsági okokból (Regulation (EU) 2024/1689, Art. 5(1)(f)).
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> affektus, affektív állapot, affektív számítástechnika, elköteleződés, hírfolyam, FOMO, tájékoztatáson alapuló beleegyezés, aggályközlés, sötét minta, célfüggvény, Digital Services Act, AI Act</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> affektus, affektív állapot, affective computing, elköteleződés, hírfolyam, FOMO, tájékoztatáson alapuló beleegyezés, expression of concern, sötét minta, célfüggvény, Digital Services Act, AI Act</summary>
 
 - **Affektus, affektív állapot:** érzések és hangulatok, például öröm, félelem, unalom vagy düh, és hogy mennyire erősek.
 - **Affektív számítástechnika:** olyan számítógépek, amelyek felismerik az emberi érzelmeket, reagálnak rájuk vagy befolyásolják őket.
@@ -262,7 +258,7 @@ Hogy mekkora kárt okoznak az ilyen rendszerek, máig vitatott, és a tisztessé
 - **Hírfolyam (feed):** a bejegyzések vagy videók végtelen listája egy közösségimédia-alkalmazásban, amelyet az alkalmazás válogat és rendez sorba.
 - **FOMO** (fear of missing out, lemaradástól való félelem): az az aggódó érzés, hogy mások nélkülünk érzik jól magukat.
 - **Tájékoztatáson alapuló beleegyezés (informed consent):** beleegyezés egy vizsgálatban való részvételbe, miután elmondták, mivel jár.
-- **Aggályközlés (expression of concern):** egy folyóirat hivatalos megjegyzése, amely figyelmezteti az olvasókat, hogy egy megjelent cikkel kapcsolatban valami kérdéses.
+- **Expression of concern:** egy folyóirat hivatalos megjegyzése, amely figyelmezteti az olvasókat, hogy egy megjelent cikkel kapcsolatban valami kérdéses.
 - **Sötét minta (dark pattern):** tervezési trükk, amely olyasmire veszi rá a felhasználót, amit nem akart, például egy elrejtett „leiratkozás” link vagy egy hamis visszaszámláló.
 - **Célfüggvény:** az a szám, amelyet egy számítógépes rendszer a lehető legnagyobbra (vagy legkisebbre) igyekszik tenni, például a „megnézett percek” vagy a „helyesen megválaszolt kérdések” száma.
 - **Digital Services Act (DSA, digitális szolgáltatásokról szóló rendelet), AI Act (mesterséges intelligenciáról szóló rendelet):** az Európai Unió jogszabályai az online platformokról (2022) és a mesterséges intelligenciáról (2024).
@@ -277,7 +273,7 @@ A szemkontaktus az egyik legerősebb társas jelzés. Ha valakinek a szemébe n�
 
 **Tekintetkorrekció.** Ma már szoftver javítja ezt: újrarajzolja a szemeket a videóban, hogy úgy tűnjenek, mintha a kamerába néznének. Az Apple 2020-ban, az iOS 14-gyel vezette be a FaceTime **Eye Contact** (szemkontaktus) funkcióját (AppleInsider, 2020); az NVIDIA 2023 januárjában Eye Contact effektust adott Broadcast szoftveréhez, amely megtartja a természetes pislogást, és kikapcsol, ha a felhasználó túlságosan félrenéz (NVIDIA, 2023); a Windows hasonló effektust kínál (Windows Studio Effects) az MI-gyorsítóval rendelkező gépeken. Az Apple Vision Pro az ellenkező irányban megy tovább: külső kijelzője (**EyeSight**) a viselő szemének képét mutatja a közelben lévőknek, hogy lássák, mikor néz rájuk a viselő (Apple, n.d.-b).
 
-**Kínos mellékhatások.** A korrigált tekintet állandó bámulás: a korrigált személy soha nem néz félre, ami élő beszélgetésben kellemetlen, akár hátborzongató is lehet. Megváltoztatja azt is, mit *jelent* a szemkontaktus: a másik oldal olyan figyelmet lát, amely talán nincs is ott, például miközben a beszélő egy előre megírt szöveget olvas. A tekintetkorrekció kicsi, de valós példája azoknak a hitelességi és beleegyezési kérdéseknek, amelyeket az affektív számítástechnika felvet. Ha pedig a tekintet **bemenetté** válik, mint egy headsetben, új probléma jelentkezik: az emberek úgy is ránéznek dolgokra, hogy nem akarják kiválasztani őket – ez az úgynevezett **Midász-érintés** (Midas touch) probléma, ezért kell a Vision Pro-nál külön csippentés a megerősítéshez (Jacob, 1990).
+**Kínos mellékhatások.** A korrigált tekintet állandó bámulás: a korrigált személy soha nem néz félre, ami élő beszélgetésben kellemetlen, akár hátborzongató is lehet. Megváltoztatja azt is, mit *jelent* a szemkontaktus: a másik oldal olyan figyelmet lát, amely talán nincs is ott, például miközben a beszélő egy előre megírt szöveget olvas. A tekintetkorrekció kicsi, de valós példája azoknak a hitelességi és beleegyezési kérdéseknek, amelyeket az affective computing felvet. Ha pedig a tekintet **bemenetté** válik, mint egy headsetben, új probléma jelentkezik: az emberek úgy is ránéznek dolgokra, hogy nem akarják kiválasztani őket – ez az úgynevezett **Midász-érintés** (Midas touch) probléma, ezért kell a Vision Pro-nál külön csippentés a megerősítéshez (Jacob, 1990).
 
 <details>
 <summary><b>Egyszerűen elmagyarázva:</b> kölcsönös tekintet, elfordított tekintet, arousal, elköteleződés, tekintetkorrekció, MI-gyorsító, Midász-érintés</summary>
@@ -290,9 +286,9 @@ A szemkontaktus az egyik legerősebb társas jelzés. Ha valakinek a szemébe n�
 
 </details>
 
-## VIII. Ember–robot interakció és a hátborzongató völgy
+## VIII. Ember–robot interakció és az uncanny valley
 
-A robotok az operációs rendszerek sajátos felhasználói: fizikai valójukban léteznek, mozognak, és az emberek társas lényként reagálnak rájuk. Az **ember–robot interakció (HRI, human–robot interaction)** ezeket a reakciókat vizsgálja. Legismertebb gondolata a **hátborzongató völgy** (uncanny valley), amelyet Mori Maszahiro japán robotkutató vetett fel 1970-ben (Mori, 1970/2012).
+A robotok az operációs rendszerek sajátos felhasználói: fizikai valójukban léteznek, mozognak, és az emberek társas lényként reagálnak rájuk. Az **ember–robot interakció (HRI, human–robot interaction)** ezeket a reakciókat vizsgálja. Legismertebb gondolata az **uncanny valley** (a „hátborzongató völgy”), amelyet Mori Maszahiro japán robotkutató vetett fel 1970-ben (Mori, 1970/2012).
 
 ![A rokonszenv az emberhez való hasonlósággal nő az ipari robottól a játékrobotig, a majdnem emberi alakoknál mély völgybe zuhan, majd a valódi embernél ismét emelkedik](uncanny-valley.svg)
 
@@ -301,10 +297,10 @@ Mori szerint ahogy egy robot egyre emberszerűbb lesz, úgy nő iránta érzett 
 Mori a görbét intuícióból rajzolta, nem mérésekből. A későbbi kísérletek bizonyos ingerek esetében alátámasztják a mélyedést: egy 80 valódi robotarcot értékeltető vizsgálatban a legemberszerűbb, de tökéletlen arcoknál csökkent a rokonszenv és a bizalom (Mathur & Reichling, 2016). A kísérleti szakirodalom egy metaanalízise összességében alátámasztotta a völgy alakú összefüggést (Diel et al., 2022), de a görbe pontos alakja és oka (egymásnak ellentmondó jelek, a halott vagy beteg dolog érzete, megsértett elvárások) még vita tárgya. Az elképzelés a robotokon túl is érvényes: a filmek és játékok számítógéppel generált szereplőire, a videós avatarokra és a majdnem, de nem egészen emberi szintetikus hangokra.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> HRI, hátborzongató, rokonszenv, ipari robot, android, művégtag, avatar, szintetikus hang</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> HRI, uncanny valley, rokonszenv, ipari robot, android, művégtag, avatar, szintetikus hang</summary>
 
 - **HRI** (human–robot interaction, ember–robot interakció): annak tudománya, hogyan dolgoznak és élnek együtt emberek és robotok.
-- **Hátborzongató (uncanny):** furcsa, kísérteties, nyugtalanító.
+- **Uncanny valley:** az angol *uncanny* jelentése furcsa, kísérteties, nyugtalanító; a „valley” (völgy) a görbe mélyedése, ahol a majdnem emberi alak már ilyennek hat.
 - **Rokonszenv (affinity):** mennyire kedvelünk valamit, és mennyire érezzük jól magunkat vele.
 - **Ipari robot:** robotkar egy gyárban, például olyan, amely autókarosszériákat hegeszt.
 - **Android:** embernek látszó robot.
@@ -316,11 +312,11 @@ Mori a görbét intuícióból rajzolta, nem mérésekből. A későbbi kísérl
 
 ## IX. Etológia: a robotok mintája a kutya, nem az ember
 
-Az **etológia** az állati viselkedés természetes környezetben történő biológiai vizsgálata. Magyar kutatók, mindenekelőtt a budapesti Eötvös Loránd Tudományegyetem kutyakogníciós kutatócsoportja, azt javasolták, hogy alkalmazzuk a robotokra. **Etorobotika** (ethorobotics) nevű megközelítésük a hátborzongató völgyből indul ki, és más következtetésre jut, mint hogy „tegyük emberszerűbbé a robotokat” (Miklósi et al., 2017):
+Az **etológia** az állati viselkedés természetes környezetben történő biológiai vizsgálata. Magyar kutatók, mindenekelőtt a budapesti Eötvös Loránd Tudományegyetem kutyakogníciós kutatócsoportja, azt javasolták, hogy alkalmazzuk a robotokra. **Etorobotika** (ethorobotics) nevű megközelítésük az uncanny valley jelenségéből indul ki, és más következtetésre jut, mint hogy „tegyük emberszerűbbé a robotokat” (Miklósi et al., 2017):
 
 - **A kutya mint modell.** A kutyák évezredek óta élnek együtt az emberrel anélkül, hogy hasonlítanának ránk. Nem a külsejük teszi őket jó társsá, hanem a **szociális kompetenciájuk**: a kötődés, az emberi tekintetre és mutatásra fordított figyelem, a kommunikáció, az együttműködés és a megfigyelés útján történő tanulás.
 - **Először a funkció.** A robotot a funkciójához és az ökológiai fülkéjéhez (niche) kell tervezni, azokkal a társas készségekkel, amelyekre ez a funkció igényt tart, és olyan testtel, amely ehhez illik, függetlenül attól, mennyire emberszerű. Egy takarítórobotnak azt kell jeleznie, mit csinál és merre tart, nem arcra van szüksége.
-- **A társas jelzések továbbra is számítanak.** Az a robot, amely mutatja, hová „néz”, a hozzá beszélő ember felé fordul, és egyszerű, következetes jelekkel jelzi az állapotát, ösztönösen megérthető, ahogy a kutya testtartását és tekintetét is megértjük. Ez újra összekapcsolja a III. (jelölők), a VI. (érzelmek) és a VII. (tekintet) szakaszt.
+- **A társas jelzések továbbra is számítanak.** Az a robot, amely mutatja, hová „néz”, a hozzá beszélő ember felé fordul, és egyszerű, következetes jelekkel jelzi az állapotát, ösztönösen megérthető, ahogy a kutya testtartását és tekintetét is megértjük. Ez újra összekapcsolja a III. (signifierek), a VI. (érzelmek) és a VII. (tekintet) szakaszt.
 
 Az operációs rendszerek számára a tanulság a szoftverágensekre is kiterjed. Egy hangalapú asszisztensnek vagy egy chatbotnak nem kell embernek tettetnie magát ahhoz, hogy hasznos legyen; azt kell világossá tennie, mire képes, mit csinál éppen, és mikor értett meg valamit – ezek pedig a felhasználói felület klasszikus feladatai.
 
@@ -340,22 +336,22 @@ Az operációs rendszerek számára a tanulság a szoftverágensekre is kiterjed
 
 Három további téma tartozik minden operációs rendszer felületéhez, és mindegyik összeköti a fenti kilenc témát a későbbi előadások gépezetével.
 
-**Visszajelzés és válaszidő.** Donald Norman szerint bármely rendszer használata két szakadék áthidalását jelenti: a **végrehajtási szakadékét** (gulf of execution: hogyan mondjam meg a rendszernek, mit akarok?) és a **kiértékelési szakadékét** (gulf of evaluation: sikerült-e, és milyen állapotban van most a rendszer?) (Norman, 2013). A jelölők és a felismerés az elsőt szűkítik, a **visszajelzés** a másodikat. Az időzítés is a visszajelzés része. Az 1960-as évek óta három határt használnak: nagyjából 0,1 s alatt azonnalinak érezzük a reakciót, nagyjából 1 s-ig a felhasználó gondolatmenete megszakítás nélkül folytatódik, és nagyjából 10 s-ig marad a figyelem a feladaton; ezen túl folyamatjelzőre van szükség (Nielsen, 1993). Ezek a számok magyarázzák, miért részesíti előnyben az operációs rendszer ütemezője az interaktív programokat: az a szövegszerkesztő, amelynek 200 ms kell egy leütés megjelenítéséhez, hibásnak tűnik, akármilyen gyorsan végez a kötegelt munkával. A megszakításokról és később az ütemezésről szóló előadások megmutatják, hogyan tartja rövidre az operációs rendszer az ilyen késleltetéseket.
+**Visszajelzés és válaszidő.** Donald Norman szerint bármely rendszer használata két szakadék áthidalását jelenti: a **végrehajtási szakadékét** (gulf of execution: hogyan mondjam meg a rendszernek, mit akarok?) és a **kiértékelési szakadékét** (gulf of evaluation: sikerült-e, és milyen állapotban van most a rendszer?) (Norman, 2013). A signifierek és a felismerés az elsőt szűkítik, a **visszajelzés** a másodikat. Az időzítés is a visszajelzés része. Az 1960-as évek óta három határt használnak: nagyjából 0,1 s alatt azonnalinak érezzük a reakciót, nagyjából 1 s-ig a felhasználó gondolatmenete megszakítás nélkül folytatódik, és nagyjából 10 s-ig marad a figyelem a feladaton; ezen túl folyamatjelzőre van szükség (Nielsen, 1993). Ezek a számok magyarázzák, miért részesíti előnyben az operációs rendszer ütemezője az interaktív programokat: az a szövegszerkesztő, amelynek 200 ms kell egy leütés megjelenítéséhez, hibásnak tűnik, akármilyen gyorsan végez a kötegelt munkával. A megszakításokról és később az ütemezésről szóló előadások megmutatják, hogyan tartja rövidre az operációs rendszer az ilyen késleltetéseket.
 
-**Hibák és visszavonás.** Shneiderman aranyszabályai között szerepel a „hibák megelőzése” és a „műveletek könnyű visszafordíthatósága” (Shneiderman et al., 2016); a minőségről szóló előadás ezt a tulajdonságot *megbocsátónak* nevezte. A felületek úgy előzik meg a hibákat, hogy lehetetlenné teszik a rossz műveleteket (kiszürkített menüpont, dátumválasztó szabad szöveg helyett), csak azt erősíttetik meg, ami nem vonható vissza (és a következmény megnevezésével: „Véglegesen törli a 3 fájlt?”, nem pedig „Biztos benne?”), minden más esetben pedig visszavonást kínálnak: lomtár, verzióelőzmények, fájlrendszer-pillanatképek. Az a megerősítő párbeszédablak, amely minden műveletnél megjelenik, megtanítja a felhasználót, hogy olvasás nélkül kattintson az „OK”-ra – ez az V. szakasz tanulsága: a szakértők automatizálnak.
+**Hibák és visszavonás.** Shneiderman aranyszabályai között szerepel a „hibák megelőzése” és a „műveletek könnyű visszafordíthatósága” (Shneiderman et al., 2016); a minőségről szóló előadás ezt a tulajdonságot *megbocsátónak* nevezte. A felületek úgy előzik meg a hibákat, hogy lehetetlenné teszik a rossz műveleteket (kiszürkített menüpont, dátumválasztó szabad szöveg helyett), csak azt erősíttetik meg, ami nem vonható vissza (és a következmény megnevezésével: „Véglegesen törli a 3 fájlt?”, nem pedig „Biztos benne?”), minden más esetben pedig visszavonást kínálnak: lomtár, verzióelőzmények, fájlrendszer-snapshotok. Az a megerősítő párbeszédablak, amely minden műveletnél megjelenik, megtanítja a felhasználót, hogy olvasás nélkül kattintson az „OK”-ra – ez az V. szakasz tanulsága: a szakértők automatizálnak.
 
 **Félbeszakítások és értesítések.** Minden értesítés félbeszakítás, és a félbeszakításoknak ára van. Egy laboratóriumi vizsgálatban azok, akiket félbeszakítottak, gyorsabban végeztek a munkájukkal, de szignifikánsan több stresszről, frusztrációról, időnyomásról és erőfeszítésről számoltak be (Mark et al., 2008). Az értesítési rendszer az operációs rendszeré, így az dönti el, mekkora árat követelhetnek az alkalmazások a felhasználó figyelméért: a csoportosítás, a csendes órák, a fókuszmódok és a megadott időpontokban kézbesített összefoglalók operációsrendszer-funkciók, és közvetlenül kapcsolódnak a VI. szakasz figyelemgazdaságához.
 
 **Akadálymentesség.** A felületnek azok számára is működnie kell, akik nem látják a képernyőt, nem tudnak egeret használni, vagy nem hallják a hangokat. Az operációs rendszerek ezt központilag biztosítják: képernyőolvasók (VoiceOver az Apple rendszerein, TalkBack Androidon, Narrátor Windowson, Orca a linuxos asztalon, amely az AT-SPI akadálymentesítési interfészen keresztül olvassa az alkalmazásokat), teljes billentyűzetes vezérlés, szövegméretezés és nagyítás, feliratok, nagy kontraszt, színszűrők és „mozgás csökkentése” beállítás azoknak, akiknél az animáció szédülést okoz. Az akadálymentesség a korábbi témák legszigorúbb próbája: az az alkalmazás, amelynek gombjai csak név nélküli képek, láthatatlan egy képernyőolvasó számára, ahogy a csak pirossal jelzett hiba is láthatatlan a színtévesztő felhasználónak.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> végrehajtási szakadék, kiértékelési szakadék, visszajelzés, késleltetés, ütemező, visszavonás, pillanatkép, értesítés, képernyőolvasó, AT-SPI, mozgás csökkentése</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> végrehajtási szakadék, kiértékelési szakadék, visszajelzés, késleltetés, ütemező, visszavonás, snapshot, értesítés, képernyőolvasó, AT-SPI, mozgás csökkentése</summary>
 
 - **Végrehajtási szakadék:** a távolság aközött, amit tenni szeretnénk, és aközött, hogy tudjuk, hogyan mondjuk meg a számítógépnek. **Kiértékelési szakadék:** a távolság aközött, amit a számítógép tett, és aközött, ahogyan mi ezt megértjük.
 - **Visszajelzés:** a rendszer válasza, amely megmutatja, mi történt: egy hang, egy kiemelés, egy folyamatjelző sáv.
 - **Késleltetés (latency):** a cselekvés és a reakció közötti idő.
 - **Ütemező:** az operációs rendszer azon része, amely eldönti, melyik program használhatja következőként a processzort.
-- **Visszavonás (undo):** az utolsó művelet visszacsinálása. **Pillanatkép (snapshot):** az összes fájl egy adott pillanatbeli mentett állapota, amelyhez vissza lehet térni.
+- **Visszavonás (undo):** az utolsó művelet visszacsinálása. **Snapshot:** az összes fájl egy adott pillanatbeli mentett állapota, amelyhez vissza lehet térni.
 - **Értesítés:** üzenet, amelyet egy alkalmazás azért jelenít meg, hogy felhívja magára a figyelmet, akkor is, ha éppen mást csinálunk.
 - **Képernyőolvasó:** program, amely felolvassa, ami a képernyőn van, vak és gyengénlátó felhasználóknak.
 - **AT-SPI** (Assistive Technology Service Provider Interface, segítő technológiák szolgáltatói interfésze): a linuxos asztal módja arra, hogy az alkalmazások elmondják a képernyőolvasóknak, mi látható a képernyőn.
@@ -594,13 +590,13 @@ $ python3 hci_laws.py menu
 5. Egy felület a hibákat pirossal, a sikeres műveleteket zölddel jelöli. A felhasználók mekkora részének okozhat ez gondot, és hogyan javítanád?
 6. Mit állapított meg Miller (1956) és Cowan (2001) a rövid távú memóriáról? Helyes következtetés-e, hogy „soha ne legyen hétnél több menüpont”? Miért igen vagy miért nem?
 7. Magyarázd el a tömbösítést két, operációs rendszerekből vett példával.
-8. Magyarázd el az affordancia és a jelölő közötti különbséget egy fizikai és egy grafikus példával. Mit változtatott a lapos dizájn?
+8. Magyarázd el az affordancia és a signifier közötti különbséget egy fizikai és egy grafikus példával. Mit változtatott a lapos dizájn?
 9. Mondd ki Fitts törvényét. Miért könnyű eltalálni a képernyő szélén lévő célpontokat, és miért írnak elő az érintéses irányelvek minimális célpontméreteket?
 10. Magyarázd el a felismerés és a felidézés különbségét a grafikus felület, a parancssor és a hangalapú asszisztensek példáján. A shell mely funkciói alakítják a felidézést felismeréssé?
 11. Miért kell egy felületnek ugyanahhoz a művelethez több utat kínálnia? Hogyan segíti a menü a felhasználót abban, hogy szakértővé váljon?
-12. Mi az affektív számítástechnika? Adj egy példát, amelyben a felhasználót szolgálja, és egyet, amelyben kihasználhatja. Mely uniós szabályok foglalkoznak a második esettel?
+12. Mi az affective computing? Adj egy példát, amelyben a felhasználót szolgálja, és egyet, amelyben kihasználhatja. Mely uniós szabályok foglalkoznak a második esettel?
 13. Miért fontos a kölcsönös tekintet, miért vész el a videohívásokban, és mik a korrekciójának mellékhatásai?
-14. Írd le Mori hátborzongató völgyét. Mi a hipotézis mai helyzete, és milyen tervezési tanács következik belőle?
+14. Írd le Mori uncanny valley hipotézisét. Mi a hipotézis mai helyzete, és milyen tervezési tanács következik belőle?
 15. Mit javasol az etorobotika az egyre emberszerűbb robotok építése helyett, és miért a kutya a mintája?
 16. Mi a persona, hogyan készül, és a tervezőcsapatok melyik problémáját oldja meg? Írj egy felhasználói történetet két elfogadási kritériummal egy operációsrendszer-funkcióhoz, és nevezd meg, hogy az egyes kritériumok az előadás melyik elvét ellenőrzik.
 
@@ -614,7 +610,7 @@ $ python3 hci_laws.py menu
 5. Az észak-európai származású férfiak mintegy 8%-a vörös–zöld színtévesztő (a nők közül jóval kevesebben). Javítás: adjunk hozzá egy második jelet (ikon, alak, szöveg, világosságkülönbség), válasszunk világosságban eltérő színeket, és teszteljünk szimulációval.
 6. Miller: körülbelül 7 ± 2 elem az azonnali emlékezetben, ami tömbösítéssel bővíthető; Cowan: körülbelül 4 tömb, ha a tömbösítést és az ismétlést megakadályozzák. A menüszabály félreértés: a látható elemek felismerést igényelnek, nem memorizálást. A menütervezést a keresési és döntési idő, valamint a mélység és szélesség közötti kompromisszum korlátozza, nem a memóriakapacitás.
 7. Például: ember által olvasható méretek (`ls -lh`: 118M), négy csoportba írt IP-címek, párokba írt MAC-címek, címszavak alá csoportosított menük, kategóriákba rendezett beállítások, mappahierarchiák.
-8. Affordancia: a lehetséges cselekvés (az ajtó tolható); jelölő: az érzékelhető jel, amely ezt megmutatja (egy lapos lemez). Grafikus felület: az ablak átméretezhető (affordancia); a bordázott sarokfogó mutatja, hol (jelölő). A lapos dizájn sok jelölőt eltüntetett (árnyékok, domborítások, aláhúzások), ami megnehezítette a kattintható elemek azonosítását (22%-kal több idő Moran vizsgálatában); a Material Design ezért megtartott néhány mélységi jelet.
+8. Affordancia: a lehetséges cselekvés (az ajtó tolható); signifier: az érzékelhető jel, amely ezt megmutatja (egy lapos lemez). Grafikus felület: az ablak átméretezhető (affordancia); a bordázott sarokfogó mutatja, hol (signifier). A lapos dizájn sok signifiert eltüntetett (árnyékok, domborítások, aláhúzások), ami megnehezítette a kattintható elemek azonosítását (22%-kal több idő Moran vizsgálatában); a Material Design ezért megtartott néhány mélységi jelet.
 9. A mozgási idő $\log_2(D/W+1)$-gyel nő. A mutató megáll a szélen, így a széli célpont a mozgás irányában gyakorlatilag végtelenül mély. Az ujj nagyobb és pontatlanabb egy mutatónál, és eltakarja a célpontot, így a körülbelül 44 pt / 48 dp alatti célpontok hibákhoz vezetnek.
 10. Grafikus felület: a menük és ikonok megmutatják a lehetőségeket (felismerés). CLI: a felhasználónak emlékeznie kell a parancsnevekre és kapcsolókra (felidézés). Hang: nincsenek látható lehetőségek, így a felhasználónak ki kell találnia, mit ért meg az asszisztens (felidézés, felfedezhetőség). A shell segítségei: Tab-kiegészítés, előzmények és Ctrl+R keresés, `--help`, `man`.
 11. A felhasználók különböznek és fejlődnek: a kezdőknek látható, magától értetődő utak kellenek, a szakértőknek gyorsak. A menük minden parancs mellé kiírják a billentyűparancsot, így a menü használata megtanítja a billentyűparancsot.

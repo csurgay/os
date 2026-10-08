@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 430" width="760" height="430" role="img" aria-label="Hardveresen támogatott virtualizáció: a vendég közvetlenül fut, amíg nem jön egy VM exit">
+<title>Hardveresen támogatott virtualizáció: a vendég közvetlenül fut, amíg nem jön egy VM exit</title>
+<style>
+  .ink{fill:#1f1f1f}.quiet{fill:#6b6b66}.edge{stroke:#b5b4a8}.edgef{fill:#b5b4a8}
+  .grid{stroke:#e3e2da}.acc{stroke:#2f6fd6}.accf{fill:#2f6fd6;fill-opacity:.12}.acct{fill:#2f6fd6}
+  .c2{fill:#d9822b}.c2s{stroke:#d9822b}.c2f{fill:#d9822b;fill-opacity:.14}.tint{fill:#f4f3ee}
+  .bad{fill:#c8372d}.bads{stroke:#c8372d}.badf{fill:#c8372d;fill-opacity:.14}
+  text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+  @media (prefers-color-scheme: dark){
+    .ink{fill:#e8e8e3}.quiet{fill:#a3a39c}.edge{stroke:#6f6e66}.edgef{fill:#6f6e66}
+    .grid{stroke:#3a3a35}.acc{stroke:#5b93ef}.accf{fill:#5b93ef;fill-opacity:.18}.acct{fill:#7aa9f5}
+    .c2{fill:#eb9a4b}.c2s{stroke:#eb9a4b}.c2f{fill:#eb9a4b;fill-opacity:.2}.tint{fill:#22221f}
+    .bad{fill:#ff7b70}.bads{stroke:#ff7b70}.badf{fill:#ff7b70;fill-opacity:.2}
+  }
+</style>
+<defs><marker id="vx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="edgef"/></marker><marker id="vxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="acct"/></marker></defs>
+<text x="24" y="30" font-size="15" font-weight="600" class="ink" text-anchor="start">Hardveresen támogatott virtualizáció: a vendég közvetlenül fut, amíg nem jön egy VM exit</text>
+<text x="24" y="62" font-size="12.5" font-weight="600" class="ink" text-anchor="start">vendég: VMX non-root mód</text>
+<text x="24" y="222" font-size="12.5" font-weight="600" class="ink" text-anchor="start">hypervisor:</text>
+<text x="24" y="240" font-size="12.5" font-weight="600" class="ink" text-anchor="start">VMX root mód</text>
+<line x1="24" y1="186" x2="736" y2="186" class="grid" stroke-dasharray="4 4"/>
+<rect x="24" y="74" width="190" height="40" rx="6" class="c2f"/><rect x="24" y="74" width="190" height="40" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="119.0" y="98.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">teljes sebességű vendégkód</text>
+<rect x="420" y="74" width="180" height="40" rx="6" class="c2f"/><rect x="420" y="74" width="180" height="40" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="510.0" y="98.14" font-size="11.5" font-weight="400" class="ink" text-anchor="middle">teljes sebességű vendégkód</text>
+<rect x="616" y="74" width="120" height="40" rx="6" class="c2f"/><rect x="616" y="74" width="120" height="40" rx="6" fill="none" class="c2s" stroke-width="1.5"/>
+<text x="676.0" y="97.6" font-size="10" font-weight="400" class="ink" text-anchor="middle">… a következő exitig</text>
+<path d="M214 114C240 154 250 170 262 198" fill="none" class="edge" stroke-width="1.5" marker-end="url(#vx)"/>
+<text x="160" y="142" font-size="12" font-weight="600" class="ink" text-anchor="middle">VM exit</text>
+<text x="160" y="158" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">vendégállapot → VMCS</text>
+<rect x="262" y="200" width="150" height="52" rx="6" class="accf"/><rect x="262" y="200" width="150" height="52" rx="6" fill="none" class="acc" stroke-width="2"/>
+<text x="337.0" y="222.89" font-size="11.5" font-weight="600" class="ink" text-anchor="middle">az exit kezelése</text>
+<text x="337.0" y="237.39" font-size="11.5" font-weight="400" class="quiet" text-anchor="middle">emulál, injektál, ütemez</text>
+<path d="M412 210C428 170 410 154 430 116" fill="none" class="acc" stroke-width="1.5" marker-end="url(#vxa)"/>
+<text x="470" y="142" font-size="12" font-weight="600" class="acct" text-anchor="middle">VM entry</text>
+<text x="470" y="158" font-size="10.5" font-weight="400" class="quiet" text-anchor="middle">VMRESUME</text>
+<text x="24" y="288" font-size="12.5" font-weight="600" class="ink" text-anchor="start">Tipikus kilépési okok</text>
+<text x="36" y="312" font-size="11.5" font-weight="600" class="ink" text-anchor="start">• CPUID, HLT, MOV a CR-be, RDMSR/WRMSR</text>
+<text x="330" y="312" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">kilépésre beállított utasítások</text>
+<text x="36" y="334" font-size="11.5" font-weight="600" class="ink" text-anchor="start">• I/O-port-hozzáférés, MMIO</text>
+<text x="330" y="334" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">egy emulált eszközhöz nyúl</text>
+<text x="36" y="356" font-size="11.5" font-weight="600" class="ink" text-anchor="start">• EPT violation</text>
+<text x="330" y="356" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">a vendég fizikai lap még nincs leképezve</text>
+<text x="36" y="378" font-size="11.5" font-weight="600" class="ink" text-anchor="start">• külső megszakítás</text>
+<text x="330" y="378" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">a gazdagépnek vissza kell a CPU</text>
+<text x="24" y="412" font-size="11.5" font-weight="400" class="quiet" text-anchor="start">Minden exit száz-ezer CPU-ciklusba kerül (beágyazott virtualizációnál többe); a hypervisorokat az exitek elkerülésére hangolják.</text>
+</svg>

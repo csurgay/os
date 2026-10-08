@@ -2,10 +2,6 @@
 
 *Operációs rendszerek előadás: miért látszik az egész rendszer nagynak és gyorsnak, ha egy nagy, lassú memória elé egy kicsi, gyorsat teszünk; hogyan találja meg a gyorsítótár az adatait (direkt leképezésű, teljesen asszociatív, csoportasszociatív szervezés); melyik sort kell kidobni; és hogyan írjunk olyan programot, amelyet a gyorsítótár „szeret”*
 
-Előző: [Párhuzamosság, holtpontok, folyamatállapotok és a Linux ütemezése](../06-concurrency-deadlocks-scheduling/). Következő: [Virtuális memória](../08-virtual-memory/).
-
-> **Hogyan olvasd ezt az előadást?** Ahol új rövidítés vagy fogalom jelenik meg, utána egy **Egyszerűen elmagyarázva** feliratú doboz következik. Kattints rá, és kinyílik egy köznapi nyelvű magyarázat. Ha már ismered a fogalmakat, nyugodtan átugorhatod ezeket a dobozokat.
-
 ## Tanulási célok
 
 Az [utasítás-végrehajtási ciklusról szóló előadás](../04-fetch-execute-cycle/) feltételezte, hogy a CPU minden lépésben ki tud olvasni a memóriából egy utasítást vagy egy adatszót. A valóságban a központi memória százszor lassabb a CPU-nál. Ez az előadás azt mutatja meg, hogyan rejtik el a számítógépek ezt a különbséget egy **kétszintű memóriával**: egy nagy, lassú memória (a RAM) elé egy kicsi, gyors memóriát (a gyorsítótárat, angolul cache) tesznek. Megmutatja azt is, miért tér vissza ugyanez az ötlet a RAM és a lemez között, amire a virtuális memóriáról szóló későbbi előadások épülnek.
@@ -190,7 +186,7 @@ Az **írásokhoz** stratégia kell:
 - **Átíró (write-through):** minden írás a gyorsítótárba és a RAM-ba is eljut. Egyszerű, a RAM mindig naprakész, de minden írás egy RAM-elérésbe kerül (ezt általában egy írási puffer tompítja).
 - **Visszaíró (write-back):** az írás csak a gyorsítótárba kerül, és D = 1 lesz; a RAM csak akkor frissül, amikor a módosított sort kiszorítjuk. Kevesebb RAM-írás, ezért használja a legtöbb mai gyorsítótár, cserébe a hiány kezelése bonyolultabb, és a RAM átmenetileg elavult (ami a DMA és a többi mag szempontjából számít, lásd alább a koherenciát).
 
-És mi történik, ha egy írás **hiányt** okoz? Az **írásra foglaló** (write-allocate) gyorsítótár előbb betölti a sort, majd beleír (ez a visszaíró stratégia szokásos párja: az ugyanarra a sorra eső későbbi írások találatot adnak); a **nem foglaló** (no-write-allocate) gyorsítótár az írást egyenesen a RAM-nak küldi, és a gyorsítótárat nem bántja (ez az átíró stratégia szokásos párja). Ezért jelent az alább bemutatott cachegrind írásokra is hiányokat.
+És mi történik, ha egy írás **hiányt** okoz? A **write-allocate** gyorsítótár előbb betölti a sort, majd beleír (ez a visszaíró stratégia szokásos párja: az ugyanarra a sorra eső későbbi írások találatot adnak); a **no-write-allocate** gyorsítótár az írást egyenesen a RAM-nak küldi, és a gyorsítótárat nem bántja (ez az átíró stratégia szokásos párja). Ezért jelent az alább bemutatott cachegrind írásokra is hiányokat.
 
 **Miért van középen az index?** A gyorsítótárak a címet *tag | index | eltolás* sorrendben bontják fel, az index tehát középen van, nem a legfelső biteken. Ez a sorrend nem mellékes részlet. Ha az indexet az eltolás fölötti bitekből vesszük, a memória egymást követő blokkjai egymást követő sorokba kerülnek, így egy program, amely egy a gyorsítótárnál kisebb tömbön halad végig, az egészet bent tarthatja. Ha az index a legfelső biteken volna, az összes szomszédos blokk ugyanazon a néhány soron osztozna, és kiszorítanák egymást; a szimulátor megmutatja ennek árát ([Linux-szakasz](#gyorsítótár-szimulátor)). A valódi sorok ráadásul sokkal rövidebbek a tanpélda 16 KiB-jánál: minden mai x86 és a legtöbb ARM processzoron 64 bájtosak, [a sorméretről szóló szakaszban](#a-sorméret-megválasztása) kifejtett okokból.
 
@@ -226,7 +222,7 @@ Azonos tageknél az XNOR `111111`-et, az ÉS 1-et ad: találat. (Ugyanez XOR-ral
 
 ![Az összes tárolt taget párhuzamosan hasonlítjuk össze a cím tagjével; az egyező sor adja ki az eltolás által kiválasztott szót](fully-associative-cache.svg)
 
-Ütközések nincsenek, de a komparátorok miatt nagy és sok energiát fogyaszt (tárolt bitenként 9 vagy 10 tranzisztor, [lásd fent](#miért-drága-a-gyors-memória)), ezért így csak kis gyorsítótárakat építenek, például sok olyan TLB-t (translation lookaside buffer, címfordítási gyorsítótár), amely a virtuális memória címfordításait tárolja (a nagyobb TLB-k viszont, a többi gyorsítótárhoz hasonlóan, csoportasszociatívak).
+Ütközések nincsenek, de a komparátorok miatt nagy és sok energiát fogyaszt (tárolt bitenként 9 vagy 10 tranzisztor, [lásd fent](#miért-drága-a-gyors-memória)), ezért így csak kis gyorsítótárakat építenek, például sok olyan TLB-t (translation lookaside buffer), amely a virtuális memória címfordításait tárolja (a nagyobb TLB-k viszont, a többi gyorsítótárhoz hasonlóan, csoportasszociatívak).
 
 ### Csoportasszociatív gyorsítótárak: a kompromisszum
 
@@ -249,7 +245,7 @@ Az alább használt gépnek 8 utas, 32 KiB-os L1 adatgyorsítótára (64 csoport
 - **Komparátor:** kis áramkör, amely megvizsgálja, hogy két szám egyenlő-e.
 - **Tartalom szerint címezhető memória (CAM):** olyan memória, amelytől azt kérdezed: „hol van ez az érték?”, nem pedig azt, hogy „mi van ezen a helyen?”.
 - **XNOR, ÉS:** az XNOR két bitet hasonlít össze, és 1-et ad, ha egyenlők; az ÉS (AND) csak akkor ad 1-et, ha minden bemenete 1. Együtt: „minden bit egyenlő?”.
-- **TLB** (translation lookaside buffer, címfordítási gyorsítótár): kis gyorsítótár a CPU-ban a virtuális memória címfordításai számára (egy későbbi előadás témája).
+- **TLB** (translation lookaside buffer): kis gyorsítótár a CPU-ban a virtuális memória címfordításai számára (egy későbbi előadás témája).
 - **Csoport, n utas:** a gyorsítótár n sorból álló kis csoportokra oszlik; egy blokk a saját csoportjának bármelyik sorába kerülhet. Középút az „egyetlen fix hely” és a „bárhol” között.
 - **Kötelező hiány:** amikor valamit először használunk, az még nem lehet a gyorsítótárban. **Kapacitáshiány:** a gyorsítótár egyszerűen túl kicsi. **Ütközési hiány:** lenne hely, csak nem a megfelelő csoportban.
 
@@ -286,36 +282,36 @@ Rögzített kapacitású gyorsítótárnál a hiányarány a sor (blokk) méret�
 
 A szimulált terhelés a kétféle lokalitást keveri: 32 gyakran használt változó egy megabájton szétszórva (csak időbeli lokalitás) és egy tömb szekvenciális bejárásai (csak térbeli lokalitás). A hiányarány az egyszavas sorok 87%-áról 64 bájtnál 9,1%-ra esik, aztán újra emelkedik. A nagyobb sorok ráadásul minden hiányt lassabbá is tesznek, mert több bájtot kell átvinni. A sok programon végzett mérések a processzortervezőket ugyanide vezették: ma a 64 bájtos sor a szabvány (Hennessy & Patterson, 2019).
 
-Két klasszikus trükk csökkenti egy hosszú sor hiányának idejét, hogy a CPU-nak ne kelljen az egészre várnia. A **korai újraindításnál** (early restart) a gyorsítótár a sort a szokásos sorrendben tölti be, de a kért szót azonnal továbbadja a CPU-nak, amint megérkezett, miközben a sor többi része tovább érkezik. A **kritikus szó elsőként** (critical word first) módszernél a gyorsítótár előbb a kért szót kéri a memóriától, a többit utána, a sor végén körbefordulva, így a CPU már az első átvitel után folytathatja (Hennessy & Patterson, 2019). Hiány esetén az olvasás tehát két párhuzamos tevékenység: a szó kiadása a CPU-nak és a sor feltöltése a gyorsítótárban. A DDR3 és a DDR4 memória ezt közvetlenül támogatja: egy 64 bájtos sor sorozatos (burst) olvasási átvitele a sor bármelyik 8 bájtos szavával kezdődhet.
+Két klasszikus trükk csökkenti egy hosszú sor hiányának idejét, hogy a CPU-nak ne kelljen az egészre várnia. Az **early restart** (korai újraindítás) módszernél a gyorsítótár a sort a szokásos sorrendben tölti be, de a kért szót azonnal továbbadja a CPU-nak, amint megérkezett, miközben a sor többi része tovább érkezik. A **critical word first** (a kritikus szó elsőként) módszernél a gyorsítótár előbb a kért szót kéri a memóriától, a többit utána, a sor végén körbefordulva, így a CPU már az első átvitel után folytathatja (Hennessy & Patterson, 2019). Hiány esetén az olvasás tehát két párhuzamos tevékenység: a szó kiadása a CPU-nak és a sor feltöltése a gyorsítótárban. A DDR3 és a DDR4 memória ezt közvetlenül támogatja: egy 64 bájtos sor burst olvasási átvitele a sor bármelyik 8 bájtos szavával kezdődhet.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> optimum, korai újraindítás, kritikus szó elsőként, sorozatos (burst) átvitel</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> optimum, early restart, critical word first, burst átvitel</summary>
 
 - **Optimum:** a legjobb érték két véglet között, itt az a sorméret, amelynél a legkevesebb a hiány.
-- **Korai újraindítás:** a CPU folytathatja, amint megérkezett a szava, nem várja meg az egész sort.
-- **Kritikus szó elsőként:** azt a szót hozzuk el először, amelyre a CPU vár, és csak utána a sor többi szavát, mint a pincér, aki előbb az italodat hozza ki, a rendelés többi részét pedig utána.
-- **Sorozatos (burst) átvitel:** a RAM-ból egymás után következő átvitelek sorozata, amelyet egyetlen kérés indít el.
+- **Early restart** (korai újraindítás): a CPU folytathatja, amint megérkezett a szava, nem várja meg az egész sort.
+- **Critical word first** (a kritikus szó elsőként): azt a szót hozzuk el először, amelyre a CPU vár, és csak utána a sor többi szavát, mint a pincér, aki előbb az italodat hozza ki, a rendelés többi részét pedig utána.
+- **Burst átvitel:** a RAM-ból egymás után következő átvitelek sorozata, amelyet egyetlen kérés indít el.
 
 </details>
 
 ## Gyorsítótárak egy valódi gépben
 
 - **Több szint.** Minden magnak saját L1 gyorsítótárai vannak, utasítás- és adatgyorsítótárra osztva (hogy egy utasításlehívás és egy adatelérés ugyanabban az órajelciklusban történhessen), valamint saját L2-je; a lapka magjai közösen használják az L3-at.
-- **Előbetöltés (prefetching).** A hardver figyeli az elérési mintát, és a sorokat **még a kérés előtt** betölti, ha meg tudja jósolni őket: egy szekvenciális bejárás következő sorait, az állandó lépésközöket, Intel processzorokon pedig a „pár” sort is, amely egy 128 bájtos blokkot tesz teljessé (Intel, 2024). Az előbetöltés elrejti a szabályos elérési minták késleltetését, de a véletlenszerűeken nem tud segíteni; ezért látja az alábbi mutatókövetés a RAM teljes késleltetését, míg egy szekvenciális bejárás nem.
+- **Előbetöltés (prefetching).** A hardver figyeli az elérési mintát, és a sorokat **még a kérés előtt** betölti, ha meg tudja jósolni őket: egy szekvenciális bejárás következő sorait, az állandó lépésközöket, Intel processzorokon pedig a „pár” sort is, amely egy 128 bájtos blokkot tesz teljessé (Intel, 2024). Az előbetöltés elrejti a szabályos elérési minták késleltetését, de a véletlenszerűeken nem tud segíteni; ezért látja az alábbi pointer chasing mérés a RAM teljes késleltetését, míg egy szekvenciális bejárás nem.
 - **Koherencia.** Ha két mag ugyanazt a sort tartja a gyorsítótárában, és az egyik ír bele, a másik másolata elavul. Egy **gyorsítótár-koherencia protokoll** (például a MESI, amely a sorokat Modified, Exclusive, Shared vagy Invalid, azaz módosított, kizárólagos, megosztott vagy érvénytelen állapotúnak jelöli) az író magot a sor kizárólagos tulajdonosává teszi, a többi másolatot pedig érvényteleníti. A koherencia egész sorokon működik, ebből fakad a **hamis megosztás**: két szál, amely *különböző* változókat ír *ugyanabban* a sorban, folyton elveszi egymástól a sort, holott a programban semmin sem osztoznak ([Linux-szakasz](#hamis-megosztás)). Egy sornak ugyanez a magok közötti pattogása, egyetlen változó *valódi* megosztásával, áll a [párhuzamosságról szóló előadás](../06-concurrency-deadlocks-scheduling/#atomi-műveletek-spinlockok-és-mutexek) lassú, versengő számlálója mögött is.
-- **Ugyanez az ötlet egy szinttel lejjebb.** A RAM maga is a gyors szint a lemez számára: az operációs rendszer a nemrég olvasott fájladatokat az egyébként kihasználatlan RAM-ban, a **lapgyorsítótárban** (page cache) tartja, így ugyanannak a fájlnak a második olvasása a memóriából jön ([Linux-szakasz](#a-ram-mint-a-lemez-gyorsítótára)); a virtuális memória, egy későbbi előadás témája, a lemezt használja a RAM lassú szintjeként. A képlet, a lokalitás jelentősége és a csereprobléma ugyanaz; csak a számok változnak, nanoszekundumokról milliszekundumokra.
+- **Ugyanez az ötlet egy szinttel lejjebb.** A RAM maga is a gyors szint a lemez számára: az operációs rendszer a nemrég olvasott fájladatokat az egyébként kihasználatlan RAM-ban, a **page cache**-ben tartja, így ugyanannak a fájlnak a második olvasása a memóriából jön ([Linux-szakasz](#a-ram-mint-a-lemez-gyorsítótára)); a virtuális memória, egy későbbi előadás témája, a lemezt használja a RAM lassú szintjeként. A képlet, a lokalitás jelentősége és a csereprobléma ugyanaz; csak a számok változnak, nanoszekundumokról milliszekundumokra.
 
-**Történet.** Maurice Wilkes 1965-ben egy kétoldalas cikkben vetette fel az ötletet **szolgamemória** (slave memory) néven: egy kicsi, gyors memória, amely automatikusan a nagy központi memória legutóbb használt szavainak másolatát tartja (Wilkes, 1965). Az első gyorsítótárral rendelkező kereskedelmi számítógép az IBM System/360 Model 85 volt, amelyet 1968 januárjában jelentettek be 16–32 KiB-os, a mai sorokhoz hasonlóan 64 bájtos blokkokba szervezett gyorsítótárral (Liptay, 1968); a *cache* szó (franciául rejtekhely) hamarosan általános elnevezéssé vált (Smith, 1982, a következő évek terveit tekinti át).
+**Történet.** Maurice Wilkes 1965-ben egy kétoldalas cikkben vetette fel az ötletet **slave memory** néven: egy kicsi, gyors memória, amely automatikusan a nagy központi memória legutóbb használt szavainak másolatát tartja (Wilkes, 1965). Az első gyorsítótárral rendelkező kereskedelmi számítógép az IBM System/360 Model 85 volt, amelyet 1968 januárjában jelentettek be 16–32 KiB-os, a mai sorokhoz hasonlóan 64 bájtos blokkokba szervezett gyorsítótárral (Liptay, 1968); a *cache* szó (franciául rejtekhely) hamarosan általános elnevezéssé vált (Smith, 1982, a következő évek terveit tekinti át).
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> utasítás- és adatgyorsítótár, megosztott gyorsítótár, előbetöltés, koherencia, MESI, hamis megosztás, lapgyorsítótár, virtuális memória</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> utasítás- és adatgyorsítótár, megosztott gyorsítótár, előbetöltés, koherencia, MESI, hamis megosztás, page cache, virtuális memória</summary>
 
 - **Utasításgyorsítótár / adatgyorsítótár:** külön gyorsítótár a program utasításainak és azoknak az adatoknak, amelyeken a program dolgozik.
 - **Megosztott gyorsítótár:** egyetlen gyorsítótár, amelyet a lapka minden magja használ.
 - **Előbetöltés:** az adat elhozása még azelőtt, hogy kérnék, mert a mintából megjósolható – mint a pincér, aki már hozza a következő fogást, mielőtt intenél.
 - **Koherencia:** ugyanannak az adatnak a különböző gyorsítótárakban lévő másolatait összhangban tartjuk, hogy egyetlen mag se olvasson elavult értéket. **MESI:** a szokásos protokollban az a négy állapot, amelyben egy sor lehet (Modified, Exclusive, Shared, Invalid: módosított, kizárólagos, megosztott, érvénytelen).
 - **Hamis megosztás:** két szál különböző változókat használ, amelyek véletlenül ugyanabban a gyorsítótársorban vannak, és úgy lassítják egymást, mintha ugyanazért a változóért harcolnának.
-- **Lapgyorsítótár (page cache):** a RAM-nak az a része, ahol az operációs rendszer a nemrég használt fájladatok másolatát tartja.
+- **Page cache:** a RAM-nak az a része, ahol az operációs rendszer a nemrég használt fájladatok másolatát tartja.
 - **Virtuális memória:** olyan technika, amely lehetővé teszi, hogy a programok több memóriát használjanak, mint amennyi RAM van, a lemezt használva lassú szintként (egy későbbi előadás témája).
 
 </details>
@@ -328,15 +324,15 @@ A gyorsítótárak hardverek, de az operációs rendszer döntései megváltozta
 - **Gyorsítótár-affinitást figyelembe vevő ütemezés.** A felébredő feladat azon a magon fut a leggyorsabban, amelynek gyorsítótárai még tartalmazzák az adatait, ezért az ütemező szívesen hagyja a feladatokat ott, ahol legutóbb futottak, és a [terheléskiegyenlítője](../06-concurrency-deadlocks-scheduling/#a-linux-ütemezése) vonakodva mozgatja őket, elsősorban olyan magok között, amelyek közös gyorsítótáron osztoznak.
 - **A TLB és a címtartományok.** Egy másik folyamatra váltva megváltoznak a címfordítások, így a régi folyamat TLB-bejegyzései használhatatlanok. A régebbi processzorok minden váltáskor kiürítették a teljes TLB-t; a modernek a bejegyzéseket címtartomány-azonosítóval címkézik (x86-on PCID, process-context identifier; ARM-on ASID, address space identifier), így mindkét folyamat bejegyzései bent maradhatnak.
 - **DMA és koherencia.** Amikor egy eszköz DMA-val (közvetlen memória-hozzáféréssel) a memóriába ír, a gyorsítótárakban lévő másolatok elavulnak. x86-on a hardver tartja őket koherensen; sok beágyazott processzoron a meghajtóprogramnak magának kell kiírnia vagy érvénytelenítenie az érintett sorokat, a kernel DMA-interfészén keresztül.
-- **Az utolsó szintű gyorsítótár megosztása.** A különböző magokon futó folyamatok versenyeznek a közös L3-ért. Az operációs rendszerek ezt csökkenthetik, ha olyan fizikai lapokat választanak, amelyek a gyorsítótár különböző részeire képeződnek le (*lapszínezés*, page colouring), a modern Intel és AMD processzorok pedig lehetővé teszik, hogy az operációs rendszer az L3-at folyamatcsoportok között felossza (az Intel Cache Allocation Technology, amelyet Linuxon a `resctrl` fájlrendszer kezel). A felhőszolgáltatók ilyen mechanizmusokra támaszkodnak; ez az egyik oka annak, hogy egy virtuális gép kisebb L3-at láthat, mint amekkora a lapkán van, ahogy az alábbi mérésben is.
+- **Az utolsó szintű gyorsítótár megosztása.** A különböző magokon futó folyamatok versenyeznek a közös L3-ért. Az operációs rendszerek ezt csökkenthetik, ha olyan fizikai lapokat választanak, amelyek a gyorsítótár különböző részeire képeződnek le (*page colouring*), a modern Intel és AMD processzorok pedig lehetővé teszik, hogy az operációs rendszer az L3-at folyamatcsoportok között felossza (az Intel Cache Allocation Technology, amelyet Linuxon a `resctrl` fájlrendszer kezel). A felhőszolgáltatók ilyen mechanizmusokra támaszkodnak; ez az egyik oka annak, hogy egy virtuális gép kisebb L3-at láthat, mint amekkora a lapkán van, ahogy az alábbi mérésben is.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> gyorsítótár-szennyezés, affinitás, PCID/ASID, lapszínezés, gyorsítótár-particionálás</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> gyorsítótár-szennyezés, affinitás, PCID/ASID, page colouring, gyorsítótár-particionálás</summary>
 
 - **Gyorsítótár-szennyezés:** egy másik program adatai kiszorították a tieidet a gyorsítótárból, így hiányokkal kezdesz.
 - **Affinitás:** egy feladat „ragaszkodása” ahhoz a maghoz, amelyen korábban futott, és ahol az adatai még a gyorsítótárban vannak.
 - **PCID, ASID:** kis szám, amely jelzi, melyik folyamathoz tartozik egy TLB-bejegyzés, így a bejegyzéseket nem kell minden váltáskor eldobni.
-- **Lapszínezés:** a memórialapokat úgy választjuk, hogy a különböző programok a gyorsítótár különböző részeit használják.
+- **Page colouring:** a memórialapokat úgy választjuk, hogy a különböző programok a gyorsítótár különböző részeit használják.
 - **Gyorsítótár-particionálás:** minden programcsoport rögzített részt kap a közös gyorsítótárból, így egyik sem tudja az összes többit kiszorítani.
 
 </details>
@@ -352,16 +348,16 @@ A gyorsítótárba beférő kis tömböknél a különbség szerény lehet; az e
 - **Az adatokat a tárolás sorrendjében járjuk be.** Az egymásba ágyazott ciklusok legbelső ciklusa C/C++-ban az utolsó indexen fusson végig (Fortranban az elsőn, mert ott a tömböket oszloponként tárolják).
 - **Részesítsük előnyben a folytonos adatszerkezeteket.** Egy értékeket tartalmazó tömb (`std::vector`) sokkal gyorsabban bejárható, mint a külön-külön lefoglalt csomópontokból álló láncolt lista, amelynél minden lépés potenciális hiány.
 - **Ami együtt használatos, legyen együtt**, és válasszuk szét, amit különböző szálak írnak: a szálankénti adatokat töltsük ki 64 bájtra (erre a C++17 a `std::hardware_destructive_interference_size` konstanst kínálja).
-- **Dolgozzunk a gyorsítótárba beférő blokkokban.** A nagy mátrixokon dolgozó algoritmusok (szorzás, transzponálás) olyan csempéket dolgoznak fel, amelyek beférnek az L1-be vagy az L2-be (blokkosítás, csempézés).
+- **Dolgozzunk a gyorsítótárba beférő blokkokban.** A nagy mátrixokon dolgozó algoritmusok (szorzás, transzponálás) olyan kis blokkokat (tile-okat) dolgoznak fel, amelyek beférnek az L1-be vagy az L2-be (blokkosítás, tiling).
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> kétdimenziós tömb, soronkénti (row-major) tárolás, láncolt lista, kitöltés, csempézés</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> kétdimenziós tömb, soronkénti (row-major) tárolás, láncolt lista, kitöltés, tiling</summary>
 
 - **Kétdimenziós tömb:** számok táblázata sorokkal és oszlopokkal, `a[sor][oszlop]`.
 - **Soronkénti tárolás (row-major order):** a táblázatot sorról sorra tároljuk a memóriában, mint egy könyv sorait.
 - **Láncolt lista:** különálló adatdarabok lánca, ahol mindegyik a következőre mutat; a darabok bárhol lehetnek a memóriában.
 - **Kitöltés (padding):** szándékosan hozzáadott üres bájtok, hogy két adat különböző gyorsítótársorokba kerüljön.
-- **Csempézés (tiling, blokkosítás):** egy nagy táblázatot kis négyzetekre bontunk, és egy négyzetet befejezünk, mielőtt a következőt elkezdenénk, így a négyzet a gyorsítótárban marad.
+- **Tiling (blokkosítás):** egy nagy táblázatot kis négyzetekre bontunk, és egy négyzetet befejezünk, mielőtt a következőt elkezdenénk, így a négyzet a gyorsítótárban marad.
 
 </details>
 
@@ -370,7 +366,7 @@ A gyorsítótárba beférő kis tömböknél a különbség szerény lehet; az e
 Az alábbi kimenetek egy valódi rendszerről származnak: egy felhőalapú adatközpontban futó Ubuntu 24.04 virtuális gépről, 2 virtuális CPU-val (Intel Xeon, Cascade Lake család, 2,8 GHz), 8 GiB RAM-mal, Linux 6.18-cal és gcc 13-mal. Egy virtuális gépen más bérlők is osztozhatnak az L3 gyorsítótáron és a memóriasínen, így az abszolút számok futásról futásra változnak; a lépcsők és az arányok a lényegesek.
 
 <details>
-<summary><b>Egyszerűen elmagyarázva:</b> konzol, lscpu, sysfs, gcc, -O2, taskset, valgrind/cachegrind, munkahalmaz, mutatókövetés, lépésköz, lap, óriáslap, vektorutasítások, memóriaszintű párhuzamosság, atomi növelés</summary>
+<summary><b>Egyszerűen elmagyarázva:</b> konzol, lscpu, sysfs, gcc, -O2, taskset, valgrind/cachegrind, munkahalmaz, pointer chasing, lépésköz, lap, huge page, vektorutasítások, memory-level parallelism, atomi növelés</summary>
 
 - **Konzol** (terminál): ablak, amelybe szövegként gépeljük a parancsokat. A `$` jellel kezdődő sorokat mi gépeljük; a többi sor a számítógép válasza.
 - **lscpu:** a processzort leíró parancs. **sysfs** (`/sys`): virtuális fájlok halmaza, amelyekben a Linux-kernel a hardverről közöl információkat.
@@ -378,11 +374,11 @@ Az alábbi kimenetek egy valódi rendszerről származnak: egy felhőalapú adat
 - **taskset -c 0:** a programot csak a 0. CPU-n futtatjuk, hogy a mérés közben ne kerüljön át egy másik magra.
 - **valgrind / cachegrind:** eszköz, amely a programot egy szimulált processzoron futtatja, és megszámolja a gyorsítótár-találatait és -hiányait.
 - **Munkahalmaz:** az a memória, amelyet egy program egy adott időszakban használ.
-- **Mutatókövetés (pointer chase):** egy lánc követése, amelyben minden elem megmondja, hol van a következő, így minden lépésnek meg kell várnia az előzőt.
+- **Pointer chasing:** egy lánc követése, amelyben minden elem megmondja, hol van a következő, így minden lépésnek meg kell várnia az előzőt.
 - **Lépésköz (stride):** két egymást követő elérés távolsága; az 1-es lépésköz minden elemet jelent, a 16-os minden 16.-at.
-- **Lap, óriáslap:** a memóriát lapokban kezeljük, ezek általában 4 KiB-osak; az óriáslap (huge page) 2 MiB-os. Kevesebb, nagyobb laphoz kevesebb címfordítás kell.
+- **Lap, huge page:** a memóriát lapokban kezeljük, ezek általában 4 KiB-osak; a huge page 2 MiB-os. Kevesebb, nagyobb laphoz kevesebb címfordítás kell.
 - **Vektorutasítások (SIMD):** olyan utasítások, amelyek egyszerre több szomszédos számon végzik el ugyanazt a műveletet.
-- **Memóriaszintű párhuzamosság:** a processzor egyszerre több, egymástól független memóriaelérésre vár, így a várakozási idők átfedik egymást.
+- **Memory-level parallelism:** a processzor egyszerre több, egymástól független memóriaelérésre vár, így a várakozási idők átfedik egymást.
 - **Atomi növelés:** egy változó eggyel növelése egyetlen oszthatatlan lépésként, hogy két mag ne keverhesse össze a frissítéseit.
 
 </details>
@@ -433,7 +429,7 @@ working set  ns/access
 
 ![Mért elérési idő a munkahalmaz méretének függvényében, logaritmikus tengelyeken, lépcsőkkel az L1, L2, L3 és RAM szinteknél](latency-ladder.svg)
 
-A lépcsők maguk a hierarchia: 32 KiB-ig az adat befér az L1-be (körülbelül 1,6 ns, 2,8 GHz-en 4–5 órajelciklus); 1 MiB-ig az L2-be (4,4 ns); aztán jön az L3 (körülbelül 25 ns); néhány MiB fölött a RAM (110–180 ns). Az L3-lépcső jóval a hardver által jelentett 33 MiB alatt véget ér, valószínűleg azért, mert egy felhőbeli virtuális gépen az L3-on ugyanazon a fizikai processzoron futó más bérlők is osztoznak. 8 MiB fölött egy második hatás is hozzáadódik a RAM késleltetéséhez: a szokásos 4 KiB-os lapokkal maguk a címfordítások sem férnek már bele a TLB-be. 2 MiB-os „óriáslapokat” kérve (`./latency huge`) ebben a futásban a legnagyobb munkahalmazok 10–26%-kal gyorsabbak lettek (például 512 MiB-nál 182 helyett 134 ns); erre a virtuális memóriáról szóló előadás visszatér.
+A lépcsők maguk a hierarchia: 32 KiB-ig az adat befér az L1-be (körülbelül 1,6 ns, 2,8 GHz-en 4–5 órajelciklus); 1 MiB-ig az L2-be (4,4 ns); aztán jön az L3 (körülbelül 25 ns); néhány MiB fölött a RAM (110–180 ns). Az L3-lépcső jóval a hardver által jelentett 33 MiB alatt véget ér, valószínűleg azért, mert egy felhőbeli virtuális gépen az L3-on ugyanazon a fizikai processzoron futó más bérlők is osztoznak. 8 MiB fölött egy második hatás is hozzáadódik a RAM késleltetéséhez: a szokásos 4 KiB-os lapokkal maguk a címfordítások sem férnek már bele a TLB-be. 2 MiB-os huge page-eket kérve (`./latency huge`) ebben a futásban a legnagyobb munkahalmazok 10–26%-kal gyorsabbak lettek (például 512 MiB-nál 182 helyett 134 ns); erre a virtuális memóriáról szóló előadás visszatér.
 
 ### Mennyit számít a találati arány
 
@@ -521,7 +517,7 @@ stride   accesses    time (ms)    ns/access
   1024      16384          0.2        10.74
 ```
 
-Az 1-es lépésköztől a 16-osig (64 bájtos soronként egy `int`) a tizenhatszor kevesebb elérés az időnek kevesebb mint a felét takarítja meg. Az idő csak a 32-es lépésközről a 64-esre feleződik, nem a 16-osról a 32-esre: 32-es lépésköznél (128 bájt) a program minden második sort érinti, de a processzor térbeli előbetöltője minden sor párját is betölti, amely a 128 bájtos blokkot teljessé teszi, így ugyanannyi adat halad át a memóriasínen. Figyeljük meg azt is, hogy egy elérés itt körülbelül 11 ns-ba kerül, tízszer kevesebbe, mint a véletlenszerű mutatókövetés 110–180 ns-a. Néhány száz bájtig terjedő lépésközöknél a hardveres előbetöltők felismerik a mintát, és előre betöltenek; az előbetöltők azonban nem lépik át a 4 KiB-os laphatárokat, és 1024-es lépésköznél (4 KiB) minden elérés új lapra esik, mégis csak 11 ns-ba kerül. Ennek oka a **memóriaszintű párhuzamosság**: ezek az elérések nem függenek egymástól, így a soron kívüli végrehajtású (out-of-order) mag egyszerre körülbelül tíz hiányt tart folyamatban, és 140 ns tíz átfedő hiány között elosztva körülbelül 14 ns hiányonként. A mutatókövetésnél minden elérésnek szüksége van az előző eredményére, így a hiányok nem fedhetik át egymást.
+Az 1-es lépésköztől a 16-osig (64 bájtos soronként egy `int`) a tizenhatszor kevesebb elérés az időnek kevesebb mint a felét takarítja meg. Az idő csak a 32-es lépésközről a 64-esre feleződik, nem a 16-osról a 32-esre: 32-es lépésköznél (128 bájt) a program minden második sort érinti, de a processzor térbeli előbetöltője minden sor párját is betölti, amely a 128 bájtos blokkot teljessé teszi, így ugyanannyi adat halad át a memóriasínen. Figyeljük meg azt is, hogy egy elérés itt körülbelül 11 ns-ba kerül, tízszer kevesebbe, mint a véletlenszerű pointer chasing 110–180 ns-a. Néhány száz bájtig terjedő lépésközöknél a hardveres előbetöltők felismerik a mintát, és előre betöltenek; az előbetöltők azonban nem lépik át a 4 KiB-os laphatárokat, és 1024-es lépésköznél (4 KiB) minden elérés új lapra esik, mégis csak 11 ns-ba kerül. Ennek oka a **memory-level parallelism** (a memóriaelérések átfedése): ezek az elérések nem függenek egymástól, így a soron kívüli végrehajtású (out-of-order) mag egyszerre körülbelül tíz hiányt tart folyamatban, és 140 ns tíz átfedő hiány között elosztva körülbelül 14 ns hiányonként. A pointer chasingnél minden elérésnek szüksége van az előző eredményére, így a hiányok nem fedhetik át egymást.
 
 ### Hamis megosztás
 
@@ -541,7 +537,7 @@ Két magon futó két szálnak ugyanannyi idő alatt kellene végeznie, mint egy
 
 ### A RAM mint a lemez gyorsítótára
 
-A lapgyorsítótár a RAM-ot a fájlok gyors szintjévé teszi. Egy 512 MiB-os fájlt olvasunk be közvetlenül a lapgyorsítótár kiürítése után, majd újra:
+A page cache a RAM-ot a fájlok gyors szintjévé teszi. Egy 512 MiB-os fájlt olvasunk be közvetlenül a page cache kiürítése után, majd újra:
 
 ```console
 $ head -c 512M /dev/urandom > big.bin
@@ -556,7 +552,7 @@ $ dd if=big.bin of=/dev/null bs=1M
 536870912 bytes (537 MB, 512 MiB) copied, 0.0828352 s, 6.5 GB/s
 ```
 
-Az első olvasás után a lapgyorsítótár a fájl 512 MiB-jával nőtt, és a második olvasás a RAM-ból jön, háromszor gyorsabban. Egy fizikai merevlemezen, amely 100–200 MB/s sebességgel olvas, az első olvasás néhány másodpercig tartana, ez 30–60-szoros különbség (szétszórt kis olvasásoknál akár százszoros vagy még nagyobb); egy felhőbeli gép virtuális lemezét maga a gazdagép is gyorsítótárazza. Rendszergazdai jogok nélkül a `dd if=big.bin iflag=nocache count=0` arra kéri a kernelt, hogy csak ezt a fájlt dobja ki a lapgyorsítótárból.
+Az első olvasás után a page cache a fájl 512 MiB-jával nőtt, és a második olvasás a RAM-ból jön, háromszor gyorsabban. Egy fizikai merevlemezen, amely 100–200 MB/s sebességgel olvas, az első olvasás néhány másodpercig tartana, ez 30–60-szoros különbség (szétszórt kis olvasásoknál akár százszoros vagy még nagyobb); egy felhőbeli gép virtuális lemezét maga a gazdagép is gyorsítótárazza. Rendszergazdai jogok nélkül a `dd if=big.bin iflag=nocache count=0` arra kéri a kernelt, hogy csak ezt a fájlt dobja ki a page cache-ből.
 
 ### A hívási mélység mérése
 
@@ -670,7 +666,7 @@ Mindkét terhelés 72 különböző sort használ; a különbség az *újrafelha
 5. **A direkt leképezésű példagyorsítótár.** Az előadás példagyorsítótárának geometriájára (32 bites címek, 1024 darab 16 KiB-os sor) add meg a `0x00000000`, `0x00004000`, `0x01000000` és `0xFFFFFFFC` címek tagjét, indexét és eltolását. Melyikek versenyeznek ugyanazért a sorért? Ellenőrizd a `cachesim.py split` paranccsal. Ezután számítsd ki, hány bit tagre és állapotbitre van szüksége összesen a gyorsítótárnak, az adatkapacitásának százalékában. Válaszold meg mindkét kérdést az egyszavas sorokból álló kis gyorsítótárra is (1024 darab 4 bájtos sor), és ellenőrizd a `cachesim.py small` paranccsal. Mit mond az összehasonlítás a rövid sorokról?
 6. **Szimuláció.** A `cachesim.py` segítségével ismételd meg az `assoc` kísérletet úgy, hogy a két tömb 8 KiB + 64 bájtra legyen egymástól: mi történik a direkt leképezésű gyorsítótárral, és miért? Adj gyorsítótárméret-paramétert a `blocksize` kísérlethez, és ábrázold a görbét 2, 4 és 8 KiB-os gyorsítótárra. Hogyan mozdul el az optimum?
 7. **Csere.** Valósítsd meg a `cachesim.py`-ban a klasszikus öregítési algoritmust (soronként egy 8 bites számláló, amelyet minden eléréskor jobbra léptetünk, találatkor pedig beállítjuk a legmagasabb helyiértékű bitjét), és hasonlítsd össze a „+1 / felezés” eljárással és az LRU-val. Ezután mutasd meg a Bélády-anomáliát: keress olyan elérési sorozatot, amelyre a FIFO 4 sorral több hiányt okoz, mint 3-mal.
-8. **Hamis megosztás és lapgyorsítótár.** Módosítsd a `falseshare.c`-t úgy, hogy a két számláló 16, 32, 64 és 128 bájtra legyen egymástól. Hol tűnik el a lassulás? Ezután mérd meg egy nagy fájl hideg és meleg olvasását a saját lemezeden (`dd`, a kiszorításhoz `iflag=nocache`), és hasonlítsd össze a szorzót az előadásban látottal.
+8. **Hamis megosztás és page cache.** Módosítsd a `falseshare.c`-t úgy, hogy a két számláló 16, 32, 64 és 128 bájtra legyen egymástól. Hol tűnik el a lassulás? Ezután mérd meg egy nagy fájl hideg és meleg olvasását a saját lemezeden (`dd`, a kiszorításhoz `iflag=nocache`), és hasonlítsd össze a szorzót az előadásban látottal.
 
 ## Ellenőrző kérdések
 
@@ -688,7 +684,7 @@ Mindkét terhelés 72 különböző sort használ; a különbség az *újrafelha
 12. Rögzített gyorsítótárméret mellett miért csökken először, majd nő a hiányarány, ahogy a sorméret nő? Miért szabványosak a 64 bájtos sorok?
 13. Magyarázd el Scott Meyers soronkénti és oszloponkénti példáját. Miért lassabb az oszloponkénti ciklus, és miért nő a különbség a tömb méretével?
 14. Mi a hamis megosztás, és hogyan kerülhető el? Hogyan kapcsolódik a gyorsítótár-koherenciához?
-15. Milyen értelemben gyorsítótára a RAM a lemeznek? Mi a lapgyorsítótár (page cache), és mi ott a „találati arány” és a „hiánybüntetés”?
+15. Milyen értelemben gyorsítótára a RAM a lemeznek? Mi a page cache, és mi ott a „találati arány” és a „hiánybüntetés”?
 16. Vezesd le a $T = T_1 + (1 - H) \cdot T_2$ alakot a $T = H \cdot T_1 + (1 - H) \cdot (T_1 + T_2)$ képletből. Mikor érvényes ez a look-through alak, és mikor a $T = H \cdot T_1 + (1 - H) \cdot T_2$ alak? Számítsd ki mindkettőt $T_1$ = 2 ns, $T_2$ = 100 ns, H = 98% esetén.
 17. Egy 1024 darab 4 bájtos sorból álló, direkt leképezésű gyorsítótárban, 32 bites bájtcímekkel add meg a `0x0000A0C7` cím tagjét, indexét és eltolását. Melyik másik, `0x0000B` tagű cím versenyez ugyanazért a sorért? Hogyan dönti el egy teljesen asszociatív gyorsítótár, hogy egy tárolt `110010` 6 bites tag egyezik-e a keresett `110011` taggel?
 18. Miért gyorsabb és bitenként drágább az SRAM a DRAM-nál? Mi a frissítés, és melyik memóriának van rá szüksége? Csoportosítsd a memóriahierarchiát belső, külső és offline tárakra.
@@ -707,10 +703,10 @@ Mindkét terhelés 72 különböző sort használ; a különbség az *újrafelha
 9. Bármely blokk bármelyik sorba kerülhet; a taget párhuzamosan hasonlítjuk össze az összes tárolt taggel. Soronként egy komparátor kell: drága területben és energiában, ezért csak kis gyorsítótárakhoz (TLB-khez) használják. Csoportasszociatív: az index kiválaszt egy csoportot, a taget a csoport n során belül hasonlítjuk össze: kevés komparátor, kevés ütközés.
 10. Kötelező (első elérés; nagyobb sorok, előbetöltés), kapacitás (túl kicsi gyorsítótár; nagyobb gyorsítótár), ütközési (túl sok blokk egy csoportban; nagyobb asszociativitás).
 11. LRU: a legrégebben használtat szorítja ki; FIFO: a legrégebben betöltöttet; véletlen; öregítés: számlálók közelítik az LRU-t (itt: minden eléréskor mind +1, a találat megfelezi a kort, a legöregebb megy); OPT: azt a sort szorítja ki, amelyet a legtávolabbi jövőben használunk. Az OPT-hez ismerni kellene a jövőt, de alsó korlátot ad, amelyhez a valódi stratégiákat mérjük. Bélády-anomália: FIFO esetén több sor több hiányt adhat.
-12. A kis sorok hiányonként keveset hoznak (elpazarolt térbeli lokalitás, sok kötelező hiány); a nagy sorok miatt kevés sor van, így az újra használt adat kiszorul (elpazarolt időbeli lokalitás), és minden hiány tovább tart. A 64 B a tipikus programoknál egyensúlyban tartja a kettőt, és illeszkedik a DRAM sorozatos (burst) átviteleihez.
+12. A kis sorok hiányonként keveset hoznak (elpazarolt térbeli lokalitás, sok kötelező hiány); a nagy sorok miatt kevés sor van, így az újra használt adat kiszorul (elpazarolt időbeli lokalitás), és minden hiány tovább tart. A 64 B a tipikus programoknál egyensúlyban tartja a kettőt, és illeszkedik a DRAM burst átviteleihez.
 13. A C soronként tárolja a tömböket. A soronkénti bejárás minden 64 bájtos sor mind a 16 int-jét felhasználja (és `-O3`-nál lehetővé teszi a vektorutasításokat); az oszloponkénti soronként egy int-et használ, és minden eléréshez új sor kell. A kis tömbök az oszlopok között még bent maradnak a gyorsítótárban; ha a tömb nagyobb az L2-nél/L3-nál, minden oszloponkénti elérés a RAM-ig megy.
 14. Két szál különböző változókat ír ugyanabban a gyorsítótársorban; a koherenciaprotokoll a sort kizárólagosan az író magnak adja, így a sor minden íráskor átpattog a magok között. Elkerülhető, ha a szálankénti adatokat kitöltéssel vagy a sorméretre (64 B) való igazítással külön-külön gyorsítótársorba tesszük.
-15. Az operációs rendszer a nemrég olvasott fájladatokat a kihasználatlan RAM-ban tartja; az olyan olvasások, amelyek ott megtalálják az adatukat, találatok (nincs lemezelérés), a hiányok a lemezhez fordulnak. A hiánybüntetés egy lemezelérés, nanoszekundumok helyett milliszekundumok, ezért a lapgyorsítótár találati aránya még fontosabb.
+15. Az operációs rendszer a nemrég olvasott fájladatokat a kihasználatlan RAM-ban tartja; az olyan olvasások, amelyek ott megtalálják az adatukat, találatok (nincs lemezelérés), a hiányok a lemezhez fordulnak. A hiánybüntetés egy lemezelérés, nanoszekundumok helyett milliszekundumok, ezért a page cache találati aránya még fontosabb.
 16. $H \cdot T_1 + (1 - H) \cdot T_1 = T_1$, így az összeg $T_1 + (1 - H) \cdot T_2$. Look-through: először a gyorsítótárat nézzük meg, és egy hiány mindkét időt megfizeti (ez a szokásos szervezés, és a többszintű képleté is). A másik alak a look-aside szervezésre érvényes, ahol a RAM-ot párhuzamosan kérdezzük, vagy akkor, ha $T_2$ egy hiány teljes idejét jelöli. Look-through: 2 + 0,02 × 100 = 4,0 ns; a másik alak: 0,98 × 2 + 0,02 × 100 = 3,96 ns.
 17. `0x0000A0C7` = `0000 0000 0000 0000 1010 | 00 0011 0001 | 11`: tag `0x0000A`, index 49, eltolás 3. A `0x0000B0C4` … `0x0000B0C7` címek bármelyike `0x0000B` taggel a 49. sorra képeződik, és versenyez vele. CAM: a `110010` és a `110011` bitenkénti XNOR-ja `111110`; a bitek ÉS-kapcsolata 0, tehát nincs egyezés (egy bit eltér).
 18. Egy SRAM-bit egy 6 tranzisztoros flip-flop a processzorlapkán: nem kell frissíteni, nagyon gyors, de nagy a területe, ezért drága. Egy DRAM-bit 1 tranzisztor és 1 kondenzátor: sűrű és olcsó, de a töltés elszivárog, ezért frissíteni kell (minden sort 64 ms-on belül a DDR4, 32 ms-on belül a DDR5 esetén), az olvasás romboló, és a lapkák egy memóriavezérlő mögött vannak, ezért lassabb. Belső: regiszterek, gyorsítótár, RAM; külső: lemezek, SSD-k, optikai lemezek; offline: szalagok és más cserélhető adathordozók.

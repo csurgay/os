@@ -2,10 +2,6 @@
 
 *Operating Systems lecture: why a small, fast memory in front of a big, slow one makes the whole system look big and fast, how a cache finds its data (direct-mapped, fully associative, set-associative), which line to throw out, and how to write programs that the cache likes*
 
-Previous: [Concurrency, Deadlocks, Process States and Linux Scheduling](../06-concurrency-deadlocks-scheduling/). Next: [Virtual Memory](../08-virtual-memory/).
-
-> **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
-
 ## Learning objectives
 
 The [fetch-execute lecture](../04-fetch-execute-cycle/) assumed that the CPU can read an instruction or a data word from memory at every step. In reality, main memory is a hundred times slower than the CPU. This lecture shows how computers hide that gap with a **two-level memory**: a small, fast memory (the cache) in front of a big, slow one (RAM), and why the same idea reappears between RAM and the disk, which later lectures on virtual memory build on.

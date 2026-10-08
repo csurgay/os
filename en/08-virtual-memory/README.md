@@ -2,10 +2,6 @@
 
 *Operating Systems lecture: how the operating system gives every process its own private, contiguous memory, protects processes from each other, and uses the disk to extend RAM: fragmentation, paging, page tables, the TLB, page faults and page replacement, with Linux measurements*
 
-Previous: [Two-Level Memories and Caches](../07-two-level-memory-and-cache/). Next: [File Systems](../09-file-systems/).
-
-> **How to read this lecture.** Wherever a new abbreviation or concept appears, a box marked **Explained simply** follows. Click it to open a plain-language explanation. You can skip these boxes if you already know the terms.
-
 ## Learning objectives
 
 The [previous lecture](../07-two-level-memory-and-cache/) built a two-level memory from a cache and RAM. This lecture builds the next one down, from **RAM and the disk**, and shows that it does much more than add capacity: it is how an operating system separates processes, gives each of them a simple view of memory, and shares RAM between them.

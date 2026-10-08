@@ -184,7 +184,7 @@ def grips():
     p.append(rect(x + 77, 82, 16, 44, "acc", rx=8))
     for k in range(3):
         p.append(f'<path d="M{x + 81} {98 + k * 6}H{x + 89}" class="acc" stroke-width="1.5"/>')
-    p.append(text(24, 242, "A textúra jelölő: megmutatja, hol lehetséges a cselekvés, akkor is, ha az egész felület laposnak látszik.", 11.5, cls="quiet"))
+    p.append(text(24, 242, "A textúra itt a signifier: megmutatja, hol lehetséges a cselekvés, akkor is, ha az egész felület laposnak látszik.", 11.5, cls="quiet"))
     return svg(760, 258, title, "\n".join(p))
 
 
@@ -213,7 +213,7 @@ def paths():
 # ---------------- 6. Affective computing loop ----------------
 def affect():
     m = "af"
-    title = "Az affektív számítástechnika mint hurok: érzékelés, előrejelzés, módosítás"
+    title = "Az affective computing mint hurok: érzékelés, előrejelzés, módosítás"
     p = [f"<defs>{marker(m)}</defs>", text(24, 30, title, 15, 600)]
     nodes = [(280, 56, "felhasználó érzelmi állapota", "c2"), (520, 150, "érzékelés", "acc"), (280, 244, "előrejelzés", "acc"),
              (40, 150, "módosítás (mit mutasson)", "acc")]
@@ -247,7 +247,7 @@ def smooth(pts):
 
 
 def uncanny():
-    title = "A hátborzongató völgy (Mori, 1970): hipotézis, nem mért törvény"
+    title = "Az uncanny valley (Mori, 1970): hipotézis, nem mért törvény"
     p = [text(24, 30, title, 15, 600)]
     X0, W = 90, 560
     zero, A = 230, 130                        # neutral affinity line, amplitude
@@ -270,7 +270,7 @@ def uncanny():
         p.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="4.5" class="c2"/>')
         p.append(text(cx + (12 if anc == "start" else -8), cy + dy, lab, 12, 600, anchor=anc))
     vx, vy = S(0.8, -0.85)
-    p.append(text(vx + 12, vy + 20, "a hátborzongató völgy", 11.5, cls="quiet"))
+    p.append(text(vx + 12, vy + 20, "az uncanny valley", 11.5, cls="quiet"))
     p.append(text(24, 384, "Mori intuícióból rajzolta a görbét; szerinte a mozgás mélyíti. A későbbi kísérletek bizonyos ingereknél", 11.5, cls="quiet"))
     p.append(text(24, 402, "alátámasztják a mélyedést, de alakja és okai vitatottak. Tanácsa: az első csúcsot célozzuk, ne a teljes hasonlóságot.", 11.5, cls="quiet"))
     return svg(780, 418, title, "\n".join(p))
